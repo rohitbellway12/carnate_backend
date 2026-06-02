@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class JobCardSparePart extends Model
+{
+    use HasFactory;
+
+    protected $appends = ['category'];
+
+    protected $hidden = ['labels'];
+    protected $fillable=[
+        'purchase_price',
+        'tax_type',
+        'tax_percentage'
+    ];
+    public function labels(){
+        return $this->belongsTo(SparePartLabel::class,'stock_label_id');
+    }
+    public function getCategoryAttribute()
+    {
+        return $this->labels->spare_part_type;
+    }
+
+    public function user(){
+        return $this->belongsTo(User::class,'machanic_id');
+    }
+     public function productStock(){
+        return $this->hasOne(ProductStock::class, 'id', 'product_stock_id');
+    }
+
+}

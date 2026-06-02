@@ -1,0 +1,440 @@
+<?php
+
+namespace App\Livewire\Workshop;
+
+use App\Models\{Order, OrderItem, Payment, ProductStock, SparePart, WorkShopVendor};
+use App\Models\Staff;
+use Illuminate\Support\Facades\{Auth, DB};
+use Livewire\Component;
+use Livewire\WithPagination;
+use Illuminate\Support\Facades\Hash;
+use Livewire\Attributes\Layout;
+use Razorpay\Api\Api;
+use Livewire\Attributes\On;
+
+#[Layout('components.layouts.workshop-app')]
+class PurchaseCartController extends Component
+{
+    use WithPagination;
+
+    protected $paginationTheme = 'bootstrap';
+
+    public $orderIds = [];
+    public $totalAmounts = [];
+    public $orderStatus = [];
+    public $decline_reason = [];
+
+    public $isEdit = false, $showModal = false, $isAdd = false;
+    public $user_id, $order_items, $showOrderItem, $showReasonModel = false;
+
+    public $orderId, $user, $status = '', $checkItems = [];
+    public $totalPayabaleAmount = 0, $payabaleOrderId = [], $checked = false, $statusReason, $sotreStatusValue;
+    public $order, $orderItemId, $shoImageModel = false, $imageitem, $deleteItemId;
+
+    protected $listeners = ['delete', 'orderConfirmed'];
+
+
+
+    public function mount($id)
+    {
+
+        $user = Auth::guard('workshop')->user();
+        $this->user_id = $user->id;
+        $this->user = $user;
+
+        $order = Order::where('is_confim', 0)->where('workshop_id', $this->user_id)->where('id',$id)->first();
+
+        if (!$order) {
+            return redirect()->route('workshop.vehicle_search')->with('error', 'Cart is empty!');
+        }
+
+        $this->order = $order;
+        $this->showOrderItem = true;
+        $this->orderItemId = $order->id;
+
+        $this->order_items = OrderItem::where('order_id', $this->orderItemId)->get();
+
+    }
+
+    public function render()
+    {
+        return view('livewire.workshop.purchaseorder.purchasecart');
+    }
+
+    public function viewItem($id)
+    {
+        $this->showOrderItem = true;
+        $this->orderItemId = $id;
+    }
+
+    public function back()
+    {
+        $this->showOrderItem = false;
+        // $this->orderId = '';
+    }
+
+    public function received($id, $status)
+    {
+        $order_item = OrderItem::with('order')->find($id);
+        
+        // Update Product Stock for Workshop
+        $spare_part = SparePart::find($order_item->spare_part_id);
+        if ($spare_part) {
+            $offlinePrice = $spare_part->selling_amount ?? 0;
+            if (($spare_part->tax_type ?? '') == 'exclude' && ($spare_part->tax_percentage ?? 0)) {
+                $offlinePrice += ($offlinePrice * $spare_part->tax_percentage) / 100;
+            }
+            if ($offlinePrice <= 0) {
+                $offlinePrice = $order_item->price;
+            }
+
+            $stockProduct = ProductStock::where([
+                'label_id' => $spare_part->label_id,
+                'price' => $offlinePrice,
+                'user_id' => Auth::guard('workshop')->user()->id
+            ])->first();
+
+            if (empty($stockProduct)) {
+                $stockProduct = new ProductStock;
+                $stockProduct->label_id = $spare_part->label_id;
+                $stockProduct->category_id = $order_item->category;
+                $stockProduct->stock = $order_item->quantity;
+                $stockProduct->price = $offlinePrice;
+                $stockProduct->buy_price = $order_item->price;
+                $stockProduct->brand = $spare_part->brand;
+                $stockProduct->hsn_code = $spare_part->hsn_code;
+                $stockProduct->unit_id = $spare_part->unit_id;
+                $stockProduct->tax_type = $spare_part->tax_type;
+                $stockProduct->tax_percentage = $spare_part->tax_percentage;
+                $stockProduct->user_id = Auth::guard('workshop')->user()->id;
+                $stockProduct->save();
+            } else {
+                $stockProduct->stock = $stockProduct->stock + $order_item->quantity;
+                $stockProduct->price = $offlinePrice;
+                $stockProduct->buy_price = $order_item->price;
+                $stockProduct->tax_type = $spare_part->tax_type;
+                $stockProduct->tax_percentage = $spare_part->tax_percentage;
+                $stockProduct->save();
+            }
+        }
+
+        $order_item->status = $status;
+        $order_item->save();
+        
+        $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Received Successfully!']);
+        return redirect()->route('workshop.orders');
+    }
+
+
+
+    public function create()
+    {
+        $this->isAdd = true;
+    }
+
+    public function toggleCheckbox($id, $value, $checked)
+    {
+        $orderItem = OrderItem::where('status', 1)->where('payment_status', 0)->find($id);
+
+        if (!$orderItem) {
+            return $this->dispatch('swal:toast', [
+                'type' => 'info',
+                'title' => "Paid Item is also add!",
+            ]);
+
+        }
+        if ($checked) {
+            if (!in_array($orderItem->id, $this->payabaleOrderId)) {
+                $this->totalPayabaleAmount += $orderItem->total_amount;
+                $this->payabaleOrderId[] = $orderItem->id;
+            }
+        } else {
+            $key = array_search($orderItem->id, $this->payabaleOrderId);
+            if ($key !== false) {
+                $this->totalPayabaleAmount -= $orderItem->total_amount;
+                unset($this->payabaleOrderId[$key]);
+                $this->payabaleOrderId = array_values($this->payabaleOrderId);
+            }
+        }
+    }
+
+    public function toggleCheckboxAll($checked, $order_id)
+    {
+        if ($checked) {
+            $orderItems = OrderItem::where('order_id', $order_id)->where('status', 1)->where('payment_status', 0)->get();
+            $this->payabaleOrderId = [];
+            $this->totalPayabaleAmount = 0;
+            if (!empty($orderItems)) {
+                foreach ($orderItems as $orderItem) {
+                    $this->payabaleOrderId[] = $orderItem->id;
+                    $this->totalPayabaleAmount += $orderItem->total_amount;
+                    $this->checked = true;
+                }
+            } else {
+                $this->dispatch('swal:toast', [
+                    'type' => 'info',
+                    'title' => "Paid Item is also add!",
+                ]);
+            }
+
+        } else {
+            $this->payabaleOrderId = [];
+            $this->totalPayabaleAmount = 0;
+            $this->checked = false;
+        }
+    }
+
+    public function createOrder($order_id, $total_amount)
+    {
+        // echo "<pre>";print_r($order_id);
+        // echo "<pre>";print_r($total_amount);die;
+
+        $api_key = config('services.razorpay.key');
+        $api_secret = config('services.razorpay.secret');
+        
+        $api = new Api($api_key, $api_secret);
+
+        $orderData = [
+            'amount' => (int) $total_amount * 100, // Convert to paise
+            'currency' => 'INR',
+            'receipt' => 'receipt_' . time(),
+        ];
+
+        $order = $api->order->create($orderData);
+        $this->orderId = $order->id;
+
+        // Dispatch the event with the order details
+        $this->dispatch('razorpay-show', [
+            'amount' => $total_amount,
+            'orderId' => $this->orderId,
+            'order_id' => $order_id,
+        ]);
+
+        \Log::info('Razorpay Order Response:', (array) $order);
+    }
+
+
+    #[On('storePayment')]
+    public function handlePayment($paymentResponse)
+    {
+
+        $payment = Payment::create([
+            'payment_id' => $paymentResponse['razorpay_payment_id'],
+            'order_id' => $paymentResponse['razorpay_order_id'],
+            'status' => 'success',
+            'amount' => $paymentResponse['amount'],
+            'user_id' => Auth::guard('workshop')->user()->id,
+        ]);
+
+        // // echo "<pre>";print_r($paymentResponse['order_id']);die;
+
+        // foreach(explode(',',$paymentResponse['order_id']) as $orderID){
+        //     $order =  Order::find($orderID);
+        //     $order->payment_status = 1;
+        //     $order->is_cart = 1;
+        //     $order->save();
+        // }
+
+        $orderItems = OrderItem::whereIn('id', $this->payabaleOrderId)->get();
+
+        // Mark all selected OrderItems as paid
+        foreach ($orderItems as $orderItem) {
+            $orderItem->payment_status = 1;
+            $orderItem->save();
+        }
+
+        // Get all order items related to the affected orders
+        $orderItems = OrderItem::whereIn('order_id', $orderItems->pluck('order_id'))->get();
+        $order = Order::whereIn('id', $orderItems->pluck('order_id'))->first();
+
+        if ($order) {
+            $statusCounts = $orderItems->groupBy('status')->map->count();
+            $paymentStatusCount = $orderItems->where('payment_status', 1)->count();
+
+            $allPending = $statusCounts[0] ?? 0;
+            $allDeclined = $statusCounts[2] ?? 0;
+            $statusOneItems = $statusCounts[1] ?? 0;
+
+            if ($allPending == 0 && $allDeclined == 0) {
+                $order->payment_status = ($statusOneItems == $paymentStatusCount) ? 1 : 2;
+            } else {
+                $order->payment_status = ($allPending > 0) ? 2 : 1;
+            }
+
+            $order->is_cart = ($order->payment_status == 1) ? 1 : $order->is_cart;
+            $order->save();
+        }
+
+
+        $this->dispatch('swal:toast', [
+            'type' => 'success',
+            'title' => "Payment Paid successfully!",
+        ]);
+        return redirect()->route('workshop.orders');
+    }
+
+
+    public function confirmDelete($id)
+    {
+        $this->deleteItemId = $id;
+        $this->dispatch('swal:confirm', [
+            'title' => 'Are you sure?',
+            'text' => 'This action cannot be undone.',
+            'icon' => 'warning',
+            'showCancelButton' => true,
+            'confirmButtonText' => 'Yes, delete it!',
+            'cancelButtonText' => 'Cancel',
+            'action' => 'delete',
+        ]);
+    }
+
+    #[On('delete')]
+    public function delete()
+    {
+        $orderItem =  OrderItem::with('order')->find($this->deleteItemId);
+        $order = Order::where('id', $orderItem->order_id)->first();
+        $order->total_quantity -= $orderItem->quantity;
+        // $order->orderItem -= $orderItem->price;    
+        $order->total_amount -= $orderItem->price;    
+        $order->save();
+        OrderItem::destroy($this->deleteItemId);
+        $this->order_items = $this->order_items->reject(function ($item) {
+            return $item->id == $this->deleteItemId;
+        });
+        $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Item has been removed successfully!']);
+        $this->reset('deleteItemId');
+    }
+
+    public function showdeclineorder($id, $status)
+    {
+
+        $this->showReasonModel = true;
+        $this->sotreStatusValue[] = $id;
+        $this->sotreStatusValue[] = $status;
+        $order = OrderItem::where('id', $id)->first();
+        $this->decline_reason = $order->reason;
+        if ($status == 5) {
+            $this->statusReason = 'Delayed';
+        } else {
+            $this->statusReason = 'Decline';
+        }
+
+    }
+
+    public function declineorder($id, $status)
+    {
+
+        $this->showReasonModel = true;
+        $this->sotreStatusValue[] = $id;
+        $this->sotreStatusValue[] = $status;
+        if ($status == 5) {
+            $this->statusReason = 'Delayed';
+        } else {
+            $this->statusReason = 'Decline';
+        }
+
+    }
+
+    public function declinereasonStore()
+    {
+        $order = OrderItem::where('id', $this->sotreStatusValue[0])->first();
+        $order->reason = $this->decline_reason;
+        $order->save();
+
+        $this->changeItemStatus($this->sotreStatusValue[0], $this->sotreStatusValue[1]);
+        $this->showReasonModel = false;
+        $this->decline_reason = '';
+        $this->statusReason = '';
+        $this->sotreStatusValue = [];
+        return;
+
+    }
+
+    public function confirmOrder($id)
+    {
+        $this->orderId = $id;
+        $this->dispatch('swal:confirm', [
+            'title' => 'Are you sure?',
+            'text' => 'This action cannot be undone.',
+            'icon' => 'warning',
+            'showCancelButton' => true,
+            'confirmButtonText' => 'Yes, Confirm it!',
+            'cancelButtonText' => 'Cancel',
+            'action' => 'orderConfirmed',
+        ]);
+    }
+
+    public function clodeReasonModel()
+    {
+        $this->showReasonModel = false;
+        $this->decline_reason = '';
+        $this->statusReason = '';
+        $this->sotreStatusValue = [];
+    }
+
+    public function changeItemStatus($id, $status)
+    {
+
+        $order_item = OrderItem::with('order')->find($id);
+
+        if (!$order_item) {
+            return $this->dispatch('swal:toast', ['type' => 'error', 'message' => 'Order item not found!']);
+        }
+
+        $order_item->status = $status;
+        $order_item->save();
+
+        $order_items = OrderItem::where('order_id', $order_item->order_id)->get();
+        $order = Order::find($order_item->order_id);
+        if ($order) {
+            $statuses = $order->orderItem->pluck('status');
+
+            if ($statuses->every(fn($status) => $status == 0)) {
+                $order->order_status = 0;
+            } elseif ($statuses->every(fn($status) => $status == 1)) {
+                $order->order_status = 1;
+            } elseif ($statuses->every(fn($status) => $status == 2)) {
+                $order->order_status = 2;
+            } elseif ($statuses->every(fn($status) => $status == 5)) {
+                $order->order_status = 0;
+            } else {
+                $order->order_status = 3;
+            }
+
+            if ($order_items->where('status', 0)->count() <= 0 && $order_items->where('status', 5)->count() <= 0 && ($order_items->where('status', 1)->count() == $order_items->where('status', 1)->whereIn('payment_status', [1, 2])->count())) {
+                $order->is_cart = 1;
+                $order->payment_status = 1;
+            }
+
+            $order->save();
+        }
+
+        if ($status == 1) {
+            $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Order Item Accepted!']);
+        } else {
+            $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Order Item Declined!']);
+        }
+    }
+
+    public function orderConfirmed()
+    {
+        $order = Order::findOrFail($this->orderId);
+        $order->update(['is_confim' => 1, 'order_date' => now()]);
+        
+        $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Order confirmed successfully!']);
+        return redirect()->route('workshop.orders')->with('success', 'Order confirmed successfully!');
+    }
+
+    public function shoImage($value)
+    {
+        $this->imageitem = OrderItem::with('SpareParts')->find($value);
+        $this->shoImageModel = true;
+    }
+
+    public function clodeImageModel()
+    {
+        $this->shoImageModel = false;
+    }
+
+
+}
