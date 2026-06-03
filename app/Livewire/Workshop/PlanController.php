@@ -16,7 +16,7 @@ class PlanController extends Component
     // Public variables
     public $plans, $orderId;
     public $plan_name, $is_trial, $validity, $status, $description, $plan_type, $planDescription = [];
-    public $planId,$user;
+    public $planId,$user,$latestPlan;
     public $amount = '';
 
     protected $rules = [];
@@ -29,6 +29,11 @@ class PlanController extends Component
             ->get();
  
         $this->user = Auth::guard('workshop')->user();
+
+        $latestSubscription = Subscription::where('user_id', $this->user->id)->latest()->first();
+        if ($latestSubscription) {
+            $this->latestPlan = Plan::find($latestSubscription->plan_id);
+        }
     }
 
     public function render()
@@ -93,17 +98,9 @@ class PlanController extends Component
         $vendor->is_subscribe = 1;
         $vendor->subscription_start_date = date('Y-m-d');  
         
-        $plan_type = $plan->plan_type;  
+        $days = (int) ($plan->days ?? 0);  
         $today = new DateTime();
-        
-        if ($plan_type == 3) { 
-            $vendor->subscription_end_date = $today->modify('+12 months')->format('Y-m-d');
-        } elseif ($plan_type == 2) { 
-            $vendor->subscription_end_date = $today->modify('+1 month')->format('Y-m-d');
-        } elseif ($plan_type == 1) {  
-            $days = 1;  
-            $vendor->subscription_end_date = $today->modify("+$days days")->format('Y-m-d');
-        }
+        $vendor->subscription_end_date = $today->modify("+$days days")->format('Y-m-d');
         
         $vendor->save();
         

@@ -26,6 +26,7 @@ class Plan extends Model
         'is_trial', 
         'status',  
         'plan_type',  
+        'days',
     ];
 
     public function planDescriptions()

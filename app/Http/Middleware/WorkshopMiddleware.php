@@ -32,8 +32,13 @@ class WorkshopMiddleware
                     session()->flash('error', 'Please purchase a plan to continue.');
                     return redirect()->route('workshop.plan');
                 } else {
-                    $trialExpired = false;
-                    $trialEndDate = now()->addDays((int)$user->trial_days ?? 0)->format('Y-m-d');
+                    if ($user->is_trial == 1 && $user->trial_start_date === null) {
+                        $user->trial_start_date = now()->format('Y-m-d');
+                        $user->save();
+                    }
+
+                    $trialStartDate = $user->trial_start_date ? Carbon::parse($user->trial_start_date) : Carbon::parse($user->created_at);
+                    $trialEndDate = $trialStartDate->copy()->addDays((int)$user->trial_days ?? 0)->format('Y-m-d');
                     $trialExpired = ($user->is_trial === 1 && ($trialEndDate < $currentDate)) ? true : false;
                     
                     // dd($trialExpired);

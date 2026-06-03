@@ -14,19 +14,20 @@ class PlanController extends Component
     protected $paginationTheme = 'bootstrap';
 
     public $isEdit = false, $showModal = false;
-    public $plan_name, $is_trial, $validity, $amount, $status, $description, $plan_type, $planDescription = [];
+    public $plan_name, $is_trial, $validity, $amount, $status, $description, $plan_type, $days, $planDescription = [];
     public $planId,$adminId,$searchfilter;
 
     protected $listeners = ['delete'];
 
     protected $rules = [
         'plan_name' => 'required',
-        'is_trial' => 'required',
-        'validity' => 'required',
+        // 'is_trial' => 'required',
+        // 'validity' => 'required',
         'amount' => 'required',
         'status' => 'required',
         'description' => 'required',
-        'plan_type' => 'required',
+        // 'plan_type' => 'required',
+        'days' => 'required|integer|min:1',
         'planDescription.*' => 'required|string', // Validate each description
     ];
 
@@ -66,7 +67,7 @@ class PlanController extends Component
     {
         // $this->resetErrorBag(); 
         $this->resetValidation();
-        $this->reset(['showModal', 'plan_name', 'amount', 'validity', 'is_trial', 'status', 'plan_type', 'description', 'planDescription']); 
+        $this->reset(['showModal', 'plan_name', 'amount', 'validity', 'is_trial', 'status', 'plan_type', 'days', 'description', 'planDescription']); 
         $this->showModal = false;
     }
 
@@ -77,12 +78,13 @@ class PlanController extends Component
         // Create the Plan and get the model instance
         $plan = Plan::create([
             'plan_name' => $this->plan_name,
-            'is_trial' => $this->is_trial,
-            'validity' => $this->validity,
+            'is_trial' => 0,
+            // 'validity' => $this->validity,
             'amount' => $this->amount,
             'status' => $this->status,
             'description' => $this->description,
-            'plan_type' => $this->plan_type,
+            // 'plan_type' => $this->plan_type,
+            'days' => $this->days,
         ]);
 
         // Create associated PlanDescriptions
@@ -113,6 +115,7 @@ class PlanController extends Component
         $this->amount = $plan->amount;
         $this->status = $plan->status;
         $this->plan_type = $plan->plan_type;
+        $this->days = $plan->days;
 
         // Populate planDescription with existing descriptions
         $this->planDescription = $plan->planDescriptions->pluck('description')->toArray();
@@ -129,12 +132,13 @@ class PlanController extends Component
         // Update plan data
         $plan->update([
             'plan_name' => $this->plan_name,
-            'is_trial' => $this->is_trial,
+            'is_trial' => 0,
             'description' => $this->description,
-            'validity' => $this->validity,
+            // 'validity' => $this->validity,
             'amount' => $this->amount,
             'status' => $this->status,
-            'plan_type' => $this->plan_type,
+            // 'plan_type' => $this->plan_type,
+            'days' => $this->days,
         ]);
 
         // Update or recreate plan descriptions
@@ -192,6 +196,7 @@ class PlanController extends Component
         $this->validity = '';
         $this->amount = '';
         $this->plan_type = '';
+        $this->days = '';
         $this->status = '';
         $this->planId = null;
         $this->planDescription = ['']; // Reset descriptions
