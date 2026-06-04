@@ -13,12 +13,12 @@
             <!-- Logo Section -->
                 <div class="text-start ">
                     <a href="{{ route('home') }}">
-                        <img src="{{ asset('assets/images/logo.png') }}" class="img-fluid" style="max-width: 300px;" alt="CARNATE">
+                        <img src="{{ asset('assets/images/logo.png') }}" class="img-fluid" style="max-width: 500px; object-fit: contain;" alt="CARNATE">
                     </a>
                 </div>
 
                 <!-- Main Content -->
-                <div class="text-center text-white">
+                <div class="text-center text-white" style="margin-top: -90px;">
                     <h1 style="font-size: 3.2rem; font-weight: 700; margin-bottom: 0.5rem; background: linear-gradient(135deg, #ffffff 0%, #ff6b35 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                         WorkShop
                     </h1>
@@ -43,7 +43,7 @@
         <div class="col-12 col-sm-6 min-vh-100 d-flex align-items-center justify-content-center px-3 px-md-4 px-lg-5" style="background: #ffffff;">
             <form class="w-100" wire:submit="login" style="max-width: 500px !important">
                 <h2 class="text-center mb-2" style="color: #1a2a3a; font-weight: 700;">Login</h2>
-                <p class="text-center text-muted mb-4" style="font-size: 0.9rem;">Login for Workshop & Spare Parts Vendors</p>
+                <!-- <p class="text-center text-muted mb-4" style="font-size: 0.9rem;">Login for Workshop & Spare Parts Vendors</p> -->
 
                 @csrf
 
