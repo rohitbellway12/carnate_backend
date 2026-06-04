@@ -115,10 +115,10 @@ if (Auth::guard('sparepart')->check()) {
                                             class="fa fa-chevron-right dropdown-right-icon icon"> </span>
                                     </a>
                                     <div class="dropdown-content">
-                                       
+
                                             <a href="{{ route('sparepart.suppliers') }}"
                                                 style="background-color: unset;">Suppliers</a>
-                                                <a href="{{ route('sparepart.purchaseorder') }}" 
+                                                <a href="{{ route('sparepart.purchaseorder') }}"
                                                 style="background-color: unset;">Purchase Order</a>
                                                 <a href="{{ route('sparepart.stock.list') }}" style="background-color: unset;"> Stock List </a>
                                     </div>
@@ -143,7 +143,7 @@ if (Auth::guard('sparepart')->check()) {
                                     </a>
                                 </li>
                             @endif
-                           
+
                             @if (@$sparePart->hasPermissionTo('wallet-show'))
                                 <li>
                                     <a href="{{ route('sparepart.withdrawal') }}">
@@ -222,6 +222,108 @@ if (Auth::guard('sparepart')->check()) {
                                     <div class="menu-title"> Reset Password </div>
                                 </a>
                             </li>
+
+
+                             {{-- <li>
+                                    <div class="dropdown w-100">
+                                        <a href="javascript:void(0)">
+                                            <div class="parent-icon"><i class="fa-solid fa-circle-info"></i></div>
+                                            <div class="menu-title w-100">Support</div>
+                                            <span class="fa fa-chevron-right dropdown-right-icon icon"></span>
+                                        </a>
+                                        <div class="dropdown-content">
+                                            <a href="#" class="ms-3" style="background-color: unset;">+91 8147 938 343</a>
+                                            <a href="#" class="ms-3" style="background-color: unset;">carnateindia@gmail.com</a>
+
+                                        </div>
+                                    </div>
+                                </li> --}}
+
+
+                                <li style="list-style:none; margin:8px 0;">
+    <div class="dropdown w-100" style="position:relative;">
+
+        <a href="javascript:void(0)"
+            style="
+                display:flex;
+                align-items:center;
+                justify-content:space-between;
+                padding:12px 18px;
+                text-decoration:none;
+                background:linear-gradient(135deg,#2c3e50,#4ca1af);
+                border-radius:14px;
+                color:#fff;
+                box-shadow:0 5px 15px rgba(0,0,0,0.15);
+                transition:0.3s;
+            ">
+
+            <div style="display:flex;align-items:center;">
+                <div class="parent-icon"
+                    style="
+                        width:38px;
+                        height:38px;
+                        border-radius:50%;
+                        background:rgba(255,255,255,0.15);
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        margin-right:12px;
+                    ">
+                    <i class="fa-solid fa-circle-info"></i>
+                </div>
+
+                <div class="menu-title"
+                    style="font-size:16px;font-weight:600;letter-spacing:0.5px;">
+                    Support
+                </div>
+            </div>
+
+            <span class="fa fa-chevron-down"
+                style="font-size:13px;color:#fff;"></span>
+        </a>
+
+        <div class="dropdown-content"
+            style="
+                background:#fff;
+                margin-top:8px;
+                border-radius:12px;
+                overflow:hidden;
+                box-shadow:0 8px 20px rgba(0,0,0,0.12);
+            ">
+
+            <a href="tel:+918147938343"
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    padding:12px 18px;
+                    color:#333;
+                    text-decoration:none;
+                    border-bottom:1px solid #f1f1f1;
+                ">
+                <i class="fa-solid fa-phone" style="color:#4ca1af;"></i>
+                +91 8147 938 343
+            </a>
+
+            <a href="mailto:carnateindia@gmail.com"
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    padding:12px 18px;
+                    color:#333;
+                    text-decoration:none;
+                ">
+                <i class="fa-solid fa-envelope" style="color:#4ca1af;"></i>
+                carnateindia@gmail.com
+            </a>
+
+        </div>
+    </div>
+</li>
+
+
+
                             <li>
                                 <a href="{{ route('unified.logout') }}">
                                     <div class="parent-icon"><i class="bx bx-log-out-circle fs-5"></i>
