@@ -20,6 +20,7 @@ class WorkShopVendorController extends Component
     public $isEdit = false, $showModal = false;
     public $name, $lastname, $email, $password, $mobile_no, $branch_name, $landline_no, $country_id, $state_id, $city_id, $address, $user_title = 'mr', $birth_date, $display_name, $branches, $branch_email, $branch_number, $is_trial = 0, $trial_days = 0, $imageId, $image_id, $uploadedImageId, $uniqueId, $adminId, $gst_no, $company_name;
     public $vendorId;
+    public $countries = [];
     public $states = [];
     public $cities = [], $searchfilter;
     public $imageName, $imageImage, $image, $pincode;
@@ -34,6 +35,7 @@ public $is_gst = false;
     public function mount()
     {
         $this->branches = Branch::get();
+        $this->countries = Country::all();
         $this->adminId = Auth::guard('admin')->user()->id;
     }
 
@@ -61,9 +63,7 @@ public $is_gst = false;
             ->where('type', 0)
             ->paginate(10);
 
-        $countries = Country::all();
-
-        return view('livewire.admin.work_shop_vendor', compact('vendors', 'countries'));
+        return view('livewire.admin.work_shop_vendor', compact('vendors'));
     }
 
     public function create()

@@ -51,7 +51,7 @@
                  <!-- supplier -->
                              <div>
                             <label class="form-label">Supplier</label>
-                                <select class="form-select" wire:model="supplier_id">
+                                <select class="form-select searchable-select" data-placeholder="Select Supplier" wire:model="supplier_id">
                                 <option value="">Select Supplier</option>
                                 @foreach ($suppliers as $supplier)
                                     <option value="{{ $supplier->id }}">{{ $supplier->owner_first_name }}</option>
@@ -283,7 +283,7 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="form-label">Category<sup class="text-danger">*</sup></label>
-                                    <select class="form-select" wire:model="category" id="category">
+                                    <select class="form-select searchable-select" data-placeholder="Select Category" wire:model="category" id="category">
                                         <option value="">Select Category</option>
                                         @foreach ($categories as $category)
                                             <option value="{{ $category['categoryId'] }}">
@@ -397,7 +397,7 @@
                                        wire:model.live="brandFilter"
                                         class="form-control mb-3"
                                         placeholder="Type brand name">
-                                        
+
                                     <label class="form-label">Compatible Vehicles List<span class="text-danger">*</span></label>
                                     <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
                                         @if (!empty($api_compatible_vehicles))

@@ -124,11 +124,11 @@
                             @enderror
                         </div>
 
-                        <!-- Country -->
+                              <!-- Country -->
                         <div class="@if ($isEdit == true) col-md-6 @else col-md-6 @endif">
                             <div class="form-group">
                                 <label class="form-label">Country</label>
-                                <select class="form-select" wire:change="stateData($event.target.value)"
+                                <select class="form-select searchable-select" data-placeholder="Select Country" wire:change="stateData($event.target.value)"
                                     wire:model="country_id">
                                     <option value="">Select Country</option>
                                     @foreach ($countries as $country)
@@ -145,7 +145,7 @@
                         <div class="@if ($isEdit == true) col-md-6 @else col-md-6 @endif">
                             <div class="form-group">
                                 <label class="form-label">State</label>
-                                <select class="form-select" wire:model="state_id"
+                                <select class="form-select searchable-select" data-placeholder="Select State" wire:model="state_id"
                                     wire:change="cityData($event.target.value)">
                                     <option value="">Select State</option>
                                     @foreach ($states as $state)
@@ -163,7 +163,7 @@
                         <div class="@if ($isEdit == true) col-md-6 @else col-md-6 @endif">
                             <div class="form-group">
                                 <label class="form-label">City</label>
-                                <select class="form-select" wire:model="city_id">
+                                <select class="form-select searchable-select" data-placeholder="Select City" wire:model="city_id">
                                     <option value="">Select City</option>
                                     @foreach ($cities as $city)
                                         <option value="{{ $city->id }}" @selected($city_id == $city->id)>

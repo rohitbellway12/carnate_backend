@@ -94,7 +94,7 @@
                                      @enderror
                                  </div>
                              @endif--}}
-                             
+
                              <!-- Password -->
                              @if ($isEdit == false)
                              <div class="col-md-6">
@@ -124,7 +124,7 @@
                                      <span class="text-danger error">{{ $message }}</span>
                                  @enderror
                              </div>
-                             
+
                              <div class="col-md-6">
     <div class="form-group">
         <label class="form-label">GST Billing</label>
@@ -175,7 +175,7 @@
                              <div class=" col-md-6">
                                  <div class="form-group">
                                      <label class="form-label">Country<span class="text-danger">*</span></label>
-                                     <select class="form-select" wire:change="stateData($event.target.value)"
+                                     <select class="form-select searchable-select" data-placeholder="Select Country" wire:change="stateData($event.target.value)"
                                          wire:model="country_id">
                                          <option value="">Select Country</option>
                                          @foreach ($countries as $country)
@@ -191,8 +191,8 @@
                              <!-- State -->
                              <div class=" col-md-6">
                                  <div class="form-group">
-                                     <label class="form-label">State<span class="text-danger">*</span></label>
-                                     <select class="form-select" wire:model="state_id"
+                                     <label class="form-label ">State<span class="text-danger">*</span></label>
+                                     <select class="form-select searchable-select" data-placeholder="Select State" wire:model="state_id"
                                          wire:change="cityData($event.target.value)">
                                          <option value="">Select State</option>
                                          @foreach ($states as $state)
@@ -210,7 +210,7 @@
                              <div class=" col-md-6">
                                  <div class="form-group">
                                      <label class="form-label">City<span class="text-danger">*</span></label>
-                                     <select class="form-select" wire:model="city_id">
+                                     <select class="form-select searchable-select" data-placeholder="Select City" wire:model="city_id">
                                          <option value="">Select City</option>
                                          @foreach ($cities as $city)
                                              <option value="{{ $city->id }}" @selected($city->id == $city_id)>
@@ -222,7 +222,7 @@
                                      <span class="text-danger error">{{ $message }}</span>
                                  @enderror
                              </div>
-                            
+
                              <div class=" col-md-6">
                                  <div class="form-group">
                                      <label class="form-label" for="pincode">Pincode<span class="text-danger">*</span></label>
@@ -283,7 +283,7 @@
                  <div class="col-9 text-right">
                      <button type="button" class="mr-2 btn btn-info text-white rounded-0  float-end"
                          wire:click="resetFilter" fdprocessedid="orntg">Clear</button>
-                         
+
                      @if(count($selectedVendors) > 0)
                      <div class="dropdown float-end me-2">
                          <button class="btn btn-secondary dropdown-toggle" type="button" id="bulkActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -341,16 +341,16 @@
                                      <td> {{ $vendor->cityName ? $vendor->cityName->name : 'NA' }} </td>
                                      <td>
                                          <div class="form-check form-switch">
-                                             <input class="form-check-input" type="checkbox" id="status_{{ $vendor->id }}" 
-                                                    wire:change="changeStatus({{ $vendor->id }})" 
+                                             <input class="form-check-input" type="checkbox" id="status_{{ $vendor->id }}"
+                                                    wire:change="changeStatus({{ $vendor->id }})"
                                                     {{ $vendor->status ? 'checked' : '' }}
                                                     @if (!@$admin->hasPermissionTo('spare-part-vendor-edit')) disabled @endif>
                                          </div>
                                      </td>
                                      <td>
                                          <div class="form-check form-switch">
-                                             <input class="form-check-input" type="checkbox" id="online_status_{{ $vendor->id }}" 
-                                                    wire:change="changeOnlineStockStatus({{ $vendor->id }})" 
+                                             <input class="form-check-input" type="checkbox" id="online_status_{{ $vendor->id }}"
+                                                    wire:change="changeOnlineStockStatus({{ $vendor->id }})"
                                                     {{ $vendor->online_stock_status ? 'checked' : '' }}
                                                     @if (!@$admin->hasPermissionTo('spare-part-vendor-edit')) disabled @endif>
                                          </div>
@@ -389,22 +389,9 @@
 
 
  @section('footerscript')
-     <script>
-         document.addEventListener('livewire:init', function() {
-
-             Livewire.hook('morphed', (message, component) => {
-                 $('.select2').select2().on('change', function(e) {
-                     const selectedValues = $(this).val();
-                     @this.set(e.target.dataset.property, selectedValues);
-                 });
-             });
-
-
-         });
-     </script>
       <script>
     document.addEventListener('DOMContentLoaded', function() {
-        toggleGstField(); 
+        toggleGstField();
 
         var isGstSelect = document.getElementById('is_gst');
         if (isGstSelect) {

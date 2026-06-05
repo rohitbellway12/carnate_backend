@@ -205,7 +205,7 @@
                              <div class="col-md-6">
                                  <div class="form-group">
                                      <label class="form-label">Category<sup class="text-danger">*</sup></label>
-                                     <select class="form-select" wire:model="category">
+                                     <select class="form-select searchable-select" data-placeholder="Select Category" wire:model="category">
                                          <option value="">Select Category</option>
                                          @foreach ($categories as $category)
                                              <option value="{{ $category['categoryId'] }}">{{ $category['categoryName'] }}</option>

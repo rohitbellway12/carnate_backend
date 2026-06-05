@@ -20,6 +20,7 @@ class SparePartVendorController extends Component
     public $isEdit = false, $showModal = false;
     public $name, $lastname, $email, $password, $mobile_no, $branch_name, $landline_no, $country_id, $state_id, $city_id, $address, $user_title = 'mr', $birth_date, $display_name, $branches,$imageId,$image_id,$uploadedImageId,$uniqueId,$type,$editId,$adminId,$company_name;
     public $vendorId;
+    public $countries = [];
     public $states = [];
     public $cities = [],$searchfilter,$gst_no,$pincode;
     public $imageName, $imageImage,$image;
@@ -48,6 +49,7 @@ class SparePartVendorController extends Component
     public function mount()
     {
         $this->branches = Branch::get();
+        $this->countries = Country::all();
         $this->adminId = Auth::guard('admin')->user()->id;
 
         $this->imageName = '';
@@ -64,10 +66,7 @@ class SparePartVendorController extends Component
         }
             $vendors=$vendors->paginate(10);
 
-
-        $countries = Country::all();
-
-        return view('livewire.admin.spare_part_vendor', compact('vendors', 'countries'));
+        return view('livewire.admin.spare_part_vendor', compact('vendors'));
     }
 
     public function create()

@@ -176,6 +176,7 @@
         @endif
     </script>
 
+    @include('components.includes.searchable-select-script')
     @yield('footerscript')
 </body>
 

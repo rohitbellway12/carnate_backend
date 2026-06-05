@@ -39,7 +39,7 @@
                 <div>
                     @if ($message)
                         <div id="subscription-alert"
-                            class="alert @if ($daysLeft === 0) alert-danger @elseif ($daysLeft <= 7) alert-warning @else alert-info @endif">
+                            class="alert @if ($daysLeft === 0) alert-danger @elseif ($daysLeft <= 15) alert-warning @else alert-info @endif">
                             {{ $message }}
                         </div>
                     @endif

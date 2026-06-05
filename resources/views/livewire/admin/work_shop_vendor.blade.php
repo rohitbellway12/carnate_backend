@@ -94,7 +94,7 @@
                                      @enderror
                                  </div>
                              @endif--}}
-                             
+
                               <!-- Password -->
                              @if ($isEdit == false)
                              <div class="col-md-6">
@@ -106,7 +106,7 @@
                                     <a href="javascript:void(0);" class="input-group-text bg-transparent"
                                     onclick="togglePassword()">
                                     <i class='bx bx-hide' id="password-icon"></i>
-                                    </a> 
+                                    </a>
                                  </div>
                                  @error('password')
                                  <span class="text-danger error">{{ $message }}</span>
@@ -136,7 +136,7 @@
                                      <span class="text-danger error">{{ $message }}</span>
                                  @enderror
                              </div>
-                             
+
           <!-- Is GST -->
 <div class="col-md-6">
     <div class="form-group">
@@ -170,8 +170,8 @@
                              <div class="col-md-6">
                                  <div class="form-group">
                                      <label class="form-label">Country<sup class="text-danger">*</sup></label>
-                                     <select class="form-select" wire:change="stateData($event.target.value)"
-                                         wire:model="country_id">
+                                    <select class="form-select searchable-select" data-placeholder="Select Country" wire:change="stateData($event.target.value)"
+                                        wire:model="country_id">
                                          <option value="">Select Country</option>
                                          @foreach ($countries as $country)
                                              <option value="{{ $country->id }}">{{ $country->name }}</option>
@@ -187,8 +187,8 @@
                              <div class="col-md-6">
                                  <div class="form-group">
                                      <label class="form-label">State<sup class="text-danger">*</sup></label>
-                                     <select class="form-select" wire:model="state_id"
-                                         wire:change="cityData($event.target.value)">
+                                    <select class="form-select searchable-select" data-placeholder="Select State" wire:model="state_id"
+                                        wire:change="cityData($event.target.value)">
                                          <option value="">Select State</option>
                                          @foreach ($states as $state)
                                              <option value="{{ $state->id }}" @selected($state_id == $state->id)>
@@ -205,7 +205,7 @@
                              <div class="col-md-6">
                                  <div class="form-group">
                                      <label class="form-label">City<sup class="text-danger">*</sup></label>
-                                     <select class="form-select" wire:model="city_id">
+                                    <select class="form-select searchable-select" data-placeholder="Select City" wire:model="city_id">
                                          <option value="">Select City</option>
                                          @foreach ($cities as $city)
                                              <option value="{{ $city->id }}" @selected($city_id == $city->id)>
@@ -375,24 +375,9 @@
 
 
  @section('footerscript')
-     <script>
-         document.addEventListener('livewire:init', function() {
-
-             Livewire.hook('morphed', (message, component) => {
-                 $('.select2').select2().on('change', function(e) {
-                     const selectedValues = $(this).val();
-                     @this.set(e.target.dataset.property, selectedValues);
-                 });
-             });
-
-
-         });
-         
-         
-     </script>
  <script>
     document.addEventListener('DOMContentLoaded', function() {
-        toggleGstField(); 
+        toggleGstField();
 
         var isGstSelect = document.getElementById('is_gst');
         if (isGstSelect) {

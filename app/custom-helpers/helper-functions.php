@@ -142,21 +142,38 @@ if (!function_exists('getCommission')) {
 	{
 		switch ($category) {
 			case 1:
-				$commision = 5;
+				$commision = 10;
 				break;
 			case 2:
 				$commision = 10;
 				break;
 			case 3:
-				$commision = 15;
+				$commision = 10;
 				break;
 			case 4:
-				$commision = 20;
+				$commision = 10;
 				break;
 			default:
-				$commision = 0;
+				$commision = 10;
 				break;
 		}
+		// switch ($category) {
+		// 	case 1:
+		// 		$commision = 5;
+		// 		break;
+		// 	case 2:
+		// 		$commision = 10;
+		// 		break;
+		// 	case 3:
+		// 		$commision = 15;
+		// 		break;
+		// 	case 4:
+		// 		$commision = 20;
+		// 		break;
+		// 	default:
+		// 		$commision = 0;
+		// 		break;
+		// }
 		return $commision;
 	}
 }
@@ -3108,8 +3125,8 @@ if (!function_exists('getAmountInWords')) {
         $result = implode('', $str);
         $points = '';
         if ($point) {
-            $points = ($point < 21) ? 
-                " and " . $words[$point] . " Paise" : 
+            $points = ($point < 21) ?
+                " and " . $words[$point] . " Paise" :
                 " and " . $words[floor($point / 10) * 10] . " " . $words[$point % 10] . " Paise";
         }
         return $result . $points;

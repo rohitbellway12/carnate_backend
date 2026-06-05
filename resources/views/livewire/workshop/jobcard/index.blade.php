@@ -77,7 +77,7 @@
         .jobcardtable tbody tr {
             transition: all 0.2s ease;
         }
-        
+
         .jobcardtable tbody tr:hover {
             filter: brightness(0.95);
         }
@@ -262,7 +262,7 @@
                                     <th>S.No.</th>
                                     <th>Entry Date</th>
                                     <th>Job-Card Number</th>
-                                    @if ($items->contains('status', 2))
+                                    @if ($items->contains('status', 2) || $items->contains('status', 3))
                                         <th>Invoice No.</th>
                                     @endif
                                     <!-- <th>Shared Serial</th> -->
@@ -304,9 +304,9 @@
                                                 @endif
                                             </a>
                                         </td>
-                                        @if ($items->contains('status', 2))
+                                        @if ($items->contains('status', 2) || $items->contains('status', 3))
                                             <td>
-                                                @if ($jobcard->status == 2)
+                                                @if ($jobcard->status == 2 || $jobcard->status == 3 )
                                                     <a
                                                        @if ($jobcard->soft_delete == 0) href="{{ route('workshop.jobcardedit', $jobcard->id) }}" @endif>
                                                        {{ $jobcard->shared_serial ?? '-' }}

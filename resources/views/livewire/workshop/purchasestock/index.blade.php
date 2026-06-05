@@ -1,4 +1,4 @@
- 
+
 <div>
 
     <div class="modal @if ($showSpariOartesModal) show @endif" tabindex="-1"
@@ -94,7 +94,7 @@
                         <div class="col-md-6 ">
                             <div class="form-group">
                                 <label class="form-label">Category<sup class="text-danger">*</sup></label>
-                                <select class="form-select" 
+                                <select class="form-select"
                                     wire:model="category_id">
                                     <option value="" selected >-- Select Category --</option>
                                     <option value="1">Accessory</option>
@@ -111,7 +111,8 @@
                             <div class="row align-items-end">
                                 <div class="form-group col-10 pe-0">
                                     <label class="form-label">Name<sup class="text-danger">*</sup></label>
-                                    <select class="form-select" 
+                                    <select class="form-select searchable-select"
+                                        data-placeholder="Select Name"
                                         wire:model="name" wire:change="setdata">
                                         <option value="">Select Name</option>
                                         @foreach($sparePartLabels as $sparePartLabel)
@@ -133,7 +134,7 @@
                         <!-- suppolier -->
                         <div class="col-md-12">
                             <label class="form-label">Supplier</label>
-                            <select class="form-select" wire:model="supplier_id">
+                            <select class="form-select searchable-select " data-placeholder="Select Supplier" wire:model="supplier_id">
                                 <option value="">Select Supplier</option>
                                 @foreach ($suppliers as $supplier)
                                     <option value="{{ $supplier->id }}">{{ $supplier->owner_first_name }}</option>
@@ -155,7 +156,7 @@
                                     <span class="text-danger error">{{ $message }}</span>
                                 @enderror
                             </div>
-                            
+
 
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -169,7 +170,7 @@
                             </div>
                         </div>
                     @endif
-                    
+
                         <!-- Purchase Price -->
                         @if($is_self_stock)
                             <!-- Purchase Price -->
@@ -238,13 +239,13 @@
                         </div>
 
 
-                        
+
                         @if($is_self_stock)
                         <!-- HSN Code -->
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-label">HSN Code</label>
-                                <input type="text" wire:model="hsn_code" class="form-control" 
+                                <input type="text" wire:model="hsn_code" class="form-control"
                                     placeholder="Enter HSN Code">
                             </div>
                             @error('hsn_code')
@@ -253,7 +254,7 @@
                         </div>
                         @endif
 
-                       
+
                         @if($is_self_stock)
                         <!-- Unit -->
                         <div class="col-md-6">
@@ -271,13 +272,13 @@
                             @enderror
                         </div>
                         @endif
-                          
+
                         @if($is_self_stock)
                            <!-- Category -->
                            <div class="col-md-6">
                            <div class="form-group">
                                <label class="form-label">Sub Category<sup class="text-danger">*</sup></label>
-                               <select class="form-select" wire:model="category">
+                               <select class="form-select searchable-select" data-placeholder="Select Sub-Category" wire:model="category">
                                    <option value="">Select Category</option>
                                    @foreach ($categories as $category)
                                        <option value="{{ $category->id }}">{{ $category->title }}</option>
@@ -289,7 +290,7 @@
                             @enderror
                         </div>
                         @endif
-                        
+
                         @if($is_self_stock)
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -317,8 +318,8 @@
                             @enderror
                         </div>
                         @endif
-                  
-                  
+
+
                     @if($is_self_stock)
                         <div>
                             <div class="col-md-12">
@@ -333,9 +334,10 @@
                             @if (!$forAllVehicles)
                                 <div class="col-md-12 mt-3">
                                     <div class="form-group">
-                                        <select id="suitable_for" class="form-select" multiple
+                                        <select id="suitable_for" class="form-select searchable-select" multiple
+                                            data-placeholder="Select vehicle"
                                             wire:model="suitable_for">
-                                            
+
                                             @foreach ($modifications as $modification)
                                                 <option value="{{ $modification->id }}"  @if (in_array($modification->id, $suitable_for)) selected @endif>
                                                     @php
@@ -380,7 +382,7 @@
        </div>
     </div>
     </div>
-  
+
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body p-0">
             <ul class="nav nav-tabs nav-primary border-bottom-0" role="tablist">
@@ -418,7 +420,7 @@
             </div>
         </div>
     </div>
-    
+
 <div class="card mt-4">
     <div class="card-body">
         <div class="row">
@@ -426,7 +428,7 @@
             <input type="text" class="form-control" placeholder="Search spare-part" wire:model.live="search" fdprocessedid="blgf5">
         </div>
         <div class="col-3">
-                <select class="form-select" 
+                <select class="form-select"
                     wire:model.live="search_category">
                     <option value="" selected >Select Category</option>
                     <option value="1">Accessory</option>
@@ -439,7 +441,7 @@
             <button type="button" class="mr-2 btn btn-info text-white rounded-0  float-end" wire:click="resetFilter" fdprocessedid="orntg">Clear</button>
          </div>
         </div>
-        
+
     </div>
 </div>
     <div class="card mt-4">
@@ -486,11 +488,11 @@
                                             @break
 
                                             @default
-                                        @endswitch </td> 
-                                    <td>{{ $product_stock->brand }}</td> 
+                                        @endswitch </td>
+                                    <td>{{ $product_stock->brand }}</td>
                                     <td>{{ $product_stock->hsn_code ?? '-' }}</td>
                                     <td>{{ $product_stock->unit?->title ?? '-' }}</td>
-                                    <td>{{ $product_stock->stock }}</td> 
+                                    <td>{{ $product_stock->stock }}</td>
                                     <td>{{ number_format($product_stock->buy_price,2) ?? 0 }}</td>
                                     <td>
                                         {{ number_format($product_stock->price, 2) }}
@@ -500,22 +502,22 @@
                                         @if($product_stock->tax_type)
                                             <br><small class="text-muted text-capitalize">({{ $product_stock->tax_type }})</small>
                                         @endif
-                                    </td> 
-                                     <td>   
-                                             <a wire:click="edit({{ $product_stock->id }})" class="btn btn-sm p-0 text-primary"><i class="bx bxs-edit"></i></a> 
-                                             
+                                    </td>
+                                     <td>
+                                             <a wire:click="edit({{ $product_stock->id }})" class="btn btn-sm p-0 text-primary"><i class="bx bxs-edit"></i></a>
+
                                                   <a wire:click="confirmDeleteStock({{ $product_stock->id }})"
                                             class="btn btn-sm text-danger p-0 ms-2">
                                             <i class="bx bxs-trash"></i>
                                         </a>
                                      </td>
-                                     
+
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
                     <div class="pagination-wrapper">
-                        {{ $items->links() }} 
+                        {{ $items->links() }}
                     </div>
                 </div>
             </div>
@@ -525,38 +527,17 @@
             </div>
         @endif
     </div>
-   
+
 </div>
 @section('footerscript')
-   
-    <script> 
-     
+
+    <script>
         function validateMaxQuantity(input) {
-        // Get the max quantity value
-        var maxQuantity = parseInt(input.getAttribute('max'));
-        
-        // If the current value exceeds max quantity, reset it to max
-        if (parseInt(input.value) > maxQuantity) {
-            input.value = maxQuantity;
-        }
-    }
-    
-       document.addEventListener('livewire:init', () => {
-           
-        initSelect2();
-          Livewire.hook('morphed', (message, component) => {
-                initSelect2();
-            });
-       });
-        function initSelect2() {
-           
+            var maxQuantity = parseInt(input.getAttribute('max'));
 
-            $('#suitable_for').select2({
-                placeholder: "Select vehicle"
-            }).on('change', function() {
-                @this.set('suitable_for', $(this).val());
-            });
-
+            if (parseInt(input.value) > maxQuantity) {
+                input.value = maxQuantity;
+            }
         }
     </script>
 @endsection

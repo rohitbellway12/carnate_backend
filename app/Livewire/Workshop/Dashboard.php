@@ -35,7 +35,7 @@ class Dashboard extends Component
 
         $this->daysLeft = (int) $currentDate->diffInDays($subscriptionEndDate, false);
 
-        if ($this->daysLeft <= 7) {
+        if ($this->daysLeft <= 15) {
             if (ceil($this->daysLeft) == 0) {
                 $this->message = 'Your subscription plan expires today!';
             } elseif ($this->daysLeft < 0) {

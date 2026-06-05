@@ -158,7 +158,7 @@
                 <label class="form-label">Vehicle Details<span class="text-danger">*</span></label>
                 <div class="row g-2">
                     <div class="col-md-3">
-                        <select wire:model.live="brand_name" class="form-select">
+                        <select wire:model.live="brand_name" class="form-select searchable-select" data-placeholder="Select Brand">
                             <option value="">Select Brand</option>
                             @foreach ($brands as $brand)
                                 <option value="{{ json_encode($brand) }}">
@@ -168,7 +168,7 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <select wire:model.live="variant_name" class="form-select" @if(empty($variants)) disabled @endif>
+                        <select wire:model.live="variant_name" class="form-select searchable-select" data-placeholder="Select Model" @if(empty($variants)) disabled @endif>
                             <option value="">Select Model</option>
                             @foreach ($variants as $index => $variant)
                                 <option value="{{ $index }}">
@@ -178,7 +178,7 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <select wire:model.live="selected_year" class="form-select" @if(empty($years)) disabled @endif>
+                        <select wire:model.live="selected_year" class="form-select searchable-select" data-placeholder="Select Year" @if(empty($years)) disabled @endif>
                             <option value="">Select Year</option>
                             @foreach ($years as $year)
                                 <option value="{{ is_array($year) ? $year['value'] : $year }}">
@@ -188,7 +188,7 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <select wire:model.live="search_vehicle" class="form-select" @if(empty($modifications)) disabled @endif>
+                        <select wire:model.live="search_vehicle" class="form-select searchable-select" data-placeholder="Select Modification" @if(empty($modifications)) disabled @endif>
                             <option value="">Select Modification</option>
                             @foreach ($modifications as $index => $mod)
                                 <option value="{{ is_array($mod) ? $mod['id'] : $index }}">
