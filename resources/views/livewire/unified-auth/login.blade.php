@@ -31,11 +31,12 @@
 
                     <div style="width: 80px; height: 3px; background: #ff6b35; margin: 0 auto 2rem auto;"></div>
 
-                    <p style="font-size: 1rem; line-height: 1.7; opacity: 0.92; max-width: 500px; margin: 0 auto;">
+                    {{-- <p style="font-size: 1rem; line-height: 1.7; opacity: 0.92; max-width: 500px; margin: 0 auto;">
                         CARNATE helps multiple luxury cars workshops manage job cards, inventory,<br>
                         invoicing, customer communication, spare parts ordering and workshop<br>
                         operations from one powerful cloud-based platform.
-                    </p>
+                    </p> --}}
+                    <p>Welcome to CARNATE the smarter way to manage mordern workshops and automative service businesses.</p>
                 </div>
             </div>
         </div>
