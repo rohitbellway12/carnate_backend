@@ -206,49 +206,6 @@
                                 @enderror
                             </div>
 
-                            <!-- Category -->
-
-                           {{-- <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">Category<sup class="text-danger">*</sup></label>
-                                    <select class="form-select" wire:model="category">
-                                        <option value="">Select Unit</option>
-                                        @foreach ($categories as $category)
-                                            <option value="{{ $category->id }}">{{ $category->title }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                @error('category')
-                                    <span class="text-danger error">{{ $message }}</span>
-                                @enderror
-                            </div>--}}
-
-
-
-                            <!-- Suitable For -->
-                            {{-- <div class="col-md-6">
-                                 <div class="form-group">
-                                     <label class="form-label">Suitable For</label>
-                                     <input type="text" wire:model="suitable_for" class="form-control"
-                                         placeholder="Enter Suitable For">
-                                 </div>
-                                 @error('suitable_for')
-                                     <span class="text-danger error">{{ $message }}</span>
-                                 @enderror
-                             </div> --}}
-
-                            <!-- Discount -->
-                            {{-- <div class="col-md-6">
-                                 <div class="form-group">
-                                     <label class="form-label">Discount</label>
-                                     <input type="number" wire:model.live="discount" class="form-control"
-                                         placeholder="Enter Discount">
-                                 </div>
-                                 @error('discount')
-                                     <span class="text-danger error">{{ $message }}</span>
-                                 @enderror
-                             </div> --}}
-
                             <!-- Stock -->
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -296,18 +253,7 @@
                                     <span class="text-danger error">{{ $message }}</span>
                                 @enderror
                             </div>
-                            {{-- <div class="col-sm-12">
-                                 <div class="form-group mt-2 mb-0">
-                                     <label class="form-label">Image</label>
-                                     <livewire:image-uploader :unique-id="'image_id'" :preview="$imageId ? asset($imageId) : null"
-                                         wire:listen="imageUploaded" />
-                                         @if ($imagePreview)
-                                         <div class="image-preview mt-4">
-                                             <img src="{{ asset($imagePreview) }}" alt="Image Preview" height="100px" width="100px">
-                                         </div>
-                                     @endif
-                                 </div>
-                             </div> --}}
+                          
 
                             <div class="row align-items-center">
                                 <div class="col-10 mt-3">
@@ -331,69 +277,11 @@
                                     <span class="text-danger error">{{ $message }}</span>
                                 @enderror
                             </div>
-                           {{--
-                            <div>
-                                @if (!empty($api_compatible_vehicles))
-                                    <div class="col-md-12 mt-3">
-                                        <label class="form-label">Compatible Vehicles<span class="text-danger">*</span></label>
-                                        <select id="suitable_for" class="form-select" multiple wire:model="suitable_for">
-                                            @foreach ($api_compatible_vehicles as $vehicle)
-                                                <option value="{{ $vehicle['vehicleId'] }}">
-                                                    {{ $vehicle['manufacturerName'] }} {{ $vehicle['modelName'] }}
-                                                    {{ $vehicle['typeEngineName'] ? ' | ' . $vehicle['typeEngineName'] : '' }}
-                                                    {{ $vehicle['fuelType'] ? ' | ' . $vehicle['fuelType'] : '' }}
-                                                    {{ $vehicle['year'] ? ' | ' . $vehicle['year'] : '' }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        @error('suitable_for')
-                                            <span class="text-danger">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                @endif
+                      
 
-                                <div class="col-md-12 mt-3">
-                                    <label class="form-label">Select Compatible Vehicles<span
-                                            class="text-danger">*</span></label>
-                                    <div class="form-group">
-                                        <input type="checkbox" wire:model.live="forAllVehicles" id="all_vehicles">
-                                        <label for="all_vehicles">For All Vehicles</label>
-                                    </div>
-                                </div>
-
-                                @if ($forAllVehicles)
-                                    <div class="col-md-12 mt-3">
-                                        <div class="form-group">
-                                            <label for="">Selected Vehicle</label> <br>
-                                            <p class="badge bg-danger ">All</p>
-                                        </div>
-                                    </div>
-                                @else
-                                    @if (empty($api_compatible_vehicles))
-                                        <div class="col-md-12 mt-3">
-                                            <div class="form-group">
-                                                <select id="suitable_for" class="form-select" multiple wire:model="suitable_for">
-                                                    @foreach ($modifications as $modification)
-                                                        <option value="{{ $modification->id }}">
-                                                            {{ $modification->brand_name }} {{ $modification->variant_name }} {{ $modification->year }} {{ $modification->title }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                                @error('suitable_for')
-                                                    <span class="text-danger">{{ $message }}</span>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                    @endif
-                                @endif
-
-                            </div>
-                            --}}
-
-                            <div class="col-md-12 mt-3">
+                            {{-- <div class="col-md-12 mt-3">
                                 <div class="form-group">
                                     <input type="text"
-                                       {{-- wire:model.debounce.300ms="brandFilter"--}}
                                        wire:model.live="brandFilter"
                                         class="form-control mb-3"
                                         placeholder="Type brand name">
@@ -448,7 +336,81 @@
                                     </div>
                                     <small class="text-info">All vehicles in this list will be automatically saved as compatible vehicles.</small>
                                 </div>
+                            </div> --}}
+
+                               <!-- Compatible Vehicles Section (placed after description) -->
+                            <div class="col-md-12 mt-3">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" wire:model="forAllVehicles"
+                                        id="forAllVehicles">
+                                    <label class="form-check-label" for="forAllVehicles">
+                                        For All Vehicles
+                                    </label>
+                                </div>
                             </div>
+
+                            @if (!$forAllVehicles)
+                                <!-- 1. Add Vehicle from Vehicle Selector -->
+                                <div class="col-md-12 border-bottom pb-3 mb-3">
+                                    @livewire('workshop.vehicle-selector')
+                                </div>
+
+                                <!-- 2. Or Select from Existing Saved Vehicles -->
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label font-12 text-muted fw-bold">Or Select from Existing Saved Vehicles</label>
+                                    <div class="form-group">
+                                        <select id="suitable_for" class="form-select searchable-select" multiple
+                                            data-placeholder="Select vehicle"
+                                            wire:model="suitable_for">
+
+                                            @foreach ($modifications as $modification)
+                                                <option value="{{ $modification->id }}" @if (is_array($suitable_for) && in_array($modification->id, $suitable_for)) selected @endif>
+                                                    @php
+                                                        $data = array_filter([
+                                                            $modification->brand_name ?? '',
+                                                            $modification->variant_name ?? '',
+                                                            $modification->year ?? '',
+                                                            $modification->title ?? '',
+                                                        ]);
+                                                    @endphp
+
+                                                    {{ implode(' ', $data) }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        @error('suitable_for')
+                                            <span class="text-danger">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <!-- 3. Selected Compatible Vehicles List -->
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold text-dark font-13 mb-2">Selected Compatible Vehicles ({{ is_array($suitable_for) ? count($suitable_for) : 0 }})</label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        @if (empty($suitable_for))
+                                            <span class="text-muted font-12">No vehicles selected yet.</span>
+                                        @else
+                                            @foreach ($suitable_for as $index => $modId)
+                                                @php
+                                                    $localMod = $modifications->firstWhere('id', $modId);
+                                                @endphp
+                                                @if ($localMod)
+                                                    <span
+                                                        class="badge bg-secondary p-2 d-inline-flex align-items-center gap-2"
+                                                        style="font-size: 12px; border-radius: 4px;">
+                                                        {{ $localMod->brand_name }} {{ $localMod->variant_name }}
+                                                        ({{ $localMod->year }}) - {{ $localMod->title }}
+                                                        <button type="button" class="btn-close btn-close-white ms-1"
+                                                            style="font-size: 0.55rem; padding: 0; margin: 0; width: 0.55rem; height: 0.55rem;"
+                                                            wire:click="removeCompatibleVehicle({{ $index }})"></button>
+                                                    </span>
+                                                @endif
+                                            @endforeach
+                                        @endif
+                                    </div>
+                                </div>
+                            @endif
                             <!-- Description -->
                             <div class="col-md-12">
                                 <div class="form-group">

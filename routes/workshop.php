@@ -1,6 +1,6 @@
 <?php
 use App\Livewire\Workshop\{AddTocardController, ApiPartDetailsController, AppointmentController, AuthController, CustomerController, ResetPasswordController, EmployeeController, ExpensesController, StaffController,JobCardController,
-    JobCardAddController,JobCardEditController, PlanController,Select2Search,ManageRoles,ManagePermissions, PurchaseCartController,OrderController, PaidOrderController, VehicleSearchController,CounterSaleAddController,CounterSaleController,CounterSaleEditController,LabourChargeController, SalaryReportController, CustomersReportController, JobCardsReportController, StaffReportController, ExpensesReportController, InventoryReportController};
+    JobCardAddController,JobCardEditController, PlanController,Select2Search,ManageRoles,ManagePermissions, PurchaseCartController,OrderController, PaidOrderController, VehicleSearchController,CounterSaleAddController,CounterSaleController,CounterSaleEditController,LabourChargeController, SalaryReportController, CustomersReportController, JobCardsReportController, StaffReportController, ExpensesReportController, InventoryReportController, NotificationController};
 use App\Livewire\Workshop\Distributor\{AddDistributorController, DistributorController};
 use App\Livewire\Workshop\Auth\Login;
 use App\Livewire\Workshop\Dashboard;
@@ -9,6 +9,7 @@ use App\Livewire\Workshop\ProfileController;
 use App\Livewire\Workshop\PurchaseOrderController;
 use App\Livewire\Workshop\Inventory\Supplier;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
 // Route::prefix('portal')->name('portal')->group(function () {
 Route::prefix('workshop')->name('workshop.')->group(function () {
 
@@ -65,6 +66,10 @@ Route::prefix('workshop')->name('workshop.')->group(function () {
 
         // for supplier
         Route::get('suppliers', Supplier::class)->name('suppliers');
+
+        Route::get('notifications', NotificationController::class)->name('notifications');
+        Route::get('get-notifications', [HomeController::class, 'getWorkshopNotifications'])->name('get-notifications');
+        Route::post('notifications/{id}/read', [HomeController::class, 'markNotificationAsRead'])->name('notifications.read');
 
     });
 

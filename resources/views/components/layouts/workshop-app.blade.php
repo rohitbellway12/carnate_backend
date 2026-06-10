@@ -28,7 +28,7 @@
     <link href="{{ asset('assets/css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/icons.css') }}" rel="stylesheet">
     <!-- Theme Style CSS -->
-     <link href="{{ asset('assets/css/vehicle_search.css') }}" rel="stylesheet"> 
+    <link href="{{ asset('assets/css/vehicle_search.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('assets/css/dark-theme.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/semi-dark.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/header-colors.css') }}">
@@ -81,13 +81,12 @@
     <!--Morris JavaScript -->
     <script src="{{ asset('assets/plugins/raphael/raphael-min.js') }}"></script>
     <script src="{{ asset('assets/plugins/morris/js/morris.js') }}"></script>
-    {{-- <script src="{{ asset("assets/js/index2.js") }}"></script> --}}
-    <script src="{{ asset('assets/plugins/toastr/toastr.min.js') }} "></script>
+    <script src="{{ asset('assets/plugins/toastr/toastr.min.js') }}"></script>
     <script src="{{ asset('assets/plugins/datatable/js/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('assets/plugins/datatable/js/dataTables.bootstrap5.min.js') }}"></script>
     <script src="{{ asset('assets/js/crud.js') }}"></script>
     <script src="{{ asset('assets/plugins/select2/js/select2.min.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 
@@ -106,11 +105,8 @@
             }
         });
 
+        // ==================== SWEET ALERT CONFIRM DIALOG ====================
         document.addEventListener('swal:confirm', event => {
-
-            //console.log(window.Livewire);
-
-            // Destructure the event detail correctly
             const {
                 action,
                 title,
@@ -120,7 +116,6 @@
                 confirmButtonText
             } = event.detail[0];
 
-            // Show the confirmation Swal dialog
             Swal.fire({
                 title: title,
                 text: text,
@@ -136,7 +131,7 @@
             });
         });
 
-
+        // ==================== TOAST NOTIFICATIONS ====================
         window.addEventListener('swal:toast', event => {
             Toast.fire({
                 title: event.detail[0].title,
@@ -145,14 +140,216 @@
             });
         });
 
+        // ==================== MODAL HANDLERS ====================
         window.addEventListener('bs:openmodal', event => {
-            jQuery("#" + event.detail.modal).modal("show");
+            $("#" + event.detail.modal).modal("show");
         });
 
         window.addEventListener('bs:hidemodal', event => {
-            jQuery("#" + event.detail.modal).modal("hide");
+            $("#" + event.detail.modal).modal("hide");
         });
 
+        // ==================== NOTIFICATION HANDLING ====================
+        let notificationInterval = null;
+        let isFetching = false;
+
+        function checkNewOrders() {
+            if (isFetching) {
+                // console.log('Already fetching notifications, skipping...');
+                return;
+            }
+            
+            isFetching = true;
+            
+            const url = '/workshop/get-notifications';
+            // console.log('Fetching notifications from:', url);
+            
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                credentials: 'same-origin'
+            })
+            .then(async response => {
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    // console.error('Expected JSON but got:', contentType);
+                    throw new Error('Server returned non-JSON response');
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return response.json();
+            })
+            .then(data => {
+                // console.log('Notification fetch result:', data);
+                if (!data.status) return;
+
+                const notifications = Array.isArray(data.data) ? data.data : [];
+
+                // Update badge and dropdown list
+                const notifCountEl = document.getElementById('notif-count');
+                const notifListEl = document.getElementById('notification-list');
+
+                if (notifCountEl && notifListEl) {
+                    const unread = notifications.filter(n => !n.is_read);
+                    notifCountEl.textContent = unread.length;
+
+                    notifListEl.innerHTML = '';
+                    if (unread.length === 0) {
+                        const li = document.createElement('li');
+                        li.className = 'dropdown-item text-center text-muted small py-2';
+                        li.textContent = 'No new notifications';
+                        notifListEl.appendChild(li);
+                    } else {
+                        unread.slice(0, 10).forEach(n => {
+                            const li = document.createElement('li');
+                            li.className = 'dropdown-item border-bottom py-2';
+                            li.innerHTML = `
+                                <div class="d-flex justify-content-between align-items-center gap-2">
+                                    <div style="flex-grow: 1; min-width: 0;">
+                                        <strong class="text-wrap d-block text-dark" style="font-size: 0.85rem;">${escapeHtml(n.title)}</strong>
+                                        <small class="text-wrap text-secondary d-block" style="font-size: 0.75rem; line-height: 1.2;">${escapeHtml(n.message)}</small>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-light border-0 p-1" onclick="event.stopPropagation(); markHeaderNotifAsRead(${n.id})" title="Mark as read" style="min-width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                        <i class="bx bx-check text-success fs-5"></i>
+                                    </button>
+                                </div>
+                            `;
+                            notifListEl.appendChild(li);
+                        });
+                    }
+                }
+
+                const unreadList = notifications.filter(n => n && n.is_read == 0);
+                if (unreadList.length > 0) {
+                    const lastSeenId = localStorage.getItem('lastWorkshopNotifId') || 0;
+                    const newUnread = unreadList.filter(n => n.id > lastSeenId);
+                    if (newUnread.length) {
+                        if (newUnread[0].title && (newUnread[0].title.includes('Order') || newUnread[0].title
+                                .includes('Handover') || newUnread[0].title.includes('Payment'))) {
+                            showNotificationModal(newUnread[0]);
+                        }
+                        localStorage.setItem('lastWorkshopNotifId', Math.max(...unreadList.map(n => n.id)));
+                    }
+                }
+            })
+            .catch(err => {
+                // console.error('Notification check error:', err);
+                // console.error('Error message:', err.message);
+            })
+            .finally(() => {
+                isFetching = false;
+            });
+        }
+
+        function markHeaderNotifAsRead(id) {
+            const url = `/workshop/notifications/${id}/read`;
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                credentials: 'same-origin'
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status) {
+                    checkNewOrders();
+                    if (typeof Livewire !== 'undefined') {
+                        Livewire.dispatch('refreshNotifications');
+                    }
+                }
+            })
+            .catch(err => {
+                console.error('Error marking notification as read:', err);
+            });
+        }
+
+        function showNotificationModal(notification) {
+            const existingModal = document.getElementById('orderNotificationModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            const modalHtml = `
+                <div class="modal fade" id="orderNotificationModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-body text-center py-4">
+                                <i class="fa-solid fa-bell bell-icon" style="font-size: 35px; color: #ffcc00;"></i>
+                                <h5 class="mt-3">${escapeHtml(notification.title)}</h5>
+                                <p>${escapeHtml(notification.message)}</p>
+                                <button type="button" class="btn btn-primary" onclick="viewOrderAndClose(${notification.order_id || 'null'})">View Order</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            const modal = new bootstrap.Modal(document.getElementById('orderNotificationModal'));
+            modal.show();
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function viewOrderAndClose(orderId) {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('orderNotificationModal'));
+            if (modal) modal.hide();
+            window.location.href = `/workshop/order-list`;
+        }
+
+        function stopNotificationInterval() {
+            if (notificationInterval) {
+                clearInterval(notificationInterval);
+                notificationInterval = null;
+                // console.log('Notification interval stopped');
+            }
+        }
+
+        function startNotificationInterval() {
+            if (notificationInterval) {
+                // console.log('Interval already running');
+                return;
+            }
+            notificationInterval = setInterval(checkNewOrders, 15000);
+            // console.log('Notification interval started');
+        }
+
+        function initNotifications() {
+            const checkInterval = setInterval(() => {
+                if (document.getElementById('notif-count')) {
+                    // console.log('User logged in, starting notifications');
+                    clearInterval(checkInterval);
+                    checkNewOrders();
+                    startNotificationInterval();
+                }
+            }, 500);
+            
+            setTimeout(() => {
+                clearInterval(checkInterval);
+            }, 5000);
+        }
+
+        // ==================== SESSION MESSAGES ====================
         @if (Session::has('success'))
             Toast.fire({
                 title: '{!! Session::get('success') !!}',
@@ -181,6 +378,8 @@
                 showCloseButton: true,
             });
         @endif
+
+        // ==================== DROPDOWN HANDLERS ====================
         $(document).ready(function() {
             $(".dropdown > a").click(function(e) {
                 e.preventDefault();
@@ -191,7 +390,31 @@
                         "fa-chevron-down").addClass("fa-chevron-right");
             });
         });
+
+        // ==================== LIVEWIRE NAVIGATION HANDLERS ====================
+        if (typeof Livewire !== 'undefined') {
+            document.addEventListener('livewire:navigating', () => {
+                // console.log('Livewire navigating - stopping interval');
+                stopNotificationInterval();
+            });
+
+            document.addEventListener('livewire:navigated', () => {
+                // console.log('Livewire navigated - restarting interval');
+                initNotifications();
+            });
+        }
+
+        window.addEventListener('beforeunload', function() {
+            stopNotificationInterval();
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initNotifications();
+        });
     </script>
+
+    <!-- Hidden audio element for notification sounds -->
+    <audio id="notification-audio" style="display:none;"></audio>
 
     @include('components.includes.searchable-select-script')
     @yield('footerscript')

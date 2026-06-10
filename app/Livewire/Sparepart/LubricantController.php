@@ -32,7 +32,14 @@ class LubricantController extends Component
     public $forAllVehicles = false;
     public $suitable_for = [];
     public $suitableForData = [];
-    protected $listeners = ['delete'];
+    // Listen for vehicle selection events from the VehicleSelector component
+    // and for removal actions. The 'delete' listener is kept for the existing
+    // delete confirmation flow.
+    protected $listeners = [
+        'delete',
+        'vehicleAdded' => 'addSuitableVehicle',
+        'removeVehicle' => 'removeSuitableVehicle',
+    ];
 
     public $purchase_amount = 0;
     public $discount_type = 1;
@@ -60,6 +67,16 @@ class LubricantController extends Component
         // 'image_id' => 'nullable|string',
     ];
 
+    /**
+     * Computed property to expose the count of selected compatible vehicles.
+     * Livewire automatically makes getter methods available as properties
+     * using the camelCase name without the "get" prefix and "Property" suffix.
+     */
+    public function getSuitableForCountProperty()
+    {
+        return is_array($this->suitable_for) ? count($this->suitable_for) : 0;
+    }
+
     public function mount()
     {
         $this->sparepartId = Auth::guard('sparepart')->user()->id;
@@ -85,6 +102,49 @@ class LubricantController extends Component
         if ($value) {
             $this->suitable_for = [];
         }
+    }
+
+    /**
+     * Add a vehicle ID to the compatible list.
+     * Also ensure the modification is present in the $modifications collection
+     * so that the view can display its details immediately.
+     */
+    public function addSuitableVehicle($modificationId)
+    {
+        if (!is_array($this->suitable_for)) {
+            $this->suitable_for = [];
+        }
+        if (!in_array($modificationId, $this->suitable_for)) {
+            $this->suitable_for[] = $modificationId;
+        }
+
+        // Add the Modification model to the collection for immediate UI update
+        $mod = Modification::find($modificationId);
+        if ($mod && !$this->modifications->contains('id', $mod->id)) {
+            $this->modifications->push($mod);
+        }
+    }
+
+    /**
+     * Remove a vehicle ID from the compatible list.
+     */
+    public function removeSuitableVehicle($modificationId)
+    {
+        $this->suitable_for = array_filter($this->suitable_for, function ($id) use ($modificationId) {
+            return $id != $modificationId;
+        });
+        $this->suitable_for = array_values($this->suitable_for);
+    }
+
+    /**
+     * Remove a vehicle by its index (used by the badge close button).
+     */
+    public function removeCompatibleVehicle($index)
+    {
+        if (isset($this->suitable_for[$index])) {
+            unset($this->suitable_for[$index]);
+        }
+        $this->suitable_for = array_values($this->suitable_for);
     }
     public function render()
     {

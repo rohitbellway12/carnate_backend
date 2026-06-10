@@ -38,7 +38,7 @@ class AccessoryController extends Component
     public $units, $categories;
     public $part_image_url;
     public $api_compatible_vehicles = [];
-    protected $listeners = ['delete'];
+    protected $listeners = ['delete', 'vehicleAdded' => 'addSuitableVehicle', 'removeVehicle' => 'removeSuitableVehicle'];
     public $supplier_id;
     public $suppliers;
     public $brandFilter = '';
@@ -81,6 +81,16 @@ class AccessoryController extends Component
         $this->categories = SparePartCategoryService::getDropdownCategories();
     }
 
+    /**
+     * Computed property to get the count of selected compatible vehicles.
+     * Livewire automatically makes getter methods available as properties
+     * using the camelCase name without the "get" prefix and "Property" suffix.
+     */
+    public function getSuitableForCountProperty()
+    {
+        return is_array($this->suitable_for) ? count($this->suitable_for) : 0;
+    }
+
     public function updatedForAllVehicles($value)
     {
         if ($value == true) {
@@ -114,14 +124,20 @@ class AccessoryController extends Component
         }
 
         $accessories = $accessories->paginate(10);
-        // dd($accessories);
 
-        // return view('livewire.sparepart.accessory', compact('accessories'));
-        $modifications = Modification::query()
-            ->when($this->brandFilter, function ($query) {
-                $query->where('brand_name', 'like', '%' . $this->brandFilter . '%');
-            })
-            ->get();
+        // Load all modifications similar to workshop ProductStockController
+        $modifications = Modification::where('status', 1)->get();
+
+        // Include selected modifications that may have been recently added
+        if (!empty($this->suitable_for)) {
+            $selectedMods = Modification::whereIn('id', $this->suitable_for)->get();
+            foreach ($selectedMods as $mod) {
+                // Add to modifications collection if not already present
+                if (!$modifications->contains('id', $mod->id)) {
+                    $modifications->push($mod);
+                }
+            }
+        }
 
         // ---------- Return View ----------
         return view('livewire.sparepart.accessory', [
@@ -396,6 +412,71 @@ class AccessoryController extends Component
             $sparePartVehicleModification = SparePartVehicleModification::where('spare_part_id', $accessory->id)->get();
             $this->suitable_for = $sparePartVehicleModification->pluck('vehicle_modification_id')->toArray();
         }
+    }
+
+    /**
+     * Listener for the VehicleSelector component.
+     * The VehicleSelector emits "vehicleAdded" with the selected modification ID.
+     * We simply push that ID into the $suitable_for array so it will be saved
+     * when the accessory is stored.
+     */
+    /**
+     * Listener for the VehicleSelector component.
+     * Adds the selected modification ID to the compatible vehicles list.
+     * Additionally, ensures the newly added modification is present in the
+     * `$modifications` collection so that it can be displayed immediately in
+     * the "Selected Compatible Vehicles" badge list.
+     */
+    public function addSuitableVehicle($modificationId)
+    {
+        // Ensure $suitable_for is an array and avoid duplicate IDs
+        if (!is_array($this->suitable_for)) {
+            $this->suitable_for = [];
+        }
+        if (!in_array($modificationId, $this->suitable_for)) {
+            $this->suitable_for[] = $modificationId;
+        }
+
+        // Load the Modification model (if it exists) and add it to the
+        // `$modifications` collection used by the view. This mirrors the
+        // behaviour in the workshop stock page where newly added vehicles are
+        // instantly visible.
+        if ($modificationId) {
+            $mod = Modification::find($modificationId);
+            if ($mod) {
+                // $this->modifications is an Eloquent Collection; ensure we
+                // don't duplicate entries.
+                if (!$this->modifications->contains('id', $mod->id)) {
+                    $this->modifications->push($mod);
+                }
+            }
+        }
+    }
+
+    /**
+     * Remove a vehicle id from the selected list.
+     * Called from the UI via wire:click="removeVehicle({{ $vehId }})".
+     */
+    public function removeSuitableVehicle($modificationId)
+    {
+        $this->suitable_for = array_filter($this->suitable_for, function ($id) use ($modificationId) {
+            return $id != $modificationId;
+        });
+        // Re-index array to keep numeric keys sequential (optional)
+        $this->suitable_for = array_values($this->suitable_for);
+    }
+
+    /**
+     * Remove a vehicle by index from the selected list.
+     * Called from the UI via wire:click="removeCompatibleVehicle({{ $index }})".
+     */
+    public function removeCompatibleVehicle($index)
+    {
+        if (isset($this->suitable_for[$index])) {
+            unset($this->suitable_for[$index]);
+        }
+        // Re-index array to keep numeric keys sequential
+        $this->suitable_for = array_values($this->suitable_for);
     }
 
     public function update()

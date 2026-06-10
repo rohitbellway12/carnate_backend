@@ -78,12 +78,14 @@ class PaidOrderController extends Component
 	}
 
     public function received($id, $status){
-
-        $order_item = OrderItem::with('order')->find($id);
-        $order_item = OrderItem::with('order')->where('id', $id)->first();
+ 
+        $order_item = OrderItem::with(['order', 'SpareParts'])->find($id);
+        if (!$order_item) {
+            return $this->dispatch('swal:toast', ['type' => 'error', 'message' => 'Order item not found!']);
+        }
         $order_item->status = $status;
         $order_item->save();
-
+ 
         // Update Product Stock for Workshop
         $spare_part = SparePart::find($order_item->spare_part_id);
         if ($spare_part) {
@@ -94,13 +96,13 @@ class PaidOrderController extends Component
             if ($offlinePrice <= 0) {
                 $offlinePrice = $order_item->price;
             }
-
+ 
             $stockProduct = ProductStock::where([
                 'label_id' => $spare_part->label_id,
                 'price' => $offlinePrice,
                 'user_id' => Auth::guard('workshop')->user()->id
             ])->first();
-
+ 
             if (empty($stockProduct)) {
                 $stockProduct = new ProductStock;
                 $stockProduct->label_id = $spare_part->label_id;
@@ -124,7 +126,7 @@ class PaidOrderController extends Component
                 $stockProduct->save();
             }
         }
-
+ 
         // Update main order status
         $order = Order::find($order_item->order_id);
         if ($order) {
@@ -138,7 +140,29 @@ class PaidOrderController extends Component
             }
             $order->save();
         }
-
+ 
+        // Notify sparepart vendor that workshop has received the item
+        try {
+            if ($order_item->order) {
+                $sparepartVendorId = $order_item->user_id;
+                if ($sparepartVendorId) {
+                    $partName = $order_item->SpareParts->name ?? 'Spare part';
+                    $workshopUser = Auth::guard('workshop')->user();
+                    $workshopName = ($workshopUser->name ?? $workshopUser->company_name ?? 'Workshop');
+                    
+                    \App\Models\Notification::create([
+                        'user_id'  => $sparepartVendorId,
+                        'order_id' => $order_item->order_id,
+                        'title'    => '✅ Item Received by Workshop',
+                        'message'  => "Workshop '{$workshopName}' has confirmed receipt of '{$partName}' for Order #{$order_item->order_id}. The item has been received successfully.",
+                        'sound'    => 'received.mp3',
+                    ]);
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::error('[RECEIVED] Exception: '.$e->getMessage().' at '.$e->getFile().':'.$e->getLine());
+        }
+ 
         $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Received Successfully!']);
     }
 

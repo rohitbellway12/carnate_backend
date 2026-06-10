@@ -10,6 +10,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 
 #[Layout('components.layouts.workshop-app')]
 class ProductStockController extends Component
@@ -49,6 +50,7 @@ class ProductStockController extends Component
       
         $user = WorkShopVendor::find($this->user_id);
         $this->sparePartLabels = SparePartLabel::select('id', 'title')->get();
+        $this->modifications = Modification::where('status', 1)->get();
         $items = ProductStock::with('label')->where('user_id', $user->is_user == 0 ? $this->user_id : $user->parent_id);
         if (!empty($this->search)) {
             $items = $items->whereHas('label', function ($query) {
@@ -80,7 +82,6 @@ class ProductStockController extends Component
         $this->showModal = true;
         $this->units = Unit::all();
         $this->categories = Category::all();
-        $this->modifications = Modification::where('status', 1)->get();
 
     }
 
@@ -418,6 +419,26 @@ class ProductStockController extends Component
     public function cancelEdit()
     {
         $this->editingPriceId = null;
+    }
+
+    #[On('vehicleAdded')]
+    public function handleVehicleAdded($modificationId)
+    {
+        if (!is_array($this->suitable_for)) {
+            $this->suitable_for = [];
+        }
+
+        if (!in_array($modificationId, $this->suitable_for)) {
+            $this->suitable_for[] = $modificationId;
+        }
+    }
+
+    public function removeCompatibleVehicle($index)
+    {
+        if (isset($this->suitable_for[$index])) {
+            unset($this->suitable_for[$index]);
+            $this->suitable_for = array_values($this->suitable_for);
+        }
     }
 
 }

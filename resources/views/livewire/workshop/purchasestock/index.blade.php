@@ -321,25 +321,31 @@
 
 
                     @if($is_self_stock)
-                        <div>
+                        <div class="card border border-light-2 mt-3 p-3 bg-light-3">
                             <div class="col-md-12">
-                                <label class="form-label">Compatible Vehicles<span
-                                        class="text-danger">*</span></label>
-                                <div class="form-group">
-                                    <input type="checkbox" wire:model.live="forAllVehicles" id="all_vehicles">
-                                    <label for="all_vehicles">For All Vehicles</label>
+                                <label class="form-label fw-bold text-secondary">Compatible Vehicles<span class="text-danger">*</span></label>
+                                <div class="form-group mb-2">
+                                    <input type="checkbox" wire:model.live="forAllVehicles" id="all_vehicles" class="form-check-input">
+                                    <label for="all_vehicles" class="form-check-label fw-bold ms-1">For All Vehicles</label>
                                 </div>
                             </div>
 
                             @if (!$forAllVehicles)
-                                <div class="col-md-12 mt-3">
+                                <!-- 1. Add Vehicle from 3rd Party Catalog -->
+                                <div class="col-md-12 border-bottom pb-3 mb-3">
+                                    @livewire('workshop.vehicle-selector')
+                                </div>
+
+                                <!-- 2. Select from Existing Local Vehicles -->
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label font-12 text-muted fw-bold">Or Select from Existing Saved Vehicles</label>
                                     <div class="form-group">
                                         <select id="suitable_for" class="form-select searchable-select" multiple
                                             data-placeholder="Select vehicle"
                                             wire:model="suitable_for">
 
                                             @foreach ($modifications as $modification)
-                                                <option value="{{ $modification->id }}"  @if (in_array($modification->id, $suitable_for)) selected @endif>
+                                                <option value="{{ $modification->id }}" @if (is_array($suitable_for) && in_array($modification->id, $suitable_for)) selected @endif>
                                                     @php
                                                         $data = array_filter([
                                                             $modification->brand_name ?? '',
@@ -358,8 +364,30 @@
                                         @enderror
                                     </div>
                                 </div>
+
+                                <!-- 3. Selected Compatible Vehicles List -->
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold text-dark font-13 mb-2">Selected Compatible Vehicles ({{ is_array($suitable_for) ? count($suitable_for) : 0 }})</label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        @if(empty($suitable_for))
+                                            <span class="text-muted font-12">No vehicles selected yet.</span>
+                                        @else
+                                            @foreach ($suitable_for as $index => $modId)
+                                                @php
+                                                    $localMod = $modifications->firstWhere('id', $modId);
+                                                @endphp
+                                                @if ($localMod)
+                                                    <span class="badge bg-secondary p-2 d-inline-flex align-items-center gap-2" style="font-size: 12px; border-radius: 4px;">
+                                                        {{ $localMod->brand_name }} {{ $localMod->variant_name }} ({{ $localMod->year }}) - {{ $localMod->title }}
+                                                        <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.55rem; padding: 0; margin: 0; width: 0.55rem; height: 0.55rem;" wire:click="removeCompatibleVehicle({{ $index }})"></button>
+                                                    </span>
+                                                @endif
+                                            @endforeach
+                                        @endif
+                                    </div>
+                                </div>
                             @else
-                                <div class="col-md-12 mt-3">
+                                <div class="col-md-12 mt-2">
                                     <div class="form-group">
                                         <label for="">Selected Vehicle</label> <br>
                                         <p class="badge bg-danger ">All</p>

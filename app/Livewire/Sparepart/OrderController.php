@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\Layout;
+use App\Models\Notification;
 
 #[Layout('components.layouts.spare-part-app')]
 class OrderController extends Component
@@ -177,6 +178,34 @@ class OrderController extends Component
         //     $order->save();
         // }
 
+        // Notify workshop about acceptance/rejection
+        if ($order_item->order) {
+            $workshopId = $order_item->order->workShopVendor?->id ?? null;
+            if ($workshopId) {
+                $partName = $order_item->SpareParts->name ?? 'Spare part';
+                $vendorName = $this->currentUser->name ?? $this->currentUser->company_name ?? 'Spare part vendor';
+                
+                if ($status == 1) {
+                    $title = '✅ Order Item Accepted';
+                    $message = "Good news! Spare parts vendor '{$vendorName}' has accepted your order item for '{$partName}' (Order #{$order_item->order_id}). Your part is being prepared.";
+                } elseif ($status == 2) {
+                    $title = '❌ Order Item Declined';
+                    $message = "Spare parts vendor '{$vendorName}' has declined your order item for '{$partName}' (Order #{$order_item->order_id}). Please check the reason and take action.";
+                } else {
+                    $title = '⏳ Order Item Delayed';
+                    $message = "Spare parts vendor '{$vendorName}' has reported a delay for your order item '{$partName}' (Order #{$order_item->order_id}). Please check for updates.";
+                }
+
+                Notification::create([
+                    'user_id' => $workshopId,
+                    'order_id' => $order_item->order_id,
+                    'title'   => $title,
+                    'message' => $message,
+                    'sound'   => 'order_update.mp3',
+                ]);
+            }
+        }
+
         if ($status == 1) {
             $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Order Item Accepted!']);
         } else {
@@ -185,7 +214,7 @@ class OrderController extends Component
     }
 
     public function handover($id, $status){
-        $order_item = OrderItem::with('order')->where('id', $id)->first();
+        $order_item = OrderItem::with(['order.workShopVendor', 'SpareParts'])->where('id', $id)->first();
         
         $sparepartStock = $spare_part = SparePart::where('id', $order_item->spare_part_id)->first();
         $spare_part->stock = $spare_part->stock - $order_item->quantity;
@@ -221,7 +250,6 @@ class OrderController extends Component
                 $this->currentUser->increment('wallet', $payableAmount);
             }
 
-        $order_item = OrderItem::with('order')->where('id', $id)->first();
         $order_item->status = $status;
         $order_item->save();
 
@@ -231,9 +259,25 @@ class OrderController extends Component
             if ($statuses->every(fn($s) => $s == 3)) {
                 $order->order_status = 3;
             } elseif ($statuses->contains(3)) {
-                $order->order_status = 3; // Or a new status for partially handover if needed
+                $order->order_status = 3;
             }
             $order->save();
+        }
+
+        // Notify workshop that handover is done
+        if ($order_item->order) {
+            $workshopId = $order_item->order->workShopVendor?->id ?? null;
+            if ($workshopId) {
+                $partName = $order_item->SpareParts->name ?? 'Spare part';
+                $vendorName = $this->currentUser->name ?? $this->currentUser->company_name ?? 'Spare part vendor';
+                Notification::create([
+                    'user_id' => $workshopId,
+                    'order_id' => $order_item->order_id,
+                    'title'   => '🚚 Order Item Handed Over',
+                    'message' => "Spare parts vendor '{$vendorName}' has handed over '{$partName}' for Order #{$order_item->order_id}. Please confirm receipt.",
+                    'sound'   => 'handover.mp3',
+                ]);
+            }
         }
 
         $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Hand over Successfully!']);

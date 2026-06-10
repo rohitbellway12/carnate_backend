@@ -185,8 +185,67 @@
         @endif
     </script>
 
+    <!-- Notification handling script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Determine the logged‑in user ID for the appropriate guard (workshop, sparepart or default web)
+            const userId = {{ Auth::guard('workshop')->id() ?? Auth::guard('sparepart')->id() ?? auth()->id() ?? 'null' }};
+            if (!userId) return;
+
+            const notifCountEl = document.getElementById('notif-count');
+            const notifListEl = document.getElementById('notification-list');
+            const audioEl = document.getElementById('notification-audio');
+
+            function fetchNotifications() {
+                fetch(`/api/notifications/${userId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (!data.status) return;
+                        const notifications = data.data;
+                        const unread = notifications.filter(n => !n.is_read);
+                        notifCountEl.textContent = unread.length;
+                        notifListEl.innerHTML = '';
+                        notifications.slice(0, 10).forEach(n => {
+                            const li = document.createElement('li');
+                            li.className = 'dropdown-item';
+                            li.innerHTML = `<strong>${n.title}</strong><br><small>${n.message}</small>`;
+                            notifListEl.appendChild(li);
+                        });
+
+                        // Play sound for the newest unread notification (if any)
+                        if (unread.length && audioEl && unread[0].sound) {
+                            audioEl.src = `/sounds/${unread[0].sound}`;
+                            audioEl.play();
+                        }
+
+                        // Show toast for new unread notifications (avoid repeats)
+                        const lastSeenId = localStorage.getItem('lastNotificationId') || 0;
+                        const newUnread = unread.filter(n => n.id > lastSeenId);
+                        if (newUnread.length) {
+                            // Show the most recent one as a toast
+                            const n = newUnread[0];
+                            Toast.fire({
+                                title: n.title,
+                                text: n.message,
+                                icon: 'info',
+                            });
+                            // Update last seen id
+                            localStorage.setItem('lastNotificationId', n.id);
+                        }
+                    })
+                    .catch(err => console.error('Notification fetch error', err));
+            }
+
+            fetchNotifications();
+            setInterval(fetchNotifications, 30000); // every 30 sec
+        });
+    </script>
+
     @include('components.includes.searchable-select-script')
     @yield('footerscript')
+
+    <!-- Hidden audio element for notification sounds -->
+    <audio id="notification-audio" style="display:none;"></audio>
 </body>
 
 </html>

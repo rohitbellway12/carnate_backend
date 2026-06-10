@@ -739,9 +739,6 @@ $api_secret = config('services.razorpay.secret');
     #[On('storePayment')]
     public function handlePayment($paymentResponse)
     {
-
-
-
         $payment = Payment::create([
             'payment_id' => $paymentResponse['razorpay_payment_id'],
             'order_id' => $paymentResponse['razorpay_order_id'],
@@ -790,6 +787,22 @@ $api_secret = config('services.razorpay.secret');
             $orderItem->category = $row['category'];
             $orderItem->order_id = $order->id;
             $orderItem->save();
+        }
+
+        if ($order->is_confim == 1) {
+            $vendorIds = \App\Models\OrderItem::where('order_id', $order->id)
+                ->pluck('user_id')
+                ->unique()
+                ->filter();
+            foreach ($vendorIds as $vendorId) {
+                \App\Models\Notification::create([
+                    'user_id' => $vendorId,
+                    'order_id' => $order->id,
+                    'title'   => '🛒 New Order Received',
+                    'message' => "Workshop has placed a new order (Order #{$order->id}). Please review the order items and accept or decline them.",
+                    'sound'   => 'order.mp3',
+                ]);
+            }
         }
 
         $this->storePurchase();
@@ -873,6 +886,22 @@ $api_secret = config('services.razorpay.secret');
 
 
             $this->calculateTotals();
+        }
+ 
+        if ($order->is_confim == 1) {
+            $vendorIds = \App\Models\OrderItem::where('order_id', $order->id)
+                ->pluck('user_id')
+                ->unique()
+                ->filter();
+            foreach ($vendorIds as $vendorId) {
+                \App\Models\Notification::create([
+                    'user_id' => $vendorId,
+                    'order_id' => $order->id,
+                    'title'   => '🛒 New Order Received',
+                    'message' => "Workshop has placed a new order (Order #{$order->id}). Please review the order items and accept or decline them.",
+                    'sound'   => 'order.mp3',
+                ]);
+            }
         }
 
 
@@ -1252,39 +1281,6 @@ public function recalculateAccessories()
 }
 
 
-
-//     public function recalculateExtraCharges()
-//     {
-//         foreach ($this->extraCharges as $index => $extracharges) {
-//             $price = $extracharges['charge'] ?? 0;
-
-//             $total = $price;
-
-//             $this->extraCharges[$index]['total_amount'] = $total;
-//             $this->extraCharges[$index]['final_amount'] = $total;
-//             $this->calculateTotals();
-//         }
-//     }
-
-//     public function calculateTotalss()
-// {
-//     $subtotal = 0;
-
-//     foreach ($this->extraCharges as $index => $charge) {
-//         $qty = (int)($charge['qty'] ?? 1);
-//         $amount = (float)($charge['amount'] ?? 0);
-
-//         // Update charge (amount × qty)
-//         $this->extraCharges[$index]['charge'] = $amount * $qty;
-
-//         // Add to subtotal
-//         $subtotal += $this->extraCharges[$index]['charge'];
-//     }
-
-//     // Update any other totals that depend on these charges
-//     $this->subtotal = $subtotal;
-//     // ... other calculations ...
-// }
 public function recalculateExtraCharges()
 {
     $subtotal = 0;
@@ -1343,40 +1339,6 @@ public function recalculateExtraCharges()
 
 
 
-    // public function calculateTotals()
-    // {
-    //     $this->totalAmount = 0;
-    //     $this->final_amount = 0;
-
-    //     foreach ($this->spareParts as $part) {
-    //         $this->totalAmount += (float) $part['total_amount'];
-    //         $this->final_amount += (float) $part['final_amount'];
-    //     }
-
-    //     foreach ($this->lubes as $lube) {
-    //         $this->totalAmount += (float) $lube['total_amount'];
-    //         $this->final_amount += (float) $lube['final_amount'];
-    //     }
-
-    //     foreach ($this->accessoriess as $accessory) {
-    //         $this->totalAmount += (float) $accessory['total_amount'];
-    //         $this->final_amount += (float) $accessory['final_amount'];
-    //     }
-    //     foreach ($this->extraCharges as $charge) {
-    //         $this->totalAmount += (float) $charge['amount'];
-
-    //         $this->final_amount += (float) $charge['amount'];
-    //     }
-
-    //     $final = max(0, (float) ($this->final_amount ?? 0));
-    //     $advance = max(0, (float) ($this->advance ?? 0));
-
-    //     $this->hidden_balance_amount = max(0, $final - $advance);
-    //     $this->balance_amount = max(0, $final - $advance);
-
-    //     $this->final_paid = 0;
-    //     $this->final_discount = 0;
-    // }
 
     //jobcardtotalcards
     public function calculateTotals()
@@ -1446,67 +1408,6 @@ public function recalculateExtraCharges()
     }
 
 
-    // Add spare part row
-    // public function updatedSparePartsData($id)
-    // {
-
-    //     $price = $this->spare_parts_price;
-    //     $labels = SparePartLabel::with([
-    //         'productStocks' => function ($qry) use ($price) {
-    //             $qry->where('price', $price);
-    //         }
-    //     ])->find($id);
-
-    //     if (empty($labels->productStocks->toArray())) {
-
-    //         $this->spareParts[] = [
-    //             'id' => $id,
-    //             'part_name' => $labels->title . ' (Current Stock:0)',
-    //             'quantity' => '1',
-    //             'unit_price' => 0,
-    //             'total_amount' => 0,
-    //             'discount' => '0',
-    //             'final_amount' => 0,
-    //         ];
-
-
-    //         $this->dispatch('swal:toast', [
-    //             'type' => 'success',
-    //             'message' => 'Spare Part Row added Succesfully!',
-    //         ]);
-    //     } else {
-
-    //         // echo "<pre>";print_r($labels->productStocks->toArray());die;
-    //         // if ($labels && isset($labels->productStocks[0])) {
-    //         $sparePart = $labels->productStocks[0];
-
-    //         $this->spareParts[] = [
-    //             'id' => $id,
-    //             'part_name' => $labels->title . ' (Current Stock: ' . $sparePart->stock . ')',
-    //             'quantity' => '1',
-    //             'unit_price' => $price,
-    //             'total_amount' => $price * 1,
-    //             'discount' => '0',
-    //             'final_amount' => $price,
-    //         ];
-
-
-    //         $this->dispatch('swal:toast', [
-    //             'type' => 'success',
-    //             'message' => 'Spare Part Row added Succesfully!',
-    //         ]);
-    //     }
-
-    //     // } else {
-
-    //     //     $this->dispatch('swal:toast', [
-    //     //         'type' => 'error',
-    //     //         'message' => 'No matching product stock found.',
-    //     //     ]);
-    //     // }
-
-    //     $this->calculateTotals();
-    // }
 public function updatedSparePartsData($id)
 {
     $price = $this->spare_parts_price;
@@ -1576,45 +1477,6 @@ public function updatedSparePartsData($id)
 
 
 
-
-    // Add lubes row
-    // public function updatedLubesData($id)
-    // {
-    //     $price = $this->lubes_data_price;
-    //     $labels = SparePartLabel::with([
-    //         'productStocks' => function ($qry) use ($price) {
-    //             $qry->where('price', $price);
-    //         }
-    //     ])->find($id);
-
-    //     if ($labels && isset($labels->productStocks[0])) {
-    //         $lube = $labels->productStocks[0];
-
-    //         $this->lubes[] = [
-    //             'id' => $id,
-    //             'part_name' => $labels->title . ' (Current Stock: ' . $lube->stock . ')',
-    //             'quantity' => '1',
-    //             'unit_price' => $price,
-    //             'total_amount' => $price * 1,
-    //             'discount' => '0',
-    //             'final_amount' => $price,
-    //         ];
-
-    //         $this->dispatch('swal:toast', [
-    //             'type' => 'success',
-    //             'message' => 'Lubes Row added Succesfully!',
-    //         ]);
-    //     } else {
-
-    //         $this->dispatch('swal:toast', [
-    //             'type' => 'error',
-    //             'message' => 'No matching product stock found.',
-    //         ]);
-    //     }
-    //     $this->lubes_data = "";
-    //     $this->calculateTotals();
-    // }
-
 public function updatedLubesData($id)
 {
     $price = $this->lubes_data_price;
@@ -1677,44 +1539,6 @@ public function updatedLubesData($id)
     $this->calculateTotals();
 }
 
-
-
-    // Add accessories row
-    // public function updatedAccessoryData($id)
-    // {
-    //     $price = $this->accessory_data_price;
-    //     $labels = SparePartLabel::with([
-    //         'productStocks' => function ($qry) use ($price) {
-    //             $qry->where('price', $price);
-    //         }
-    //     ])->find($id);
-
-    //     if ($labels && isset($labels->productStocks[0])) {
-    //         $sparePart = $labels->productStocks[0];
-
-    //         $this->accessoriess[] = [
-    //             'id' => $id,
-    //             'part_name' => $labels->title . ' (Current Stock: ' . $sparePart->stock . ')',
-    //             'quantity' => '1',
-    //             'unit_price' => $price,
-    //             'total_amount' => $price * 1,
-    //             'discount' => '0',
-    //             'final_amount' => $price,
-    //         ];
-
-    //         $this->dispatch('swal:toast', [
-    //             'type' => 'success',
-    //             'message' => 'Accessory Row added Succesfully!',
-    //         ]);
-    //     } else {
-
-    //         $this->dispatch('swal:toast', [
-    //             'type' => 'error',
-    //             'message' => 'No matching product stock found.',
-    //         ]);
-    //     }
-    //     $this->calculateTotals();
-    // }
 
 public function updatedAccessoryData($id)
 {
@@ -4002,8 +3826,28 @@ public function storelabourcharge()
 
     private function confirmPendingJobCardOrders(int $jobcardId): void
     {
-        Order::where('jobcard_id', $jobcardId)
+        $pendingOrders = Order::where('jobcard_id', $jobcardId)
             ->where('is_confim', 0)
-            ->update(['is_confim' => 1]);
+            ->get();
+
+        foreach ($pendingOrders as $order) {
+            $order->is_confim = 1;
+            $order->save();
+
+            // Notify all sparepart vendors that a new order is received
+            $vendorIds = \App\Models\OrderItem::where('order_id', $order->id)
+                ->pluck('user_id')
+                ->unique()
+                ->filter();
+            foreach ($vendorIds as $vendorId) {
+                \App\Models\Notification::create([
+                    'user_id' => $vendorId,
+                    'order_id' => $order->id,
+                    'title'   => '🛒 New Order Received',
+                    'message' => "Workshop has placed a new order (Order #{$order->id}). Please review the order items and accept or decline them.",
+                    'sound'   => 'order.mp3',
+                ]);
+            }
+        }
     }
 }

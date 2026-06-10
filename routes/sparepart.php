@@ -1,5 +1,5 @@
 <?php
-use App\Livewire\Sparepart\{ResetPasswordController,AccessoryController, CategoryController, CounterSaleController, CounterSaleEditController, PartsController, ToolsController,LubricantController, OrderController, UnitController, WithdrawController,ManageSparePartPermissions,ManageSparePartRoles,StaffSparePartController,PaidOrderController,Profile};
+use App\Livewire\Sparepart\{ResetPasswordController,AccessoryController, CategoryController, CounterSaleController, CounterSaleEditController, PartsController, ToolsController,LubricantController, OrderController, UnitController, WithdrawController,ManageSparePartPermissions,ManageSparePartRoles,StaffSparePartController,PaidOrderController,Profile,NotificationController};
 
 use App\Livewire\Sparepart\Auth\Login;
 use App\Livewire\Sparepart\CounterSaleAddController;
@@ -11,6 +11,7 @@ use App\Models\Order;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 use App\Livewire\Sparepart\Inventory\StockList;
+use App\Http\Controllers\HomeController;
 
 Route::prefix('sparepart')->name('sparepart.')->group(function () {
 
@@ -54,6 +55,10 @@ Route::prefix('sparepart')->name('sparepart.')->group(function () {
 
         Route::get('pdf/{id}', [PurchaseOrder::class, 'show'])->name('purchase.order.show');
         Route::get('stock-list', StockList::class)->name('stock.list');
+
+        Route::get('notifications', NotificationController::class)->name('notifications');
+        Route::get('get-notifications', [HomeController::class, 'getSparePartNotifications'])->name('get-notifications');
+        Route::post('notifications/{id}/read', [HomeController::class, 'markSparePartNotificationAsRead'])->name('notifications.read');
 
         // Reports routes
         Route::get('report/orders', \App\Livewire\Sparepart\Report\OrdersReportController::class)->name('report.orders');

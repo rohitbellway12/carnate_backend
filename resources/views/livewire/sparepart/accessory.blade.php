@@ -49,15 +49,16 @@
                                     <span class="text-danger error">{{ $message }}</span>
                                 @enderror
                             </div>
-                              <!-- supplier -->
+                            <!-- supplier -->
                             <div>
-                            <label class="form-label">Supplier</label>
-                                <select class="form-select searchable-select" data-placeholder="Select Supplier" wire:model="supplier_id">
-                                <option value="">Select Supplier</option>
-                                @foreach ($suppliers as $supplier)
-                                    <option value="{{ $supplier->id }}">{{ $supplier->owner_first_name }}</option>
-                                @endforeach
-                            </select>
+                                <label class="form-label">Supplier</label>
+                                <select class="form-select searchable-select" data-placeholder="Select Supplier"
+                                    wire:model="supplier_id">
+                                    <option value="">Select Supplier</option>
+                                    @foreach ($suppliers as $supplier)
+                                        <option value="{{ $supplier->id }}">{{ $supplier->owner_first_name }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                             <!-- Brand -->
                             <div class="col-md-6">
@@ -75,8 +76,8 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="form-label">Part Number</label>
-                                    <input type="text" wire:model="part_number"
-                                        class="form-control" placeholder="Enter Part Number">
+                                    <input type="text" wire:model="part_number" class="form-control"
+                                        placeholder="Enter Part Number">
                                     <div wire:loading wire:target="part_number">
                                         <span class="spinner-border spinner-border-sm" role="status"
                                             aria-hidden="true"></span>
@@ -150,8 +151,8 @@
                                     <div class="input-group">
                                         <input type="number" wire:model.live="discount" class="form-control"
                                             placeholder="Enter Discount">
-                                        <select id="discount_type" class="form-select" wire:model.live="discount_type"
-                                            style="max-width: 80px;">
+                                        <select id="discount_type" class="form-select"
+                                            wire:model.live="discount_type" style="max-width: 80px;">
                                             <option value="1">₹</option>
                                             <option value="2">%</option>
                                         </select>
@@ -217,7 +218,8 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="form-label">Category<sup class="text-danger">*</sup></label>
-                                    <select class="form-select searchable-select" data-placeholder="Select Category" wire:model="category" id="category">
+                                    <select class="form-select searchable-select" data-placeholder="Select Category"
+                                        wire:model="category" id="category">
                                         <option value="">Select Category</option>
                                         @foreach ($categories as $category)
                                             <option value="{{ $category['categoryId'] }}">
@@ -273,99 +275,15 @@
                                 @enderror
                             </div>
 
-                           {{-- <div class="col-md-12 mt-3">
-                                <div class="form-group">
-                                    <label class="form-label">Compatible Vehicles List<span class="text-danger">*</span></label>
-                                    <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
-                                        @if (!empty($api_compatible_vehicles))
-                                            <div class="row">
-                                                @foreach ($api_compatible_vehicles as $vehicle)
-                                                    <div class="col-md-6 mb-2">
-                                                        <div class="vehicle-item p-2 border-bottom">
-                                                            <strong>{{ $vehicle['manufacturerName'] }} {{ $vehicle['modelName'] }}</strong><br>
-                                                            <small class="text-muted">
-                                                                {{ $vehicle['typeEngineName'] ? $vehicle['typeEngineName'] . ' | ' : '' }}
-                                                                {{ $vehicle['fuelType'] ? $vehicle['fuelType'] . ' | ' : '' }}
-                                                                {{ $vehicle['year'] ? $vehicle['year'] : '' }}
-                                                            </small>
-                                                        </div>
-                                                    </div>
+
+
+                            {{-- </div>
                                                 @endforeach
                                             </div>
                                         @elseif (!empty($modifications))
                                             <div class="row">
                                                 @foreach ($modifications as $modification)
-                                                            <div class="col-md-6 mb-2">
-                                                                <div class="form-check vehicle-item p-2 border-bottom">
-                                                                    <input class="form-check-input"
-                                                                        type="checkbox"
-                                                                        value="{{ $modification->id }}"
-                                                                        wire:model="suitable_for"
-                                                                        id="modification_{{ $modification->id }}">
-
-
-                                                                    <label class="form-check-label" for="modification_{{ $modification->id }}">
-                                                                        <strong>{{ $modification->brand_name }} {{ $modification->variant_name }}</strong><br>
-                                                                        <small class="text-muted">
-                                                                            {{ $modification->year }} {{ $modification->title }}
-                                                                        </small>
-                                                                    </label>
-                                                                </div>
-                                                            </div>
-                                                @endforeach
-
-                                            </div>
-                                        @else
-                                            <div class="text-center text-muted">
-                                                <p>No compatible vehicles found</p>
-                                            </div>
-                                        @endif
-                                    </div>
-                                    <small class="text-info">All vehicles in this list will be automatically saved as compatible vehicles.</small>
-                                </div>
-                            </div>--}}
-                            <div class="col-md-12 mt-3">
-                                <div class="form-group">
-                                    <label class="form-label">Filter by Brand</label>
-                                    <input type="text"
-                                       {{-- wire:model.debounce.300ms="brandFilter"--}}
-                                       wire:model.live="brandFilter"
-                                        class="form-control mb-3"
-                                        placeholder="Type brand name">
-
-
-
-                                         <!-- Select All Checkbox -->
-                            {{-- @if (!empty($modifications))
-                                <div class="form-check mb-2">
-                                    <input type="checkbox"
-                                        class="form-check-input"
-                                        wire:click="toggleSelectAll"
-                                        @if(count($suitable_for) === $modifications->count()) checked @endif>
-                                    <label class="form-check-label">Select All</label>
-                                </div>
-                            @endif --}}
-                                    <label class="form-label">Compatible Vehicles List <span class="text-danger">*</span></label>
-                                    <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
-                                        @if (!empty($api_compatible_vehicles))
-                                            <div class="row">
-                                                @foreach ($api_compatible_vehicles as $vehicle)
-                                                    <div class="col-md-6 mb-2">
-                                                        <div class="vehicle-item p-2 border-bottom">
-                                                            <strong>{{ $vehicle['manufacturerName'] }} {{ $vehicle['modelName'] }}</strong><br>
-                                                            <small class="text-muted">
-                                                                {{ $vehicle['typeEngineName'] ? $vehicle['typeEngineName'] . ' | ' : '' }}
-                                                                {{ $vehicle['fuelType'] ? $vehicle['fuelType'] . ' | ' : '' }}
-                                                                {{ $vehicle['year'] ? $vehicle['year'] : '' }}
-                                                            </small>
-                                                        </div>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        @elseif (!empty($modifications))
-                                            <div class="row">
-                                                @foreach ($modifications as $modification)
-                                                    @if(empty($brandFilter) || stripos($modification->brand_name, $brandFilter) !== false)
+                                                    @if (empty($brandFilter) || stripos($modification->brand_name, $brandFilter) !== false)
                                                         <div class="col-md-6 mb-2">
                                                             <div class="form-check vehicle-item p-2 border-bottom">
                                                                 <input class="form-check-input"
@@ -392,7 +310,7 @@
                                     </div>
                                     <small class="text-info">All vehicles in this list will be automatically saved as compatible vehicles.</small>
                                 </div>
-                            </div>
+                            </div>  --}}
 
 
 
@@ -406,6 +324,80 @@
                                     <span class="text-danger error">{{ $message }}</span>
                                 @enderror
                             </div>
+
+                            <!-- Compatible Vehicles Section (placed after description) -->
+                            <div class="col-md-12 mt-3">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" wire:model="forAllVehicles"
+                                        id="forAllVehicles">
+                                    <label class="form-check-label" for="forAllVehicles">
+                                        For All Vehicles
+                                    </label>
+                                </div>
+                            </div>
+
+                            @if (!$forAllVehicles)
+                                <!-- 1. Add Vehicle from Vehicle Selector -->
+                                <div class="col-md-12 border-bottom pb-3 mb-3">
+                                    @livewire('workshop.vehicle-selector')
+                                </div>
+
+                                <!-- 2. Or Select from Existing Saved Vehicles -->
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label font-12 text-muted fw-bold">Or Select from Existing Saved Vehicles</label>
+                                    <div class="form-group">
+                                        <select id="suitable_for" class="form-select searchable-select" multiple
+                                            data-placeholder="Select vehicle"
+                                            wire:model="suitable_for">
+
+                                            @foreach ($modifications as $modification)
+                                                <option value="{{ $modification->id }}" @if (is_array($suitable_for) && in_array($modification->id, $suitable_for)) selected @endif>
+                                                    @php
+                                                        $data = array_filter([
+                                                            $modification->brand_name ?? '',
+                                                            $modification->variant_name ?? '',
+                                                            $modification->year ?? '',
+                                                            $modification->title ?? '',
+                                                        ]);
+                                                    @endphp
+
+                                                    {{ implode(' ', $data) }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        @error('suitable_for')
+                                            <span class="text-danger">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <!-- 3. Selected Compatible Vehicles List -->
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold text-dark font-13 mb-2">Selected Compatible Vehicles ({{ is_array($suitable_for) ? count($suitable_for) : 0 }})</label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        @if (empty($suitable_for))
+                                            <span class="text-muted font-12">No vehicles selected yet.</span>
+                                        @else
+                                            @foreach ($suitable_for as $index => $modId)
+                                                @php
+                                                    $localMod = $modifications->firstWhere('id', $modId);
+                                                @endphp
+                                                @if ($localMod)
+                                                    <span
+                                                        class="badge bg-secondary p-2 d-inline-flex align-items-center gap-2"
+                                                        style="font-size: 12px; border-radius: 4px;">
+                                                        {{ $localMod->brand_name }} {{ $localMod->variant_name }}
+                                                        ({{ $localMod->year }}) - {{ $localMod->title }}
+                                                        <button type="button" class="btn-close btn-close-white ms-1"
+                                                            style="font-size: 0.55rem; padding: 0; margin: 0; width: 0.55rem; height: 0.55rem;"
+                                                            wire:click="removeCompatibleVehicle({{ $index }})"></button>
+                                                    </span>
+                                                @endif
+                                            @endforeach
+                                        @endif
+                                    </div>
+                                </div>
+                            @endif
 
 
 
@@ -513,7 +505,7 @@
                                 <th>Part Number</th>
                                 <th>Unit</th>
                                 <th>Brand</th>
-                                {{--<th>Suitable For</th>--}}
+                                {{-- <th>Suitable For</th> --}}
                                 <th>Price</th>
                                 <th>Amount</th>
                                 <th>Discount</th>
@@ -543,7 +535,7 @@
                                     <td>{{ $accessory->part_number }}</td>
                                     <td>{{ $accessory->unit?->title ?? '' }}</td>
                                     <td> {{ $accessory->brand }} </td>
-                                   {{--<td> {{ $accessory->suitable_for }} </td>--}}
+                                    {{-- <td> {{ $accessory->suitable_for }} </td> --}}
                                     <td> {{ $accessory->price }} </td>
                                     <td> {{ $accessory->amount }} </td>
                                     <td> {{ $accessory->discount }} </td>
@@ -584,23 +576,11 @@
 
 @section('footerscript')
     <script>
-        document.addEventListener('livewire:init', () => {
-            // Initialize Select2
-            initialize();
-
-            // Re-initialize on DOM updates
-            Livewire.hook('morphed', (message, component) => {
-                initialize();
+        document.addEventListener('livewire:init', function() {
+            // Re-initialize select2 when modal opens
+            Livewire.hook('morphed', () => {
+                window.initSearchableSelects();
             });
         });
-
-
-        function initialize() {
-            $('#unit').select2({
-                placeholder: "Select Unit"
-            }).on('change', function() {
-                @this.set('unit', $(this).val());
-            });
-        }
     </script>
 @endsection

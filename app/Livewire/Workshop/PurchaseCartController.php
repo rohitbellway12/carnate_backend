@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Workshop;
 
-use App\Models\{Order, OrderItem, Payment, ProductStock, SparePart, WorkShopVendor};
+use App\Models\{Order, OrderItem, Payment, ProductStock, SparePart, WorkShopVendor, Notification};
 use App\Models\Staff;
 use Illuminate\Support\Facades\{Auth, DB};
 use Livewire\Component;
@@ -75,7 +75,11 @@ class PurchaseCartController extends Component
 
     public function received($id, $status)
     {
-        $order_item = OrderItem::with('order')->find($id);
+        $order_item = OrderItem::with(['order', 'SpareParts'])->find($id);
+        
+        if (!$order_item) {
+            return $this->dispatch('swal:toast', ['type' => 'error', 'message' => 'Order item not found!']);
+        }
         
         // Update Product Stock for Workshop
         $spare_part = SparePart::find($order_item->spare_part_id);
@@ -120,6 +124,42 @@ class PurchaseCartController extends Component
 
         $order_item->status = $status;
         $order_item->save();
+
+        // Update main order status
+        $order = Order::find($order_item->order_id);
+        if ($order) {
+            $statuses = $order->orderItem->pluck('status');
+            if ($statuses->every(fn($s) => $s == 4)) {
+                $order->order_status = 4;
+            } elseif ($statuses->contains(4) || $statuses->contains(3)) {
+                $order->order_status = 3; 
+            } elseif ($statuses->every(fn($s) => $s == 1)) {
+                $order->order_status = 1;
+            }
+            $order->save();
+        }
+        
+        // Notify sparepart vendor that workshop has received the item
+        try {
+            if ($order_item->order) {
+                $sparepartVendorId = $order_item->user_id;
+                if ($sparepartVendorId) {
+                    $partName = $order_item->SpareParts->name ?? 'Spare part';
+                    $workshopUser = Auth::guard('workshop')->user();
+                    $workshopName = ($workshopUser->name ?? $workshopUser->company_name ?? 'Workshop');
+                    
+                    Notification::create([
+                        'user_id'  => $sparepartVendorId,
+                        'order_id' => $order_item->order_id,
+                        'title'    => '✅ Item Received by Workshop',
+                        'message'  => "Workshop '{$workshopName}' has confirmed receipt of '{$partName}' for Order #{$order_item->order_id}. The item has been received successfully.",
+                        'sound'    => 'received.mp3',
+                    ]);
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::error('[RECEIVED] Exception: '.$e->getMessage().' at '.$e->getFile().':'.$e->getLine());
+        }
         
         $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Received Successfully!']);
         return redirect()->route('workshop.orders');
@@ -226,30 +266,36 @@ class PurchaseCartController extends Component
             'user_id' => Auth::guard('workshop')->user()->id,
         ]);
 
-        // // echo "<pre>";print_r($paymentResponse['order_id']);die;
+        // Get DB order_id from paymentResponse (passed from JS)
+        $dbOrderId = $paymentResponse['order_id'] ?? null;
 
-        // foreach(explode(',',$paymentResponse['order_id']) as $orderID){
-        //     $order =  Order::find($orderID);
-        //     $order->payment_status = 1;
-        //     $order->is_cart = 1;
-        //     $order->save();
-        // }
+        // Mark selected OrderItems as paid using $this->payabaleOrderId if available
+        // Otherwise fall back to all unpaid items in the order
+        if (!empty($this->payabaleOrderId)) {
+            $paidItems = OrderItem::whereIn('id', $this->payabaleOrderId)->get();
+        } elseif ($dbOrderId) {
+            // Fallback: fetch all accepted but unpaid items for this order
+            $paidItems = OrderItem::where('order_id', $dbOrderId)
+                ->where('status', 1)
+                ->where('payment_status', 0)
+                ->get();
+        } else {
+            $paidItems = collect();
+        }
 
-        $orderItems = OrderItem::whereIn('id', $this->payabaleOrderId)->get();
-
-        // Mark all selected OrderItems as paid
-        foreach ($orderItems as $orderItem) {
+        foreach ($paidItems as $orderItem) {
             $orderItem->payment_status = 1;
             $orderItem->save();
         }
 
         // Get all order items related to the affected orders
-        $orderItems = OrderItem::whereIn('order_id', $orderItems->pluck('order_id'))->get();
-        $order = Order::whereIn('id', $orderItems->pluck('order_id'))->first();
+        $orderIds = $paidItems->pluck('order_id')->unique();
+        $allOrderItems = OrderItem::whereIn('order_id', $orderIds)->get();
+        $order = Order::whereIn('id', $orderIds)->first();
 
         if ($order) {
-            $statusCounts = $orderItems->groupBy('status')->map->count();
-            $paymentStatusCount = $orderItems->where('payment_status', 1)->count();
+            $statusCounts = $allOrderItems->groupBy('status')->map->count();
+            $paymentStatusCount = $allOrderItems->where('payment_status', 1)->count();
 
             $allPending = $statusCounts[0] ?? 0;
             $allDeclined = $statusCounts[2] ?? 0;
@@ -263,6 +309,34 @@ class PurchaseCartController extends Component
 
             $order->is_cart = ($order->payment_status == 1) ? 1 : $order->is_cart;
             $order->save();
+        }
+
+        // Notify all sparepart vendors that payment was made
+        // Use paidItems to get vendor IDs reliably
+        $vendorIds = $paidItems->pluck('user_id')->unique()->filter();
+
+        // Fallback: if paidItems is empty, try fetching by order_id directly
+        if ($vendorIds->isEmpty() && $dbOrderId) {
+            $vendorIds = OrderItem::where('order_id', $dbOrderId)
+                ->pluck('user_id')
+                ->unique()
+                ->filter();
+        }
+
+        $workshopName = Auth::guard('workshop')->user()->name
+            ?? Auth::guard('workshop')->user()->company_name
+            ?? 'Workshop';
+
+        $finalOrderId = $order ? $order->id : $dbOrderId;
+
+        foreach ($vendorIds as $vendorId) {
+            Notification::create([
+                'user_id' => $vendorId,
+                'order_id' => $finalOrderId,
+                'title'   => '💰 Payment Received',
+                'message' => "Workshop '{$workshopName}' has successfully made a payment for Order #{$finalOrderId}. Please check your orders.",
+                'sound'   => 'payment.mp3',
+            ]);
         }
 
 
@@ -420,7 +494,19 @@ class PurchaseCartController extends Component
     {
         $order = Order::findOrFail($this->orderId);
         $order->update(['is_confim' => 1, 'order_date' => now()]);
-        
+
+        $orderItems = \App\Models\OrderItem::where('order_id', $order->id)->get();
+        $vendorIds = $orderItems->pluck('user_id')->unique(); // user_id refers to spare‑part vendor
+        foreach ($vendorIds as $vendorId) {
+            \App\Models\Notification::create([
+                'user_id' => $vendorId,
+                'order_id' => $order->id,
+                'title'   => '🛒 New Order Received',
+                'message' => "Workshop has placed a new order (Order #{$order->id}). Please review the order items and accept or decline them.",
+                'sound'   => 'order.mp3',
+            ]);
+        }
+
         $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Order confirmed successfully!']);
         return redirect()->route('workshop.orders')->with('success', 'Order confirmed successfully!');
     }

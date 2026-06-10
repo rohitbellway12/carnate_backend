@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
 use Razorpay\Api\Api;
 use Livewire\Attributes\On;
+use App\Models\Notification;
 
 #[Layout('components.layouts.workshop-app')]  
 class OrderController extends Component
@@ -159,27 +160,31 @@ public function createOrder($order_id, $total_amount)
             'user_id' => Auth::guard('workshop')->user()->id,
         ]);
  
-        // echo "<pre>";print_r($paymentResponse['order_id']);die;
+        $dbOrderId = $paymentResponse['order_id'] ?? null;
  
-        // foreach(explode(',',$paymentResponse['order_id']) as $orderID){
-        //     $order =  Order::find($orderID);
-        //     $order->payment_status = 1;
-        //     $order->is_cart = 1;
-        //     $order->save();
-        // }
+        if (!empty($this->payabaleOrderId)) {
+            $paidItems = OrderItem::whereIn('id', $this->payabaleOrderId)->get();
+        } elseif ($dbOrderId) {
+            $paidItems = OrderItem::where('order_id', $dbOrderId)
+                ->where('status', 1)
+                ->where('payment_status', 0)
+                ->get();
+        } else {
+            $paidItems = collect();
+        }
  
-        $orderItems = OrderItem::whereIn('id', $this->payabaleOrderId)->get();
-        foreach ($orderItems as $orderItem) {
+        foreach ($paidItems as $orderItem) {
             $orderItem->payment_status = 1;
             $orderItem->save();
         }
  
-        $orderItems = OrderItem::whereIn('order_id', $orderItems->pluck('order_id'))->get();
-        $order = Order::whereIn('id', $orderItems->pluck('order_id'))->first();
+        $orderIds = $paidItems->pluck('order_id')->unique();
+        $allOrderItems = OrderItem::whereIn('order_id', $orderIds)->get();
+        $order = Order::whereIn('id', $orderIds)->first();
  
         if ($order) {
-            $statusCounts = $orderItems->groupBy('status')->map->count();
-            $paymentStatusCount = $orderItems->where('payment_status', 1)->count();
+            $statusCounts = $allOrderItems->groupBy('status')->map->count();
+            $paymentStatusCount = $allOrderItems->where('payment_status', 1)->count();
  
             $allPending = $statusCounts[0] ?? 0;
             $allDeclined = $statusCounts[2] ?? 0;
@@ -195,6 +200,30 @@ public function createOrder($order_id, $total_amount)
             $order->save();
         }
  
+        // Notify all sparepart vendors that payment was made
+        $vendorIds = $paidItems->pluck('user_id')->unique()->filter();
+        if ($vendorIds->isEmpty() && $dbOrderId) {
+            $vendorIds = OrderItem::where('order_id', $dbOrderId)
+                ->pluck('user_id')
+                ->unique()
+                ->filter();
+        }
+ 
+        $workshopName = Auth::guard('workshop')->user()->name
+            ?? Auth::guard('workshop')->user()->company_name
+            ?? 'Workshop';
+ 
+        $finalOrderId = $order ? $order->id : $dbOrderId;
+ 
+        foreach ($vendorIds as $vendorId) {
+            Notification::create([
+                'user_id' => $vendorId,
+                'order_id' => $finalOrderId,
+                'title'   => '💰 Payment Received',
+                'message' => "Workshop '{$workshopName}' has successfully made a payment for Order #{$finalOrderId}. Please check your orders.",
+                'sound'   => 'payment.mp3',
+            ]);
+        }
  
         $this->dispatch('swal:toast', [
             'type' => 'success',
@@ -388,5 +417,97 @@ public function createOrder($order_id, $total_amount)
         } else {
             $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Order Item Declined!']);
         }
+    }
+
+    public function received($id, $status)
+    {
+        $order_item = OrderItem::with(['order', 'SpareParts'])->find($id);
+        
+        if (!$order_item) {
+            return $this->dispatch('swal:toast', ['type' => 'error', 'message' => 'Order item not found!']);
+        }
+
+        // Update Product Stock for Workshop
+        $spare_part = SparePart::find($order_item->spare_part_id);
+        if ($spare_part) {
+            $offlinePrice = $spare_part->selling_amount ?? 0;
+            if (($spare_part->tax_type ?? '') == 'exclude' && ($spare_part->tax_percentage ?? 0)) {
+                $offlinePrice += ($offlinePrice * $spare_part->tax_percentage) / 100;
+            }
+            if ($offlinePrice <= 0) {
+                $offlinePrice = $order_item->price;
+            }
+
+            $stockProduct = \App\Models\ProductStock::where([
+                'label_id' => $spare_part->label_id,
+                'price' => $offlinePrice,
+                'user_id' => Auth::guard('workshop')->user()->id
+            ])->first();
+
+            if (empty($stockProduct)) {
+                $stockProduct = new \App\Models\ProductStock;
+                $stockProduct->label_id = $spare_part->label_id;
+                $stockProduct->category_id = $order_item->category;
+                $stockProduct->stock = $order_item->quantity;
+                $stockProduct->price = $offlinePrice;
+                $stockProduct->buy_price = $order_item->price;
+                $stockProduct->brand = $spare_part->brand;
+                $stockProduct->hsn_code = $spare_part->hsn_code;
+                $stockProduct->unit_id = $spare_part->unit_id;
+                $stockProduct->tax_type = $spare_part->tax_type;
+                $stockProduct->tax_percentage = $spare_part->tax_percentage;
+                $stockProduct->user_id = Auth::guard('workshop')->user()->id;
+                $stockProduct->save();
+            } else {
+                $stockProduct->stock = $stockProduct->stock + $order_item->quantity;
+                $stockProduct->price = $offlinePrice;
+                $stockProduct->buy_price = $order_item->price;
+                $stockProduct->tax_type = $spare_part->tax_type;
+                $stockProduct->tax_percentage = $spare_part->tax_percentage;
+                $stockProduct->save();
+            }
+        }
+
+        $order_item->status = $status;
+        $order_item->save();
+
+        // Update main order status
+        $order = Order::find($order_item->order_id);
+        if ($order) {
+            $statuses = $order->orderItem->pluck('status');
+            if ($statuses->every(fn($s) => $s == 4)) {
+                $order->order_status = 4;
+            } elseif ($statuses->contains(4) || $statuses->contains(3)) {
+                $order->order_status = 3; 
+            } elseif ($statuses->every(fn($s) => $s == 1)) {
+                $order->order_status = 1;
+            }
+            $order->save();
+        }
+        
+        // Notify sparepart vendor that workshop has received the item
+        try {
+            if ($order_item->order) {
+                $sparepartVendorId = $order_item->user_id;
+                if ($sparepartVendorId) {
+                    $partName = $order_item->SpareParts->name ?? 'Spare part';
+                    $workshopUser = Auth::guard('workshop')->user();
+                    $workshopName = ($workshopUser->name ?? $workshopUser->company_name ?? 'Workshop');
+                    
+                    Notification::create([
+                        'user_id'  => $sparepartVendorId,
+                        'order_id' => $order_item->order_id,
+                        'title'    => '✅ Item Received by Workshop',
+                        'message'  => "Workshop '{$workshopName}' has confirmed receipt of '{$partName}' for Order #{$order_item->order_id}. The item has been received successfully.",
+                        'sound'    => 'received.mp3',
+                    ]);
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::error('[RECEIVED] Exception: '.$e->getMessage().' at '.$e->getFile().':'.$e->getLine());
+        }
+        
+        $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Received Successfully!']);
+        return redirect()->route('workshop.orders');
     }
 }

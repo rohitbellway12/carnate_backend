@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Models\Notification;
 
 use Illuminate\Http\Request;
 
@@ -11,10 +12,10 @@ class HomeController extends Controller
      *
      * @return void
      */
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
+    // public function __construct()
+    // {
+    //     $this->middleware('auth');
+    // }
 
     /**
      * Show the application dashboard.
@@ -25,4 +26,129 @@ class HomeController extends Controller
     {
         return view('home');
     }
+
+    public function getWorkshopNotifications()
+{
+    try {
+        $user = auth()->guard('workshop')->user();
+        
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
+        
+        $notifications = Notification::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        return response()->json([
+            'status' => true,
+            'data' => $notifications
+        ]);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => false,
+            'message' => $e->getMessage()
+        ], 500);
+    }
+}
+public function getSparePartNotifications()
+{
+    try {
+        $user = auth()->guard('sparepart')->user();
+        
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
+        
+        $notifications = Notification::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        return response()->json([
+            'status' => true,
+            'data' => $notifications
+        ]);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => false,
+            'message' => $e->getMessage()
+        ], 500);
+    }
+}
+
+public function markNotificationAsRead($id)
+{
+    try {
+        $user = auth()->guard('workshop')->user();
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
+
+        $notification = Notification::where('id', $id)->where('user_id', $user->id)->first();
+        if ($notification) {
+            $notification->is_read = true;
+            $notification->save();
+            return response()->json([
+                'status' => true,
+                'message' => 'Notification marked as read'
+            ]);
+        }
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Notification not found'
+        ], 404);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => false,
+            'message' => $e->getMessage()
+        ], 500);
+    }
+}
+
+public function markSparePartNotificationAsRead($id)
+{
+    try {
+        $user = auth()->guard('sparepart')->user();
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
+
+        $notification = Notification::where('id', $id)->where('user_id', $user->id)->first();
+        if ($notification) {
+            $notification->is_read = true;
+            $notification->save();
+            return response()->json([
+                'status' => true,
+                'message' => 'Notification marked as read'
+            ]);
+        }
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Notification not found'
+        ], 404);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => false,
+            'message' => $e->getMessage()
+        ], 500);
+    }
+}
 }

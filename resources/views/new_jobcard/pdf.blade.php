@@ -133,6 +133,7 @@
 </head>
 
 <body>
+   
     {{-- manish --}}
     <div class="container">
         <div class="inner-container header">
@@ -148,73 +149,98 @@
             </div>
 
             <table class="table my-3">
-                <tbody>
-                    <tr>
-                        <td class="p-0 border-0">
-                            <img src="{{ file_exists(public_path($logo->Image->file)) ? 'data:image/png;base64,' . base64_encode(file_get_contents(public_path($logo->Image->file))) : 'path/to/default/image.png' }}"
-                                alt="Logo" class="logo">
-
-                        </td>
-                        <td class="p-0 border-0">
-                            <h3 class="text-end m-0 " style="font-size:25px;">
-                                {{ $logo->branch_name }}
-                            </h3>
-
-                            <p class="text-end mb-2" style="margin-top:0;">
-                                {{ Str::limit($logo->tagline, 500) }}
-                            </p>
-                            {{-- <h3 class="text-end mt-0" style="color:#663399; font-size:20px;">
-                                    {{ Auth::guard('workshop')->user()->company_name }}
-                                </h3> --}}
-                            {{-- <h1>khsgsdhgjk</h1> --}}
-                            {{-- <h3 class="text-end m-0 " style="font-size:25px;">
-                                {{ $logo->branch_name }}
-                            </h3> --}}
-
-                            <p class="text-end m-0 ">
-                                Email:- {{ Auth::guard('workshop')->user()->email }}
-                            </p>
-
-                            <p class="text-end m-0">
-                                Phone:- {{ Auth::guard('workshop')->user()->mobile_no }}
-                            </p>
-
-                            {{-- <p class="text-end m-0">
-                                    {{ Auth::guard('workshop')->user()->address }}
-                                </p> --}}
-                            {{-- <p
-                                    class="text-end m-0"style="white-space:normal; word-wrap: break-word; width: 200px;  background-color:red">
-                                    {{ Auth::guard('workshop')->user()->address }}
-                                </p> --}}
-
-                            <p
-                                style="
-                                    width: 250px;
-                                    white-space: normal;
-                                    word-wrap: break-word;
-                                    text-align: right;
-                                    margin-left: auto;
-                                    margin-right: 0;
-                                    margin-top: 0;
-                                    margin-bottom: 0;
-                                    /* background-color:rgb(36, 240, 206) */
-                                ">
-                                {{ Auth::guard('workshop')->user()->address }}
-                            </p>
-
-
-                            <p class="text-end m-0">
-                                @if ($logo->is_gst == 1)
-                                    GST No. {{ Auth::guard('workshop')->user()->gst ?? '-' }}
-                                @endif
-                            </p>
-
-
-
-                        </td>
-
-                    </tr>
-                </tbody>
+              <tbody>
+    <tr>
+        <td class="p-0 border-0" style="width: 30%; vertical-align: top; padding-right: 15px;">
+            <img src="{{ file_exists(public_path($logo->Image->file)) ? 'data:image/png;base64,' . base64_encode(file_get_contents(public_path($logo->Image->file))) : 'path/to/default/image.png' }}"
+                alt="Logo" class="logo" style="max-width: 160px; border-radius: 8px;">
+        </td>
+        
+        <td class="p-0 border-0" style="width: 70%; vertical-align: top;">
+            @php 
+                $workshop = Auth::guard('workshop')->user();
+                
+                $stateName = '';
+                if(!empty($workshop->state_id)) {
+                    $state = \App\Models\State::find($workshop->state_id);
+                    $stateName = $state->name ?? '';
+                }
+                
+                $cityName = '';
+                if(!empty($workshop->city_id)) {
+                    $city = \App\Models\City::find($workshop->city_id);
+                    $cityName = $city->name ?? '';
+                }
+                
+                $countryName = '';
+                if(!empty($workshop->country_id)) {
+                    $country = \App\Models\Country::find($workshop->country_id);
+                    $countryName = $country->name ?? '';
+                }
+            @endphp
+            
+            {{-- Header Section --}}
+            <div style="border-bottom: 2px solid #2c3e50; margin-bottom: 10px; padding-bottom: 5px;">
+                <h2 style="font-size: 22px; margin: 0; text-align: right; color: #2c3e50;">
+                    {{ $logo->branch_name }}
+                </h2>
+                @if(!empty($logo->tagline))
+                    <p style="font-size: 11px; margin: 3px 0 0 0; text-align: right; color: #7f8c8d;">
+                        {{ $logo->tagline }}
+                    </p>
+                @endif
+            </div>
+            
+            {{-- Contact Information - Without Icons --}}
+            <div style="text-align: right;">
+                {{-- Email and Phone --}}
+                <div style="margin-bottom: 5px; font-size: 11px;">
+                    <span style="font-weight: 600;">Email:</span> 
+                    {{ $workshop->email ?? 'N/A' }}
+                    &nbsp;&nbsp;|&nbsp;&nbsp;
+                    <span style="font-weight: 600;">Phone:</span> 
+                    {{ $workshop->mobile_no ?? 'N/A' }}
+                </div>
+                
+                {{-- Address Line 1 --}}
+                @if(!empty($workshop->address))
+                    <div style="margin-bottom: 3px; font-size: 11px;">
+                        <span style="font-weight: 600;">Address:</span> 
+                        {{ $workshop->address }}
+                    </div>
+                @endif
+                
+                {{-- City, State, Country --}}
+                @if(!empty($cityName) || !empty($stateName) || !empty($countryName))
+                    <div style="margin-bottom: 3px; font-size: 11px;">
+                        <span style="font-weight: 600;">Location:</span> 
+                        {{ $cityName }}
+                        {{ !empty($cityName) && !empty($stateName) ? ',' : '' }}
+                        {{ $stateName }}
+                        {{ (!empty($cityName) || !empty($stateName)) && !empty($countryName) ? ',' : '' }}
+                        {{ $countryName }}
+                    </div>
+                @endif
+                
+                {{-- Pincode --}}
+                @if(!empty($workshop->pincode))
+                    <div style="margin-bottom: 3px; font-size: 11px;">
+                        <span style="font-weight: 600;">Pincode:</span> 
+                        {{ $workshop->pincode }}
+                    </div>
+                @endif
+                
+                {{-- GST --}}
+                @if($logo->is_gst == 1 && !empty($workshop->gst))
+                    <div style="margin-top: 5px; font-size: 11px;">
+                        <span style="font-weight: 600;">GST No.:</span> 
+                        {{ $workshop->gst }}
+                    </div>
+                @endif
+            </div>
+        </td>
+    </tr>
+</tbody>
             </table>
 
             <table class="table my-3">
@@ -236,6 +262,8 @@
                     {{-- sgjsdgs --}}
                     <tr>
                         <td style="vertical-align: top; width: 30%;">
+                            {{-- Add this temporarily to see all customer data --}}
+
                             <p class="p-0 m-0">
                                 Name:-
                                 @if ($customer->cust_type == 1)
