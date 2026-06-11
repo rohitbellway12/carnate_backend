@@ -25,6 +25,7 @@ if (Auth::guard('sparepart')->check()) {
                             </div>
                         </div>
                         <ul class="metismenu mm-show" id="menu">
+                            @if (!$sparePart || !$sparePart->roles->count() || @$sparePart->hasPermissionTo('dashboard-show'))
                             <li>
                                 <a href="{{ route('sparepart.dashboard') }}">
                                     <div class="parent-icon"><i class="bx bx-home-circle"></i>
@@ -32,6 +33,7 @@ if (Auth::guard('sparepart')->check()) {
                                     <div class="menu-title">Dashboard</div>
                                 </a>
                             </li>
+                            @endif
                             @if (@$sparePart->hasPermissionTo('countersale-show'))
                                 <li>
                                     <a href="{{ route('sparepart.countersale') }}">
@@ -191,6 +193,7 @@ if (Auth::guard('sparepart')->check()) {
                                     </div>
                                 </li>
                             @endif
+                            @if (!$sparePart || !$sparePart->roles->count() || @$sparePart->hasPermissionTo('report-show'))
                             <li>
                                 <div class="dropdown w-100">
                                     <a href="#">
@@ -215,6 +218,7 @@ if (Auth::guard('sparepart')->check()) {
                                     </div>
                                 </div>
                             </li>
+                            @endif
                             <li>
                                 <a href="{{ route('sparepart.resetpassword') }}">
                                     <div class="parent-icon"><i class="bx bx-refresh"></i>
@@ -240,6 +244,7 @@ if (Auth::guard('sparepart')->check()) {
                                 </li> --}}
 
 
+                            @if (!$sparePart || !$sparePart->roles->count() || @$sparePart->hasPermissionTo('support-show'))
                                 <li style="list-style:none; margin:8px 0;">
     <div class="dropdown w-100" style="position:relative;">
 
@@ -321,7 +326,7 @@ if (Auth::guard('sparepart')->check()) {
         </div>
     </div>
 </li>
-
+                            @endif
 
 
                             <li>

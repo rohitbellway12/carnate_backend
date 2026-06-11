@@ -41,6 +41,7 @@ $logo = App\Models\WorkShopVendor::where('id', Auth::guard('workshop')->user()->
                            </div>
 
                         <ul class="metismenu mm-show" id="menu">
+                            @if (@$user->hasPermissionTo('dashboard-show'))
                             <li>
                                 <a href="{{ route('workshop.dashboard') }}">
                                     <div class="parent-icon"><i class="bx bx-home-circle"></i>
@@ -48,6 +49,7 @@ $logo = App\Models\WorkShopVendor::where('id', Auth::guard('workshop')->user()->
                                     <div class="menu-title">Dashboard</div>
                                 </a>
                             </li>
+                            @endif
                             @if (@$user->hasPermissionTo('counter-sale-show'))
                                 <li>
                                     <a href="{{ route('workshop.counter_sale') }}">
@@ -92,6 +94,7 @@ $logo = App\Models\WorkShopVendor::where('id', Auth::guard('workshop')->user()->
                                     </a>
                                 </li>
                             @endif
+                            @if (@$user->hasPermissionTo('Appointment-show'))
                             <li>
                                 <a href="{{ route('workshop.appointments') }}">
                                     <div class="parent-icon"><i class="bx bxs-calendar fs-5"></i>
@@ -99,6 +102,7 @@ $logo = App\Models\WorkShopVendor::where('id', Auth::guard('workshop')->user()->
                                     <div class="menu-title">Appointments</div>
                                 </a>
                             </li>
+                            @endif
                             @if (@$user->hasPermissionTo('expenses-show'))
                                 <li>
                                     <a href="{{ route('workshop.expenses') }}">
@@ -109,7 +113,7 @@ $logo = App\Models\WorkShopVendor::where('id', Auth::guard('workshop')->user()->
                                     </a>
                                 </li>
                             @endif
-                            @if (@$user->hasPermissionTo('purchaseorder-show'))
+                            @if (@$user->hasPermissionTo('online-store-show'))
                                 <li>
                                     <a href="{{ route('workshop.vehicle_search') }}">
                                         <div class="parent-icon"><i class="bx bx-user"></i>
@@ -221,6 +225,8 @@ $logo = App\Models\WorkShopVendor::where('id', Auth::guard('workshop')->user()->
                                         <div class="menu-title"> Reset Password </div>
                                     </a>
                                 </li>
+                            @endif
+                            @if (@$user->hasPermissionTo('order-show'))
                                 <li>
                                     <a href="{{ route('workshop.orders') }}">
                                         <div class="parent-icon"><i class="fas fa-shopping-cart fs-5"></i>
@@ -228,6 +234,8 @@ $logo = App\Models\WorkShopVendor::where('id', Auth::guard('workshop')->user()->
                                         <div class="menu-title"> Order </div>
                                     </a>
                                 </li>
+                            @endif
+                            @if (@$user->hasPermissionTo('paid-order-show'))
                                 <li>
                                     <a href="{{ route('workshop.paid-orders') }}">
                                         <div class="parent-icon"><i class="fas fa-shopping-cart fs-5"></i>
@@ -235,6 +243,8 @@ $logo = App\Models\WorkShopVendor::where('id', Auth::guard('workshop')->user()->
                                         <div class="menu-title"> Paid-Order </div>
                                     </a>
                                 </li>
+                            @endif
+                            @if (@$user->hasPermissionTo('report-show'))
                                 <li>
                                     <div class="dropdown w-100">
                                         <a href="javascript:void(0)">
@@ -252,22 +262,8 @@ $logo = App\Models\WorkShopVendor::where('id', Auth::guard('workshop')->user()->
                                         </div>
                                     </div>
                                 </li>
-
-                                 {{-- <li>
-                                    <div class="dropdown w-100">
-                                        <a href="javascript:void(0)">
-                                            <div class="parent-icon"><i class="fa-solid fa-circle-info"></i></div>
-                                            <div class="menu-title w-100">Support</div>
-                                            <span class="fa fa-chevron-right dropdown-right-icon icon"></span>
-                                        </a>
-                                        <div class="dropdown-content">
-                                            <a href="#" class="ms-3" style="background-color: unset;">+91 8147 938 343</a>
-                                            <a href="#" class="ms-3" style="background-color: unset;">carnateindia@gmail.com</a>
-
-                                        </div>
-                                    </div>
-                                </li> --}}
-
+                            @endif
+                            @if (@$user->hasPermissionTo('support-show'))
                                 <li style="list-style:none; margin:8px 0;">
     <div class="dropdown w-100" style="position:relative;">
 
@@ -349,7 +345,6 @@ $logo = App\Models\WorkShopVendor::where('id', Auth::guard('workshop')->user()->
         </div>
     </div>
 </li>
-
                             @endif
                             <li>
                                 <!-- <a href="{{ route('workshop.logout') }}"> -->

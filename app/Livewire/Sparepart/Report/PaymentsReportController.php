@@ -97,7 +97,10 @@ class PaymentsReportController extends Component
             'Expires' => '0'
         ];
 
-        $callback = function() use ($transactions) {
+        $vendorId = Auth::guard('sparepart')->user()->id;
+        $vendor = SparePartVendor::find($vendorId);
+
+        $callback = function() use ($transactions, $vendor) {
             $file = fopen('php://output', 'w');
             
             // Add UTF-8 BOM for Excel compatibility
@@ -107,7 +110,7 @@ class PaymentsReportController extends Component
 
             foreach ($transactions as $index => $t) {
                 $type = $t->type == 0 ? 'Earning / Deposit' : 'Withdrawal';
-                $invoiceNo = $t->order ? sparepartOrderReference($t->order) : '-';
+                $invoiceNo = $t->order ? sparepartOrderReference($t->order, $vendor) : '-';
                 $description = $t->order_id > 0 
                     ? 'Earning from order ' . $invoiceNo
                     : ($t->type == 1 ? "Withdrawal payout request" : "Wallet Adjustment");
@@ -189,6 +192,6 @@ class PaymentsReportController extends Component
             }])->find($this->viewOrderId);
         }
 
-        return view('livewire.sparepart.report.payments-report', compact('transactions', 'totals', 'selectedOrder', 'vendorId'));
+        return view('livewire.sparepart.report.payments-report', compact('transactions', 'totals', 'selectedOrder', 'vendorId', 'vendor'));
     }
 }

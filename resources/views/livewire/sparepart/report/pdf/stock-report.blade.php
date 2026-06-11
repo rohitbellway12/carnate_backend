@@ -57,19 +57,19 @@
         }
         table.data-table th, table.data-table td {
             border: 1px solid #e2e8f0;
-            padding: 6px 8px;
+            padding: 5px 7px;
             text-align: left;
         }
         table.data-table th {
             background: #f1f5f9;
             color: #0f172a;
             font-weight: 600;
-            font-size: 10px;
+            font-size: 9.5px;
             text-transform: uppercase;
         }
         table.data-table td {
             color: #334155;
-            font-size: 9.5px;
+            font-size: 9px;
         }
         table.data-table tr:nth-child(even) td {
             background: #f8fafc;
@@ -79,41 +79,56 @@
             text-transform: uppercase;
             font-size: 8.5px;
         }
-        .status-in { color: #16a34a; }
+        .status-in  { color: #16a34a; }
         .status-low { color: #d97706; }
         .status-out { color: #dc2626; }
+        .cat-badge {
+            font-size: 8px;
+            font-weight: bold;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .cat-1 { background: #dbeafe; color: #1e40af; }
+        .cat-2 { background: #fef3c7; color: #92400e; }
+        .cat-3 { background: #ede9fe; color: #5b21b6; }
+        .cat-4 { background: #d1fae5; color: #065f46; }
         .footer-note {
             font-size: 9.5px;
             text-align: right;
             color: #94a3b8;
             margin-top: 25px;
         }
-        .text-right {
-            text-align: right;
-        }
-        .text-center {
-            text-align: center;
-        }
+        .text-right  { text-align: right; }
+        .text-center { text-align: center; }
     </style>
 </head>
 <body>
     <div class="report-header">
         <h2>Spare Part Stock Report</h2>
-        <p>Comprehensive overview of current inventory quantities, storage locations, and total valuation</p>
+        <p>Current inventory across all categories — Accessory, Parts, Tools &amp; Lubricants</p>
     </div>
 
     <div class="divider"></div>
 
+    @php
+        $catLabels = [1 => 'Accessory', 2 => 'Parts', 3 => 'Tools', 4 => 'Lubricants'];
+    @endphp
+
     <div class="summary-box">
         <table>
             <tr>
-                <td><strong>Unique Stock Items:</strong> {{ $totals['total_entries'] }}</td>
+                <td><strong>Total Products:</strong> {{ $totals['total_entries'] }}</td>
                 <td><strong>Total Quantity:</strong> {{ number_format($totals['total_quantity']) }}</td>
-                <td><strong>Low Stock Items:</strong> {{ $totals['low_stock'] }}</td>
+                <td><strong>Low Stock:</strong> {{ $totals['low_stock'] }}</td>
                 <td><strong>Out of Stock:</strong> {{ $totals['out_of_stock'] }}</td>
             </tr>
             <tr>
-                <td colspan="4"><strong>Total Stock Valuation:</strong> <span style="font-weight: bold; color: #2563eb;">₹{{ number_format((float)$totals['total_value'], 2) }}</span></td>
+                <td colspan="2"><strong>Total Stock Value (Selling):</strong> <span style="font-weight: bold; color: #2563eb;">₹{{ number_format((float)$totals['total_value'], 2) }}</span></td>
+                <td colspan="2">
+                    @foreach($totals['by_category'] as $typeId => $count)
+                        <strong>{{ $catLabels[$typeId] ?? '' }}:</strong> {{ $count }}&nbsp;&nbsp;
+                    @endforeach
+                </td>
             </tr>
         </table>
     </div>
@@ -121,30 +136,36 @@
     <table class="data-table">
         <thead>
             <tr>
-                <th style="width: 5%;">#</th>
-                <th style="width: 30%;">Part Name</th>
-                <th style="width: 15%;">Part Number</th>
+                <th style="width: 4%;">#</th>
+                <th style="width: 12%;">Category</th>
+                <th style="width: 25%;">Part Name</th>
+                <th style="width: 13%;">Part Number</th>
                 <th style="width: 15%;">Brand</th>
-                <th style="width: 10%; text-align: center;">Rack No</th>
-                <th style="width: 10%; text-align: center;">Qty</th>
-                <th style="width: 12%; text-align: right;">Valuation (₹)</th>
-                <th style="width: 13%; text-align: center;">Status</th>
+                <th style="width: 8%; text-align: center;">Rack No</th>
+                <th style="width: 8%; text-align: center;">Stock Qty</th>
+                <th style="width: 13%; text-align: right;">Selling Price (₹)</th>
+                <th style="width: 12%; text-align: center;">Status</th>
             </tr>
         </thead>
         <tbody>
             @forelse($stocks as $index => $s)
+                @php
+                    $stockQty = (int) $s->stock;
+                    $typeId   = $s->spare_part_type;
+                @endphp
                 <tr>
                     <td>{{ $index + 1 }}</td>
-                    <td><strong>{{ $s->partname }}</strong></td>
-                    <td><code>{{ $s->part_no ?: '-' }}</code></td>
-                    <td>{{ $s->company_name ?: '-' }}</td>
+                    <td><span class="cat-badge cat-{{ $typeId }}">{{ $catLabels[$typeId] ?? 'Other' }}</span></td>
+                    <td><strong>{{ $s->label->title ?? '-' }}</strong></td>
+                    <td>{{ $s->part_number ?: '-' }}</td>
+                    <td>{{ $s->brand ?: '-' }}</td>
                     <td class="text-center">{{ $s->rack_no ?: '-' }}</td>
-                    <td class="text-center">{{ $s->quantity }} {{ $s->unit->name ?? 'pcs' }}</td>
-                    <td class="text-right" style="font-weight: bold;">{{ number_format((float)$s->total_payable, 2) }}</td>
+                    <td class="text-center">{{ $stockQty }} {{ $s->unit->name ?? 'pcs' }}</td>
+                    <td class="text-right" style="font-weight: bold;">{{ number_format((float)$s->price, 2) }}</td>
                     <td class="text-center">
-                        @if($s->quantity <= 0)
+                        @if($stockQty <= 0)
                             <span class="status-badge status-out">Out of Stock</span>
-                        @elseif($s->quantity <= 5)
+                        @elseif($stockQty <= 5)
                             <span class="status-badge status-low">Low Stock</span>
                         @else
                             <span class="status-badge status-in">In Stock</span>
@@ -153,7 +174,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" style="text-align: center;">No stock items found.</td>
+                    <td colspan="9" style="text-align: center;">No stock items found.</td>
                 </tr>
             @endforelse
         </tbody>

@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Sparepart\Report;
 
-use App\Models\SparePartProductStock;
+use App\Models\SparePart;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -21,39 +21,48 @@ class StockReportController extends Component
     // Filters
     public string $stockStatusFilter = ''; // '', 'low', 'out', 'in'
     public string $brandFilter = '';
+    public string $categoryFilter = ''; // '', '1'=Accessory, '2'=Parts, '3'=Tools, '4'=Lubricants
 
     public function updatingSearch(): void { $this->resetPage(); }
     public function updatingStockStatusFilter(): void { $this->resetPage(); }
     public function updatingBrandFilter(): void { $this->resetPage(); }
+    public function updatingCategoryFilter(): void { $this->resetPage(); }
 
     protected function getBaseQuery()
     {
         $vendorId = Auth::guard('sparepart')->user()->id;
 
-        return SparePartProductStock::query()
-            ->with('unit')
+        return SparePart::with(['label', 'unit'])
             ->where('user_id', $vendorId)
+            ->whereIn('spare_part_type', [1, 2, 3, 4])
             ->when(trim($this->search) !== '', function ($q) {
                 $s = trim($this->search);
                 $q->where(function ($sub) use ($s) {
-                    $sub->where('partname', 'LIKE', "%$s%")
-                        ->orWhere('part_no', 'LIKE', "%$s%")
-                        ->orWhere('company_name', 'LIKE', "%$s%");
+                    $sub->where('brand', 'LIKE', "%$s%")
+                        ->orWhere('part_number', 'LIKE', "%$s%")
+                        ->orWhere('rack_no', 'LIKE', "%$s%")
+                        ->orWhereHas('label', function ($lq) use ($s) {
+                            $lq->where('title', 'LIKE', "%$s%");
+                        });
                 });
             })
             ->when($this->brandFilter !== '', function ($q) {
-                $q->where('company_name', $this->brandFilter);
+                $q->where('brand', $this->brandFilter);
+            })
+            ->when($this->categoryFilter !== '', function ($q) {
+                $q->where('spare_part_type', $this->categoryFilter);
             })
             ->when($this->stockStatusFilter !== '', function ($q) {
                 if ($this->stockStatusFilter === 'low') {
-                    $q->where('quantity', '>', 0)->where('quantity', '<=', 5);
+                    $q->where('stock', '>', 0)->where('stock', '<=', 5);
                 } elseif ($this->stockStatusFilter === 'out') {
-                    $q->where('quantity', '<=', 0);
+                    $q->where('stock', '<=', 0);
                 } elseif ($this->stockStatusFilter === 'in') {
-                    $q->where('quantity', '>', 5);
+                    $q->where('stock', '>', 5);
                 }
             })
-            ->orderBy('partname', 'asc');
+            ->orderBy('spare_part_type', 'asc')
+            ->orderByRaw('(SELECT title FROM spare_part_labels WHERE spare_part_labels.id = spare_parts.label_id LIMIT 1) ASC');
     }
 
     public function downloadExcel()
@@ -62,34 +71,37 @@ class StockReportController extends Component
         $stocks = $query->get();
 
         $headers = [
-            'Content-type' => 'text/csv',
+            'Content-type'        => 'text/csv',
             'Content-Disposition' => 'attachment; filename=sparepart-stock-report.csv',
-            'Pragma' => 'no-cache',
-            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
-            'Expires' => '0'
+            'Pragma'              => 'no-cache',
+            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires'             => '0'
         ];
 
-        $callback = function() use ($stocks) {
+        $categoryMap = [1 => 'Accessory', 2 => 'Parts', 3 => 'Tools', 4 => 'Lubricants'];
+
+        $callback = function () use ($stocks, $categoryMap) {
             $file = fopen('php://output', 'w');
-            
-            // Add UTF-8 BOM for Excel compatibility
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-            
-            fputcsv($file, ['#', 'Part Name', 'Part No.', 'Brand / Manufacturer', 'Rack No.', 'Quantity', 'Unit', 'Stock Value / Payable (₹)', 'Status']);
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            fputcsv($file, ['#', 'Category', 'Part Name', 'Part Number', 'Brand', 'Rack No.', 'Stock Qty', 'Unit', 'Selling Price (₹)', 'Purchase Price (₹)', 'Status']);
 
             foreach ($stocks as $index => $s) {
-                $status = $s->quantity <= 0 ? 'Out of Stock' : ($s->quantity <= 5 ? 'Low Stock' : 'In Stock');
+                $stockQty = (int) $s->stock;
+                $status   = $stockQty <= 0 ? 'Out of Stock' : ($stockQty <= 5 ? 'Low Stock' : 'In Stock');
 
                 fputcsv($file, [
                     $index + 1,
-                    $s->partname ?: 'N/A',
-                    $s->part_no ?: 'N/A',
-                    $s->company_name ?: 'N/A',
+                    $categoryMap[$s->spare_part_type] ?? 'Other',
+                    $s->label->title ?? 'N/A',
+                    $s->part_number ?: 'N/A',
+                    $s->brand ?: 'N/A',
                     $s->rack_no ?: 'N/A',
-                    (float)$s->quantity,
+                    $stockQty,
                     $s->unit->name ?? 'pcs',
-                    (float)$s->total_payable,
-                    $status
+                    (float) $s->price,
+                    (float) $s->purchase_price,
+                    $status,
                 ]);
             }
 
@@ -101,60 +113,67 @@ class StockReportController extends Component
 
     public function downloadPDF()
     {
-        $query = $this->getBaseQuery();
+        $query  = $this->getBaseQuery();
         $stocks = $query->get();
 
-        $totals = [
-            'total_entries' => $stocks->count(),
-            'total_quantity' => (float)$stocks->sum('quantity'),
-            'total_value' => (float)$stocks->sum('total_payable'),
-            'low_stock' => $stocks->where('quantity', '>', 0)->where('quantity', '<=', 5)->count(),
-            'out_of_stock' => $stocks->where('quantity', '<=', 0)->count(),
-        ];
+        $totals = $this->buildTotals($stocks);
 
         $pdf = Pdf::loadView('livewire.sparepart.report.pdf.stock-report', [
-            'stocks' => $stocks,
-            'totals' => $totals,
+            'stocks'            => $stocks,
+            'totals'            => $totals,
             'stockStatusFilter' => $this->stockStatusFilter,
-            'brandFilter' => $this->brandFilter,
-            'search' => $this->search,
+            'brandFilter'       => $this->brandFilter,
+            'categoryFilter'    => $this->categoryFilter,
+            'search'            => $this->search,
         ])->setPaper('a4', 'landscape');
 
         $pdf->setOptions([
-            'defaultFont' => 'DejaVu Sans',
+            'defaultFont'          => 'DejaVu Sans',
             'isHtml5ParserEnabled' => true,
-            'isRemoteEnabled' => true,
+            'isRemoteEnabled'      => true,
         ]);
 
         return response()->streamDownload(
-            fn() => print($pdf->output()),
+            fn () => print($pdf->output()),
             'sparepart-stock-report.pdf'
         );
     }
 
+    private function buildTotals($stocks): array
+    {
+        return [
+            'total_entries'  => $stocks->count(),
+            'total_quantity' => (float) $stocks->sum('stock'),
+            'total_value'    => (float) $stocks->sum(fn ($s) => (float) $s->price * (int) $s->stock),
+            'low_stock'      => $stocks->filter(fn ($s) => $s->stock > 0 && $s->stock <= 5)->count(),
+            'out_of_stock'   => $stocks->filter(fn ($s) => $s->stock <= 0)->count(),
+            'by_category'    => [
+                1 => $stocks->where('spare_part_type', 1)->count(),
+                2 => $stocks->where('spare_part_type', 2)->count(),
+                3 => $stocks->where('spare_part_type', 3)->count(),
+                4 => $stocks->where('spare_part_type', 4)->count(),
+            ],
+        ];
+    }
+
     public function render()
     {
-        $query = $this->getBaseQuery();
+        $query  = $this->getBaseQuery();
         $stocks = $query->paginate($this->perPage);
 
         $vendorId = Auth::guard('sparepart')->user()->id;
 
-        // Fetch all brands/companies for dropdown filter
-        $brands = SparePartProductStock::where('user_id', $vendorId)
-            ->whereNotNull('company_name')
-            ->where('company_name', '!=', '')
+        // Brands for filter dropdown
+        $brands = SparePart::where('user_id', $vendorId)
+            ->whereIn('spare_part_type', [1, 2, 3, 4])
+            ->whereNotNull('brand')
+            ->where('brand', '!=', '')
             ->distinct()
-            ->pluck('company_name');
+            ->pluck('brand');
 
-        // Stats summary
+        // Stats summary (all matching, un-paginated)
         $allStocks = $this->getBaseQuery()->get();
-        $totals = [
-            'total_entries' => $allStocks->count(),
-            'total_quantity' => (float)$allStocks->sum('quantity'),
-            'total_value' => (float)$allStocks->sum('total_payable'),
-            'low_stock' => $allStocks->where('quantity', '>', 0)->where('quantity', '<=', 5)->count(),
-            'out_of_stock' => $allStocks->where('quantity', '<=', 0)->count(),
-        ];
+        $totals    = $this->buildTotals($allStocks);
 
         return view('livewire.sparepart.report.stock-report', compact('stocks', 'brands', 'totals'));
     }

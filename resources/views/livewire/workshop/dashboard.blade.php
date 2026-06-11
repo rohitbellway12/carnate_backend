@@ -32,7 +32,7 @@
 <div>
     <div class="row g-3 mb-3">
         <div class="col-lg-6 col-md-12">
-            <h5>{{ ucwords(Auth::guard('workshop')->user()->name) }} Dashboard</h5>
+            <h5> Dashboard</h5>
         </div>
         <div class="col-lg-6 col-md-12">
             @if (Auth::guard('workshop')->user()->is_user == 0)

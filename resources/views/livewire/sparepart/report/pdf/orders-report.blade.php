@@ -143,7 +143,7 @@
                 <tr>
                     <td>{{ $index + 1 }}</td>
                     <td><strong>#{{ $o->id }}</strong></td>
-                    <td>{{ sparepartOrderReference($o) }}</td>
+                    <td>{{ sparepartOrderReference($o, $vendor ?? null) }}</td>
                     <td>{{ $o->order_date ? \Carbon\Carbon::parse($o->order_date)->format('d M Y, h:i A') : 'N/A' }}</td>
                     <td class="text-center">{{ $myItems->count() }}</td>
                     <td class="text-right" style="font-weight: bold;">{{ number_format((float)$myItems->sum('total_amount'), 2) }}</td>

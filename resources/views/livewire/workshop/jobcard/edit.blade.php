@@ -2801,6 +2801,13 @@ Percentage Input Section (Shown based on selection)
                             <small>Update Job-Card</small>
                         </button>
                     @endif
+                @elseif ($jobcardData->status == 2)
+                    @if ($user->hasPermissionTo('completed-jobcard-update'))
+                        <button type="button" class="btn btn-primary rounded border-0 text-white"
+                            wire:click="updateJobCard({{ $jobcardData->status }})">
+                            <small>Update Job-Card</small>
+                        </button>
+                    @endif
                 @endif
 
                 @if ($jobcardData->status == 0 && $jobcardData->step == 1)
@@ -2829,14 +2836,14 @@ Percentage Input Section (Shown based on selection)
                         </button>
                     @endif
                 @elseif ($jobcardData->status == 1)
-                    @if ($user->hasPermissionTo('Jobcard-edit'))
+                    @if ($user->hasPermissionTo('completed-jobcard-update'))
                         <button type="button" class="btn btn-primary rounded border-0 text-white"
                             wire:click="updateJobCard(2)">
                             <small>Complete Job-Card</small>
                         </button>
                     @endif
                 @elseif ($jobcardData->status == 2)
-                    @if ($user->hasPermissionTo('Jobcard-edit'))
+                    @if ($user->hasPermissionTo('completed-jobcard-update'))
                         <button type="button" class="btn btn-primary rounded border-0 text-white"
                             wire:click="confirmClosed(3)">
                             <small>Close Job-Card</small>

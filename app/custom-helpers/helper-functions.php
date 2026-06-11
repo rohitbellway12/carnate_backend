@@ -121,16 +121,53 @@ if (!function_exists('generateSparepartCounterSaleNumber')) {
 
 if (!function_exists('sparepartOrderReference')) {
 	/**
-	 * Spare part reports: show invoice number only (no workshop/customer names).
+	 * Spare part reports: resolve the invoice number for an order.
+	 *
+	 * Invoice numbers are ONLY generated after payment (payment_status == 1).
+	 * For unpaid orders, no invoice number exists yet — return #order->id.
+	 *
+	 * Priority (paid orders only):
+	 *  1. order->invoice_number if already set (e.g. CARNATE prefix orders)
+	 *  2. Dynamically preview the spare part vendor's invoice number using
+	 *     SharedSerialService::previewNext() — same logic as the invoice PDF
+	 *  3. JobCard->shared_serial if the order links to a jobcard
+	 *  4. #order->id as last resort
 	 */
-	function sparepartOrderReference($order): string
+	function sparepartOrderReference($order, $vendor = null): string
 	{
 		if (!$order) {
 			return 'N/A';
 		}
 
+		// Invoice number is only generated AFTER payment
+		if ((int) $order->payment_status !== 1) {
+			return '#' . $order->id;
+		}
+
 		if (!empty($order->invoice_number)) {
 			return (string) $order->invoice_number;
+		}
+
+		// Dynamically preview the vendor-specific invoice number
+		// (same logic as getSparePartOrderInvoice in JobCardController)
+		if ($vendor) {
+			try {
+				$companyCode   = strtoupper(substr($vendor->name ?? $vendor->company_name ?? 'VEN', 0, 3) . 'INV');
+				$seriesCode    = \App\Services\SharedSerialService::resolveSeriesCode();
+				$serialService = new \App\Services\SharedSerialService();
+				return $serialService->previewNext($vendor->id, $companyCode, $seriesCode);
+			} catch (\Throwable $e) {
+				// fall through to next strategy
+			}
+		}
+
+		// Fallback: JobCard's shared_serial (only reached for paid orders)
+		if (!empty($order->jobcard_id)) {
+			$jobcard = \App\Models\JobCard::select('id', 'shared_serial')
+				->find($order->jobcard_id);
+			if ($jobcard && !empty($jobcard->shared_serial)) {
+				return (string) $jobcard->shared_serial;
+			}
 		}
 
 		return '#' . $order->id;

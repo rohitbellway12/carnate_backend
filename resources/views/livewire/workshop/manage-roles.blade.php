@@ -34,36 +34,141 @@
                                     <div class="frmInputGroup">
                                         <label class="form-label">Permission</label>
                                     </div>
-                                    <table class="table">
-                                        <thead>
-                                            <tr>
-                                                <th scope="col">Menu</th>
-                                                <th scope="col">List</th>
-                                                <th scope="col">Add</th>
-                                                <th scope="col">Edit</th>
-                                                <th scope="col">Delete</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($menus as $mkey => $mvalue)
-                                            <tr>
-                                                <th scope="row">{{ ucfirst($mkey) }}</th>
-                                                @foreach ($mvalue as $pkey => $pvalue)
-                                                    <td>
-                                                        <input
-                                                            class="name{{ $mkey }}"
-                                                            type="checkbox"
-                                                            value="{{ $pvalue['name'] }}"
-                                                            wire:model="permissions"
-                                                            @if(in_array($pvalue['name'], $permissions)) checked @endif
-                                                        >
-                                                    </td>
+                                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 4px; padding: 5px; background-color: #fff;">
+                                        <table class="table table-striped table-hover align-middle mb-0">
+                                            <thead>
+                                                <tr style="position: sticky; top: 0; background-color: #f8f9fa; z-index: 10; box-shadow: inset 0 -2px 0 #dee2e6;">
+                                                    <th scope="col" style="min-width: 150px;">Menu / Module</th>
+                                                    <th scope="col" class="text-center" style="width: 10%;">List</th>
+                                                    <th scope="col" class="text-center" style="width: 10%;">Add</th>
+                                                    <th scope="col" class="text-center" style="width: 10%;">Edit</th>
+                                                    <th scope="col" class="text-center" style="width: 10%;">Delete</th>
+                                                    <th scope="col" style="min-width: 250px;">Additional Permissions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($menus as $mkey => $mvalue)
+                                                    @php
+                                                        $showPerm = null;
+                                                        $addPerm = null;
+                                                        $editPerm = null;
+                                                        $deletePerm = null;
+                                                        $customPerms = [];
+
+                                                        foreach ($mvalue as $p) {
+                                                            $name = $p['name'];
+                                                            if (strcasecmp($name, $mkey . '-show') === 0) {
+                                                                $showPerm = $p;
+                                                            } elseif (strcasecmp($name, $mkey . '-add') === 0) {
+                                                                $addPerm = $p;
+                                                            } elseif (strcasecmp($name, $mkey . '-edit') === 0) {
+                                                                $editPerm = $p;
+                                                            } elseif (strcasecmp($name, $mkey . '-delete') === 0) {
+                                                                $deletePerm = $p;
+                                                            } else {
+                                                                $customPerms[] = $p;
+                                                            }
+                                                        }
+                                                    @endphp
+                                                    <tr>
+                                                        <th scope="row" class="text-dark" style="font-size: 13px;">
+                                                            {{ ucwords(str_replace(['-', '_'], ' ', $mkey)) }}
+                                                        </th>
+                                                        
+                                                        <!-- List -->
+                                                        <td class="text-center">
+                                                            @if ($showPerm)
+                                                                <input
+                                                                    type="checkbox"
+                                                                    value="{{ $showPerm['name'] }}"
+                                                                    wire:model="permissions"
+                                                                    class="form-check-input"
+                                                                    style="cursor: pointer; width: 1.25em; height: 1.25em;"
+                                                                    @if(in_array($showPerm['name'], $permissions)) checked @endif
+                                                                >
+                                                            @else
+                                                                <span class="text-muted small">-</span>
+                                                            @endif
+                                                        </td>
+
+                                                        <!-- Add -->
+                                                        <td class="text-center">
+                                                            @if ($addPerm)
+                                                                <input
+                                                                    type="checkbox"
+                                                                    value="{{ $addPerm['name'] }}"
+                                                                    wire:model="permissions"
+                                                                    class="form-check-input"
+                                                                    style="cursor: pointer; width: 1.25em; height: 1.25em;"
+                                                                    @if(in_array($addPerm['name'], $permissions)) checked @endif
+                                                                >
+                                                            @else
+                                                                <span class="text-muted small">-</span>
+                                                            @endif
+                                                        </td>
+
+                                                        <!-- Edit -->
+                                                        <td class="text-center">
+                                                            @if ($editPerm)
+                                                                <input
+                                                                    type="checkbox"
+                                                                    value="{{ $editPerm['name'] }}"
+                                                                    wire:model="permissions"
+                                                                    class="form-check-input"
+                                                                    style="cursor: pointer; width: 1.25em; height: 1.25em;"
+                                                                    @if(in_array($editPerm['name'], $permissions)) checked @endif
+                                                                >
+                                                            @else
+                                                                <span class="text-muted small">-</span>
+                                                            @endif
+                                                        </td>
+
+                                                        <!-- Delete -->
+                                                        <td class="text-center">
+                                                            @if ($deletePerm)
+                                                                <input
+                                                                    type="checkbox"
+                                                                    value="{{ $deletePerm['name'] }}"
+                                                                    wire:model="permissions"
+                                                                    class="form-check-input"
+                                                                    style="cursor: pointer; width: 1.25em; height: 1.25em;"
+                                                                    @if(in_array($deletePerm['name'], $permissions)) checked @endif
+                                                                >
+                                                            @else
+                                                                <span class="text-muted small">-</span>
+                                                            @endif
+                                                        </td>
+
+                                                        <!-- Additional Permissions -->
+                                                        <td>
+                                                            @if (count($customPerms) > 0)
+                                                                <div class="d-flex flex-column gap-1">
+                                                                    @foreach ($customPerms as $cp)
+                                                                        <div class="form-check d-flex align-items-center gap-1 m-0">
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                value="{{ $cp['name'] }}"
+                                                                                wire:model="permissions"
+                                                                                class="form-check-input m-0"
+                                                                                style="cursor: pointer; width: 1.15em; height: 1.15em;"
+                                                                                id="perm_{{ $cp['id'] }}"
+                                                                                @if(in_array($cp['name'], $permissions)) checked @endif
+                                                                            >
+                                                                            <label class="form-check-label text-wrap" for="perm_{{ $cp['id'] }}" style="cursor: pointer; font-size: 11px; font-weight: 500; line-height: 1.2;">
+                                                                                {{ ucwords(str_replace(['-', '_'], ' ', $cp['name'])) }}
+                                                                            </label>
+                                                                        </div>
+                                                                    @endforeach
+                                                                </div>
+                                                            @else
+                                                                <span class="text-muted small">-</span>
+                                                            @endif
+                                                        </td>
+                                                    </tr>
                                                 @endforeach
-                                            </tr>
-                                        @endforeach
-                                        
-                                        </tbody>
-                                    </table>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>

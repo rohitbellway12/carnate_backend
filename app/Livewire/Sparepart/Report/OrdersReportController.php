@@ -4,6 +4,7 @@ namespace App\Livewire\Sparepart\Report;
 
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\SparePartVendor;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Carbon\Carbon;
@@ -109,7 +110,9 @@ class OrdersReportController extends Component
             'Expires' => '0'
         ];
 
-        $callback = function() use ($orders, $vendorId) {
+        $vendor = SparePartVendor::find($vendorId);
+
+        $callback = function() use ($orders, $vendorId, $vendor) {
             $file = fopen('php://output', 'w');
             
             // Add UTF-8 BOM for Excel compatibility
@@ -140,7 +143,7 @@ class OrdersReportController extends Component
                 fputcsv($file, [
                     $index + 1,
                     '#' . $o->id,
-                    sparepartOrderReference($o),
+                    sparepartOrderReference($o, $vendor),
                     $orderItemsString ?: 'N/A',
                     $o->order_date ? \Carbon\Carbon::parse($o->order_date)->format('d M Y, h:i A') : 'N/A',
                     $totalAmount,
@@ -196,6 +199,8 @@ class OrdersReportController extends Component
             }
         }
 
+        $vendor = SparePartVendor::find($vendorId);
+
         $pdf = Pdf::loadView('livewire.sparepart.report.pdf.orders-report', [
             'orders' => $orders,
             'totals' => $totals,
@@ -206,6 +211,7 @@ class OrdersReportController extends Component
             'paymentStatusFilter' => $this->paymentStatusFilter,
             'search' => $this->search,
             'vendorId' => $vendorId,
+            'vendor' => $vendor,
         ])->setPaper('a4', 'landscape');
 
         $pdf->setOptions([
@@ -269,6 +275,8 @@ class OrdersReportController extends Component
             }])->find($this->viewOrderId);
         }
 
-        return view('livewire.sparepart.report.orders-report', compact('orders', 'totals', 'selectedOrder', 'vendorId'));
+        $vendor = SparePartVendor::find($vendorId);
+
+        return view('livewire.sparepart.report.orders-report', compact('orders', 'totals', 'selectedOrder', 'vendorId', 'vendor'));
     }
 }

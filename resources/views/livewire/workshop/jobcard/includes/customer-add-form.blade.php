@@ -122,7 +122,7 @@
                 <div class="row g-2">
                     {{-- 🔹 Brand Dropdown --}}
                     <div class="col-md-3">
-                        <select class="form-select" wire:model.live="brand_name">
+                        <select class="form-select searchable-select" data-placeholder="Select Brand" wire:model.live="brand_name">
                             <option value="">Select Brand</option>
                             @foreach ($brands as $brand)
                                 <option value="{{ json_encode($brand) }}">
@@ -134,7 +134,7 @@
 
                     {{-- 🔹 Variant Dropdown --}}
                     <div class="col-md-3">
-                        <select class="form-select" wire:model.live="variant_name"
+                        <select class="form-select searchable-select" data-placeholder="Select Model" wire:model.live="variant_name"
                             @if(empty($variants)) disabled @endif>
                             <option value="">Select Model</option>
                             @foreach ($variants as $index => $variant)
@@ -147,7 +147,7 @@
 
                     {{-- 🔹 Year Dropdown --}}
                     <div class="col-md-3">
-                        <select class="form-select" wire:model.live="selected_year"
+                        <select class="form-select searchable-select" data-placeholder="Select Year" wire:model.live="selected_year"
                             @if(empty($years)) disabled @endif>
                             <option value="">Select Year</option>
                             @foreach ($years as $year)
@@ -160,7 +160,7 @@
 
                     {{-- 🔹 Modification Dropdown --}}
                     <div class="col-md-3">
-                        <select class="form-select" wire:model.live="search_vehicle"
+                        <select class="form-select searchable-select" data-placeholder="Select Modification" wire:model.live="search_vehicle"
                             @if(empty($modifications)) disabled @endif>
                             <option value="">Select Modification</option>
                             @foreach ($modifications as $index => $mod)

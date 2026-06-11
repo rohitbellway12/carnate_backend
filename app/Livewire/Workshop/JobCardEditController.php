@@ -2991,7 +2991,7 @@ public function updatedAccessoryData($id)
                 'final_discount' => 'required|numeric|min:0',
                 'final_paid' => 'required|numeric|min:0',
                 'advance' => 'required|numeric|max:' . $this->final_amount,
-                'balance_amount' => 'required|in:0|numeric',
+                'balance_amount' => $status == 3 ? 'required|in:0|numeric' : 'required|numeric',
             ];
 
             $this->validate(
@@ -3021,28 +3021,15 @@ public function updatedAccessoryData($id)
             $jobcard->transaction_number = $this->transaction_number;
 
 
-            $jobcard->status = 3;
-            // if ($status == 3 && empty($jobcard->shared_serial)) {
-            //     $companyCode = strtoupper(Str::of((string) ($this->user->branch_name ?? 'COM'))->substr(0, 3));
-            //     $seriesCode = (string) $this->workshopId;
-            //     $serialService = new SharedSerialService();
-            //     $claimed = $serialService->claimNext($this->workshopId, $companyCode, $seriesCode);
-            //     $jobcard->shared_serial = $claimed;
-            //    dd($jobcard,"one");
-            // }
-            //dd($jobcard,"two");
+            $jobcard->status = $status;
             $jobcard->save();
-            //dd($jobcard,"three");
-            $SendJobCardPdfMail = new SendJobCardPdfMail;
-            $SendJobCardPdfMail->jobcard_id = $jobcard->id;
-            $SendJobCardPdfMail->template_type = 2;
-            $SendJobCardPdfMail->save();
 
-            $this->dispatch('swal:toast', [
-                'type' => 'success',
-                'message' => 'Job-Card Update Succesfully!',
-            ]);
-            return redirect()->route('workshop.jobcard');
+            if ($status == 3) {
+                $SendJobCardPdfMail = new SendJobCardPdfMail;
+                $SendJobCardPdfMail->jobcard_id = $jobcard->id;
+                $SendJobCardPdfMail->template_type = 2;
+                $SendJobCardPdfMail->save();
+            }
         }
 
 

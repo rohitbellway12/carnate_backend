@@ -161,7 +161,7 @@
                             @endphp
                             <tr>
                                 <td><strong>#{{ $o->id }}</strong></td>
-                                <td><strong>{{ sparepartOrderReference($o) }}</strong></td>
+                                <td><strong>{{ sparepartOrderReference($o, $vendor) }}</strong></td>
                                 <td>{{ $o->order_date ? \Carbon\Carbon::parse($o->order_date)->format('d M Y, h:i A') : 'N/A' }}</td>
                                 <td><span class="badge bg-secondary">{{ $myItems->count() }} items</span></td>
                                 <td class="text-end fw-semibold">₹{{ number_format((float)$myItems->sum('total_amount'), 2) }}</td>
@@ -222,7 +222,7 @@
                             <div class="col-md-12">
                                 <h6 class="text-primary mb-2"><i class="bx bx-receipt"></i> Order Summary</h6>
                                 <p class="mb-1 text-dark"><strong>Order No.:</strong> #{{ $selectedOrder->id }}</p>
-                                <p class="mb-1 text-dark"><strong>Invoice No.:</strong> {{ sparepartOrderReference($selectedOrder) }}</p>
+                                <p class="mb-1 text-dark"><strong>Invoice No.:</strong> {{ sparepartOrderReference($selectedOrder, $vendor) }}</p>
                                 <p class="mb-1 text-dark"><strong>Order Date:</strong> {{ $selectedOrder->order_date ? \Carbon\Carbon::parse($selectedOrder->order_date)->format('d M Y, h:i A') : 'N/A' }}</p>
                                 <p class="mb-1 text-dark"><strong>Payment Status:</strong> 
                                     @switch($selectedOrder->payment_status)

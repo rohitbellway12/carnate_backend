@@ -5,6 +5,7 @@ namespace App\Livewire\Workshop;
 use App\Models\Appointment;
 use App\Models\Customer;
 use App\Models\Vehicle;
+use App\Services\RapidApiVehicleService;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\Layout;
@@ -47,7 +48,8 @@ class AppointmentController extends Component
     public $gst_no;
     public $show_company_name = false, $company_name, $cust_type = 0, $pincode;
     public $brand_name, $variant_name, $selected_year, $modificationId;
-    public $brands = [], $variants = [], $years = [], $modifications = [];
+    public $brands = [], $variants = [], $years = [], $modifications = [], $all_modifications = [];
+    public $selectedBrandId, $selectedModelId, $selectedEngineId;
     public $numberPlate, $chassisNo, $dateOfManufacturing, $engineNo, $pickup_address, $drop_address;
     public $driver_name, $driver_number, $policy_number, $insurance_name, $policy_expiry_date;
     public $selectedVehicleName;
@@ -154,37 +156,109 @@ class AppointmentController extends Component
     {
         $this->variant_name = '';
         $this->selected_year = '';
-        $this->modificationId = '';
-        $this->variants = \App\Models\Modification::where('brand_name', $value)
-            ->distinct()
-            ->pluck('variant_name')
-            ->filter()
-            ->values();
-        $this->years = [];
+        $this->search_vehicle = '';
+        $this->modificationId = null;
         $this->modifications = [];
+        $this->years = [];
+        $this->variants = [];
+        
+        if (empty($value)) {
+            return;
+        }
+        
+        $brandId = null;
+        $decodedValue = @json_decode($value, true);
+        
+        if ($decodedValue && is_array($decodedValue) && isset($decodedValue['id'])) {
+            $brandId = $decodedValue['id'];
+        }
+        
+        if (empty($brandId)) {
+            return;
+        }
+        
+        try {
+            $this->selectedBrandId = $brandId;
+            $vehicleService = new RapidApiVehicleService();
+            $modelsList = $vehicleService->getModelsList($brandId);
+            $this->variants = $modelsList->toArray();
+        } catch (\Exception $e) {
+            \Log::error('Error fetching models in AppointmentController: ' . $e->getMessage());
+            $this->variants = [];
+        }
     }
 
     public function updatedVariantName($value)
     {
         $this->selected_year = '';
-        $this->modificationId = '';
-        $this->years = \App\Models\Modification::where('brand_name', $this->brand_name)
-            ->where('variant_name', $value)
-            ->distinct()
-            ->pluck('year')
-            ->filter()
-            ->values();
+        $this->years = [];
         $this->modifications = [];
+        $this->all_modifications = [];
+        $this->search_vehicle = '';
+        $this->modificationId = null;
+        
+        if (empty($value) && $value !== '0' && $value !== 0) {
+            return;
+        }
+
+        $variant = $this->variants[$value] ?? null;
+        if ($variant) {
+            $modelId = $variant['id'] ?? null;
+            $modelName = $variant['name'] ?? null;
+            $modelYearFrom = $variant['modelYearFrom'] ?? null;
+            $modelYearTo = $variant['modelYearTo'] ?? null;
+            
+            if ($modelId && $modelYearFrom) {
+                $startYear = (int)substr($modelYearFrom, 0, 4);
+                $endYear = $modelYearTo ? (int)substr($modelYearTo, 0, 4) : (int)date('Y');
+                
+                $yearRange = [];
+                for ($year = $endYear; $year >= $startYear; $year--) {
+                    $yearRange[] = [
+                        'value' => $year,
+                        'label' => $year
+                    ];
+                }
+                $this->years = $yearRange;
+            }
+            
+            $this->selectedModelId = $modelId;
+            $this->search_vehicle = '';
+            $this->selectedVehicleName = $modelName;
+            $this->vehicle_id = $modelId;
+
+            try {
+                $vehicleService = new RapidApiVehicleService();
+                $typesList = $vehicleService->getVehicleTypesList($modelId);
+                $this->all_modifications = $typesList->toArray();
+            } catch (\Exception $e) {
+                \Log::error('Error fetching modifications in AppointmentController: ' . $e->getMessage());
+                $this->all_modifications = [];
+            }
+        }
     }
 
     public function updatedSelectedYear($value)
     {
-        $this->modificationId = '';
-        $this->modifications = \App\Models\Modification::where('brand_name', $this->brand_name)
-            ->where('variant_name', $this->variant_name)
-            ->where('year', $value)
-            ->distinct()
-            ->pluck('title', 'id');
+        $this->search_vehicle = '';
+        $this->modificationId = null;
+        $this->selectedVehicleName = '';
+        
+        if (empty($value) || empty($this->all_modifications)) {
+            $this->modifications = [];
+            return;
+        }
+        
+        $selectedYear = (int)$value;
+        
+        $this->modifications = collect($this->all_modifications)
+            ->filter(function($item) use ($selectedYear) {
+                $yearFrom = $item['yearFrom'] ?? 0;
+                $yearTo = $item['yearTo'] ?? date('Y');
+                return $selectedYear >= $yearFrom && $selectedYear <= $yearTo;
+            })
+            ->values()
+            ->toArray();
     }
 
     public function updatedModificationId($value)
@@ -220,21 +294,57 @@ class AppointmentController extends Component
 
     public function updatedSearchVehicle($id)
     {
-        $modificationId = \App\Models\Modification::find($id);
-
-        if ($modificationId) {
-            $data = array_filter([
-                $modificationId->brand_name ?? '',
-                $modificationId->variant_name ?? '',
-                $modificationId->year ?? '',
-                $modificationId->title ?? ''
-            ]);
-
-            $this->selectedVehicleName = implode(' ', $data);
-        } else {
+        if(empty($id)) {
             $this->selectedVehicleName = '';
+            $this->modificationId = null;
+            return;
         }
-        $this->modificationId = $modificationId;
+
+        $mod = collect($this->all_modifications)->firstWhere('id', $id);
+        
+        if($mod){
+            $brandName = '';
+            $brandDecoded = @json_decode($this->brand_name, true);
+            if ($brandDecoded && is_array($brandDecoded)) {
+                $brandName = $brandDecoded['name'] ?? '';
+            } else if (is_array($this->brand_name)) {
+                $brandName = $this->brand_name['name'] ?? '';
+            }
+            
+            if (empty($brandName) && $this->selectedBrandId) {
+                $brandName = collect($this->brands)->firstWhere('id', $this->selectedBrandId)['name'] ?? '';
+            }
+
+            $variantName = '';
+            if (isset($this->variants[$this->variant_name])) {
+                $variantName = $this->variants[$this->variant_name]['name'] ?? '';
+            }
+
+            $this->modificationId = (object)[
+                'id' => $mod['id'],
+                'brand_name' => $brandName,
+                'variant_name' => $variantName,
+                'year' => $this->selected_year,
+                'title' => $mod['name']
+            ];
+
+            $brand = $this->modificationId->brand_name ?? '';
+            $model = $this->modificationId->variant_name ?? '';
+            $modName = $this->modificationId->title ?? '';
+            
+            $yearRange = ($mod['yearFrom'] ?? '') . '-' . ($mod['yearTo'] ?? '');
+            $fuel = $mod['fuelType'] ? ' - ' . $mod['fuelType'] : '';
+
+            $this->selectedVehicleName = trim("$brand $model | $modName ($yearRange)$fuel");
+        } else {
+            $localMod = \App\Models\Modification::find($id);
+            if ($localMod) {
+                $this->modificationId = $localMod;
+                $this->selectedVehicleName = trim("{$localMod->brand_name} {$localMod->variant_name} | {$localMod->title} ({$localMod->year})");
+            } else {
+                $this->selectedVehicleName = '';
+            }
+        }
     }
 
     public function selectVehicleDetails($data)
@@ -265,12 +375,21 @@ class AppointmentController extends Component
     public function addCustomer()
     {
         $this->showCustomerModal = true;
-        $this->brands = \App\Models\Modification::distinct()->pluck('brand_name')->filter()->values();
+        
+        try {
+            $vehicleService = new RapidApiVehicleService();
+            $this->brands = collect($vehicleService->getBrandsList())->toArray();
+        } catch (\Exception $e) {
+            \Log::error('Error loading brands in AppointmentController: ' . $e->getMessage());
+            $this->brands = [];
+        }
+        
         $this->variants = [];
         $this->years = [];
         $this->modifications = [];
+        $this->all_modifications = [];
 
-        $this->reset('modificationId', 'show_company_name', 'cust_type', 'search_vehicle', 'selectedVehicleName', 'states', 'cities', 'name', 'lastname', 'mobile_no', 'address', 'insurance_name', 'policy_expiry_date', 'gst_no', 'country_id', 'state_id', 'city_id', 'email', 'birth_date', 'user_title', 'numberPlate', 'chassisNo', 'dateOfManufacturing', 'engineNo', 'pickup_address', 'drop_address', 'driver_name', 'driver_number', 'policy_number', 'brand_name', 'variant_name', 'selected_year');
+        $this->reset('modificationId', 'show_company_name', 'cust_type', 'search_vehicle', 'selectedVehicleName', 'states', 'cities', 'name', 'lastname', 'mobile_no', 'address', 'insurance_name', 'policy_expiry_date', 'gst_no', 'country_id', 'state_id', 'city_id', 'email', 'birth_date', 'user_title', 'numberPlate', 'chassisNo', 'dateOfManufacturing', 'engineNo', 'pickup_address', 'drop_address', 'driver_name', 'driver_number', 'policy_number', 'brand_name', 'variant_name', 'selected_year', 'selectedBrandId', 'selectedModelId', 'selectedEngineId');
     }
 
     public function openCustomerModal()
@@ -301,6 +420,14 @@ class AppointmentController extends Component
             'company_name.required_if' => 'The company name field is required.',
         ]);
 
+        if (empty($this->search_vehicle)) {
+            $this->dispatch('swal:toast', [
+                'type' => 'error',
+                'message' => 'Please select the complete Vehicle details (Modification)',
+            ]);
+            return;
+        }
+
         $customerSerch = Customer::where('mobile_no', $this->mobile_no)->where('user_id', $this->workshopId)->first();
 
         if (empty($customerSerch)) {
@@ -321,12 +448,46 @@ class AppointmentController extends Component
             $customer = $customerSerch;
         }
 
+        // Find or create local Modification
+        $makerType = \App\Models\MakerType::firstOrCreate(['title' => $this->modificationId->brand_name ?? ''], ['status' => 1]);
+        $maker = \App\Models\Maker::firstOrCreate(
+            ['title' => $this->modificationId->variant_name ?? '', 'maker_type_id' => $makerType->id],
+            ['status' => 1]
+        );
+
+        $mod = collect($this->all_modifications)->firstWhere('id', $this->search_vehicle);
+        $fuelType = $mod ? ($mod['fuelType'] ?? null) : null;
+        $typeEngineName = $mod ? ($mod['name'] ?? null) : null;
+        
+        $startYear = substr($mod['yearFrom'] ?? '', 0, 4);
+        $endYear = substr($mod['yearTo'] ?? '', 0, 4);
+        $yearRange = $startYear;
+        if (!empty($endYear)) {
+            $yearRange .= ' / ' . $endYear;
+        }
+
+        $localModification = \App\Models\Modification::updateOrCreate(
+            [
+                'brand_name' => $this->modificationId->brand_name ?? '',
+                'variant_name' => $this->modificationId->variant_name ?? '',
+                'title' => $this->modificationId->title ?? '',
+                'year' => $yearRange ?: ($this->selected_year ?? date('Y')),
+            ],
+            [
+                'engine_name' => $typeEngineName,
+                'fuel_type' => $fuelType,
+                'brand_id' => $makerType->id,
+                'variant_id' => $maker->id,
+                'status' => 1,
+            ]
+        );
+
         $vehicle = new Vehicle();
-        $vehicle->modification_id = $this->modificationId->id ?? null;
-        $vehicle->brand = $this->modificationId->brand_name ?? $this->brand_name;
-        $vehicle->variant = $this->modificationId->variant_name ?? $this->variant_name;
-        $vehicle->year = $this->modificationId->year ?? $this->selected_year;
-        $vehicle->modification = $this->modificationId->title ?? '';
+        $vehicle->modification_id = $localModification->id;
+        $vehicle->brand = $this->modificationId->brand_name ?? null;
+        $vehicle->variant = $this->modificationId->variant_name ?? null;
+        $vehicle->year = $this->selected_year ?? null;
+        $vehicle->modification = $this->modificationId->title ?? null;
         $vehicle->number_plate = $this->numberPlate;
         $vehicle->chassis_no = $this->chassisNo;
         $vehicle->date_of_manufacturing = $this->dateOfManufacturing;
