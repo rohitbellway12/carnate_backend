@@ -1,5 +1,5 @@
 <?php
-use App\Livewire\Sparepart\{ResetPasswordController,AccessoryController, CategoryController, CounterSaleController, CounterSaleEditController, PartsController, ToolsController,LubricantController, OrderController, UnitController, WithdrawController,ManageSparePartPermissions,ManageSparePartRoles,StaffSparePartController,PaidOrderController,Profile,NotificationController};
+use App\Livewire\Sparepart\{ResetPasswordController,AccessoryController, CategoryController, CounterSaleController, CounterSaleEditController, PartsController, ToolsController,LubricantController, OrderController, UnitController, WithdrawController,ManageSparePartPermissions,ManageSparePartRoles,StaffSparePartController,PaidOrderController,Profile,NotificationController, ExpenseCategoryController, ExpenseSupplierController, ExpensesReportController};
 
 use App\Livewire\Sparepart\Auth\Login;
 use App\Livewire\Sparepart\CounterSaleAddController;
@@ -25,6 +25,9 @@ Route::prefix('sparepart')->name('sparepart.')->group(function () {
         Route::get('logout', [Login::class, 'logout'])->name('logout');       
         Route::get('accessory', AccessoryController::class)->name('accessory');
         Route::get('parts', PartsController::class)->name('parts');
+        Route::get('parts/create', PartsController::class)->name('parts.create');
+        Route::get('parts/{id}/edit', PartsController::class)->name('parts.edit');
+        Route::get('parts/{id}/view', PartsController::class)->name('parts.view');
         Route::get('tools', ToolsController::class)->name('tools');
         Route::get('lubricants', LubricantController::class)->name('lubricants');
         Route::get('unit', UnitController::class)->name('unit');
@@ -60,6 +63,11 @@ Route::prefix('sparepart')->name('sparepart.')->group(function () {
         Route::get('get-notifications', [HomeController::class, 'getSparePartNotifications'])->name('get-notifications');
         Route::post('notifications/{id}/read', [HomeController::class, 'markSparePartNotificationAsRead'])->name('notifications.read');
 
+        // Expenses for sparepart vendors
+        Route::get('expenses', \App\Livewire\Sparepart\ExpensesController::class)->name('expenses');
+        Route::get('expense-category', \App\Livewire\Sparepart\ExpenseCategoryController::class)->name('expense.category');
+        Route::get('expense-supplier', \App\Livewire\Sparepart\ExpenseSupplierController::class)->name('expense.supplier');
+
         // Reports routes
         Route::get('report/orders', \App\Livewire\Sparepart\Report\OrdersReportController::class)->name('report.orders');
         Route::get('report/countersale', \App\Livewire\Sparepart\Report\CounterSalesReportController::class)->name('report.countersale');
@@ -67,5 +75,6 @@ Route::prefix('sparepart')->name('sparepart.')->group(function () {
         Route::get('report/stock', \App\Livewire\Sparepart\Report\StockReportController::class)->name('report.stock');
         Route::get('report/commission', \App\Livewire\Sparepart\Report\CommissionReportController::class)->name('report.commission');
         Route::get('report/salary', \App\Livewire\Sparepart\Report\SalaryReportController::class)->name('report.salary');
+        Route::get('report/expenses', \App\Livewire\Sparepart\ExpensesReportController::class)->name('report.expenses');
     });
 });

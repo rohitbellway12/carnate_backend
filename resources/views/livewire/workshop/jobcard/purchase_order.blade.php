@@ -50,7 +50,7 @@
 
                                         </td>
                                         <td>
-                                            <select class="form-control livewire-select2-dropdown"
+                                            <select class="form-control searchable-select"
                                                 wire:model.change="rows.{{ $index }}.item"
                                                 id="rows.{{ $index }}.item">
                                                 <option value="" selected disabled>-- Select Item --</option>

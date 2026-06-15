@@ -1,6 +1,6 @@
 <?php
 use App\Livewire\Workshop\{AddTocardController, ApiPartDetailsController, AppointmentController, AuthController, CustomerController, ResetPasswordController, EmployeeController, ExpensesController, StaffController,JobCardController,
-    JobCardAddController,JobCardEditController, PlanController,Select2Search,ManageRoles,ManagePermissions, PurchaseCartController,OrderController, PaidOrderController, VehicleSearchController,CounterSaleAddController,CounterSaleController,CounterSaleEditController,LabourChargeController, SalaryReportController, CustomersReportController, JobCardsReportController, StaffReportController, ExpensesReportController, InventoryReportController, NotificationController};
+    JobCardAddController,JobCardEditController, PlanController,Select2Search,ManageRoles,ManagePermissions, PurchaseCartController,OrderController, PaidOrderController, VehicleSearchController,CounterSaleAddController,CounterSaleController,CounterSaleEditController,LabourChargeController, SalaryReportController, CustomersReportController, JobCardsReportController, StaffReportController, ExpensesReportController, InventoryReportController, NotificationController, ExpenseCategoryController, ExpenseSupplierController};
 use App\Livewire\Workshop\Distributor\{AddDistributorController, DistributorController};
 use App\Livewire\Workshop\Auth\Login;
 use App\Livewire\Workshop\Dashboard;
@@ -34,6 +34,8 @@ Route::prefix('workshop')->name('workshop.')->group(function () {
         Route::get('purchaseorder', PurchaseOrderController::class)->name('purchaseorder');
         Route::get('stocks', ProductStockController::class)->name('productstock');
         Route::get('expenses', ExpensesController::class)->name('expenses');
+        Route::get('expense-category', ExpenseCategoryController::class)->name('expense.category');
+        Route::get('expense-supplier', ExpenseSupplierController::class)->name('expense.supplier');
         Route::get('manage-role', ManageRoles::class)->name('managerole');
         Route::get('manage-permission', ManagePermissions::class)->name('managepermission');
         Route::get('purchase-parts', VehicleSearchController::class)->name('vehicle_search');

@@ -1,7 +1,8 @@
 <div>
     <div class="modal @if ($showModal) show @endif" tabindex="-1"
         style="opacity:1; background-color:#0606068c; display:@if ($showModal) block @endif">
-        <div class="modal-dialog modal-lg">
+        <!-- Use a fullscreen modal on small devices for better usability -->
+        <div class="modal-dialog modal-lg modal-fullscreen-sm-down">
             <div class="modal-content">
                 <form wire:submit.prevent="{{ $add ? 'storeCustomer' : 'storeCustomer' }}">
                     <div class="modal-header">
@@ -109,7 +110,7 @@
         </div>
         @csrf
         <div class="row">
-            <div class="col-6">
+            <div class="col-12 col-md-6">
                 <div class="card h-100">
                     <div class="card-body">
                         <h6 class="text-center m-0">
@@ -117,9 +118,10 @@
                         </h6>
                         <hr>
                         <label for="customer-dropdown" class="form-label">Customer Name</label>
-                        <div class="input-group mb-3" wire:ignore.self>
-                            <select id="customer_name" wire:model="customer_name" class="form-select select2"
-                                data-property="customer_name">
+                        <!-- Responsive container for Customer select and Add button -->
+                        <div class="d-flex flex-column flex-md-row align-items-start gap-2 mb-3" wire:ignore.self>
+                            <select id="customer_name" wire:model="customer_name" class="form-select select2 w-100"
+                                data-property="customer_name" @disabled($is_walkin_customer)>
                                 <option value="">--Select Customer--</option>
                                 @foreach ($customers as $customer)
                                     <option value="{{ $customer->id }}">
@@ -127,15 +129,19 @@
                                 @endforeach
                             </select>
                             <button type="button"
-                                class="btn btn-outline-secondary text-light bg-primary fl margin-left-0"
-                                wire:click="addCustomer">
+                                class="btn btn-outline-secondary text-light bg-primary"
+                                wire:click="addCustomer" @disabled($is_walkin_customer)>
                                 {{ trans('+') }}
                             </button>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input type="checkbox" class="form-check-input" id="is_walkin_customer" wire:model.live="is_walkin_customer">
+                            <label class="form-check-label fw-bold" for="is_walkin_customer">Walk-in Customer</label>
                         </div>
                         @error('customer_name')
                             <div class="text-danger error">{{ $message }}</div>
                         @enderror
-                        @if (!empty($customer_data))
+                        @if (!empty($customer_data) && !$is_walkin_customer)
                             <p class="my-2" style="color: #0dcaf0;">Customer :-
                                 {{ @$customer_data->name }}</p>
                             <p class="my-2" style="color: #0dcaf0;">Mobile No. :- {{ @$customer_data->mobile_no }}
@@ -148,7 +154,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-6">
+            <div class="col-12 col-md-6">
                 <div class="card h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between">
@@ -158,18 +164,21 @@
                         <div class="row">
                             <div class="col-12">
 
-                                <div class="ulprofile">
-                                    <div class="input-group mt-2">
-                                        <span class="input-group-text">Counter Sale No.</span>
-                                        <input type="text" form="form-control" id="countersale_number"
-                                            wire:model="countersale_number" class="form-control bg-light" readonly
-                                            placeholder="Job-Card Number" aria-label="Job-Card Number">
-                                        <span class="input-group-text">Date</span>
-                                        <input type="text" class="form-control bg-light"
-                                            value="{{ now()->format('d-m-Y') }}" readonly placeholder="Date"
-                                            aria-label="Date">
+                                    <!-- Counter Sale No. and Date in a single responsive row -->
+                                    <div class="row g-2">
+                                        <div class="col-12 col-md-6 mb-2">
+                                            <label class="form-label">Counter Sale No.</label>
+                                            <input type="text" id="countersale_number"
+                                                wire:model="countersale_number" class="form-control bg-light" readonly
+                                                placeholder="Job-Card Number" aria-label="Job-Card Number">
+                                        </div>
+                                        <div class="col-12 col-md-6 mb-2">
+                                            <label class="form-label">Date</label>
+                                            <input type="text" class="form-control bg-light"
+                                                value="{{ now()->format('d-m-Y') }}" readonly placeholder="Date"
+                                                aria-label="Date">
+                                        </div>
                                     </div>
-                                </div>
                             </div>
                         </div>
 
@@ -186,9 +195,11 @@
                         <div class="row">
                             <div class="col-12">
 
-                                <div class="mt-4 table-view overflow-auto w-100" id="spare-table"
-                                    style="display: {{ $showTable == 2 ? 'block' : 'none' }}">
-                                    <table class="table table-bordered" id="spare-part-table">
+                                    <!-- Make the spare parts table responsive on small screens -->
+                                    <div class="mt-4 table-view overflow-auto w-100" id="spare-table"
+                                        style="display: {{ $showTable == 2 ? 'block' : 'none' }}">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered" id="spare-part-table">
                                         <thead>
                                             <tr>
                                                 <th>Particulars</th>
@@ -243,7 +254,7 @@
                                                     </td>
                                                 </tr>
                                             @endforeach
-                                        </tbody>
+                                            </tbody>
 
                                         <tfoot>
                                             <tr>
@@ -278,7 +289,8 @@
                                                 </td>
                                             </tr>
                                         </tfoot>
-                                    </table>
+                                        </table>
+                                        </div>
                                 </div>
                             </div>
                         </div>
@@ -287,7 +299,7 @@
                 </div>
             </div>
 
-            <div class="col-6 mt-4">
+            <div class="col-12 col-md-6 mt-4">
                 <div class="card h-100">
                     <div class="card-body">
                         <h6 class="text-center m-0">
@@ -298,7 +310,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-6 mt-4">
+            <div class="col-12 col-md-6 mt-4">
                 <div class="card h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between">
@@ -401,7 +413,8 @@
         document.addEventListener('livewire:init', () => {
 
             $('#spare_parts_data').select2({
-                placeholder: "Select Spare Part"
+                placeholder: "Select Spare Part",
+                width: '100%'
             }).on('change', function() {
                 let selectedValue = $(this).val();
                 @this.set('spare_parts_data', selectedValue);
@@ -423,6 +436,7 @@
 
             $('#customer_name').select2({
                 placeholder: "Select Customer",
+                width: '100%',
                 ajax: {
                     url: '/workshop/countercustomers',
                     dataType: 'json',
@@ -501,6 +515,12 @@
                     }
                 });
 
+            });
+
+            window.addEventListener('set-customer-select2', event => {
+                let data = event.detail[0] || event.detail;
+                let newOption = new Option(data.text, data.id, true, true);
+                $('#customer_name').append(newOption).trigger('change');
             });
         });
     </script>

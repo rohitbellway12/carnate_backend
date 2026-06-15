@@ -122,8 +122,8 @@
                                 <td>{{ $loop->iteration + ($items->currentPage()-1)*$items->perPage() }}</td>
                                 <td>{{ $e->bill_number }}</td>
                                 <td>{{ $e->date }}</td>
-                                <td>{{ $e->category->title ?? '-' }}</td>
-                                <td>{{ $e->supplier->name ?? '-' }}</td>
+                                <td>{{ $e->workshopCategory->title ?? '-' }}</td>
+                                <td>{{ $e->workshopSupplier->business_first_name ?? '-' }}</td>
                                 <td>₹{{ number_format((float)($e->total_amount ?? 0), 2) }}</td>
                                 <td>₹{{ number_format((float)($e->paid_amount ?? 0), 2) }}</td>
                                 <td>₹{{ number_format((float)($e->balance_amount ?? 0), 2) }}</td>
@@ -156,8 +156,8 @@
                             <div class="row g-2">
                                 <div class="col-md-3"><div class="text-muted small">Bill No</div><div>{{ $detail->bill_number }}</div></div>
                                 <div class="col-md-3"><div class="text-muted small">Date</div><div>{{ $detail->date }}</div></div>
-                                <div class="col-md-3"><div class="text-muted small">Category</div><div>{{ $detail->category->title ?? '-' }}</div></div>
-                                <div class="col-md-3"><div class="text-muted small">Supplier</div><div>{{ $detail->supplier->name ?? '-' }}</div></div>
+                                <div class="col-md-3"><div class="text-muted small">Category</div><div>{{ $detail->workshopCategory->title ?? '-' }}</div></div>
+                                <div class="col-md-3"><div class="text-muted small">Supplier</div><div>{{ $detail->workshopSupplier->business_first_name ?? '-' }}</div></div>
                                 <div class="col-md-3"><div class="text-muted small">Total</div><div>₹{{ number_format((float)($detail->total_amount ?? 0), 2) }}</div></div>
                                 <div class="col-md-3"><div class="text-muted small">Paid</div><div>₹{{ number_format((float)($detail->paid_amount ?? 0), 2) }}</div></div>
                                 <div class="col-md-3"><div class="text-muted small">Balance</div><div>₹{{ number_format((float)($detail->balance_amount ?? 0), 2) }}</div></div>

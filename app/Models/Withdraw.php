@@ -11,6 +11,7 @@ class Withdraw extends Model
         'amount',
         'status',
         'withdraw_date',
+        'transaction_id',
     ];
      
     public function SparePartVendor()

@@ -50,6 +50,28 @@ $logo = App\Models\WorkShopVendor::where('id', Auth::guard('workshop')->user()->
                                 </a>
                             </li>
                             @endif
+                              @if (@$user->hasPermissionTo('expenses-show'))
+                                <li>
+                                    <div class="dropdown w-100">
+                                        <a href="#">
+                                            <div class="parent-icon"><i class="fas fa-file-invoice fs-5"></i>
+                                            </div>
+                                            <div class="menu-title w-100">Expenses Master</div><span
+                                                class="fa fa-chevron-right dropdown-right-icon icon"> </span>
+                                        </a>
+                                        <div class="dropdown-content">
+                                            <a href="{{ route('workshop.expenses') }}" class="ms-3"
+                                                style="background-color: unset;">Expenses</a>
+                                            <a href="{{ route('workshop.expense.category') }}" class="ms-3"
+                                                style="background-color: unset;">Expense Category</a>
+                                            {{-- @if (@$user->hasPermissionTo('expense-supplier-show')) --}}
+                                            <a href="{{ route('workshop.expense.supplier') }}" class="ms-3"
+                                                style="background-color: unset;">Expense Supplier</a>
+                                            {{-- @endif --}}
+                                        </div>
+                                    </div>
+                                </li>
+                            @endif
                             @if (@$user->hasPermissionTo('counter-sale-show'))
                                 <li>
                                     <a href="{{ route('workshop.counter_sale') }}">
@@ -103,16 +125,7 @@ $logo = App\Models\WorkShopVendor::where('id', Auth::guard('workshop')->user()->
                                 </a>
                             </li>
                             @endif
-                            @if (@$user->hasPermissionTo('expenses-show'))
-                                <li>
-                                    <a href="{{ route('workshop.expenses') }}">
-                                        <div class="parent-icon"><i
-                                                class="fa-solid fa-clipboard-check margin-right-10px"></i>
-                                        </div>
-                                        <div class="menu-title">Expenses</div>
-                                    </a>
-                                </li>
-                            @endif
+                          
                             @if (@$user->hasPermissionTo('online-store-show'))
                                 <li>
                                     <a href="{{ route('workshop.vehicle_search') }}">

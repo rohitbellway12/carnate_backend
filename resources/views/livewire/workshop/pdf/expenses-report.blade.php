@@ -184,9 +184,9 @@
             <table>
                 <tr>
                     <th style="width:25%">Category</th>
-                    <td style="width:25%">{{ $e->category->title ?? '-' }}</td>
-                    <th style="width:25%">Supplier</th>
-                    <td>{{ $e->supplier->name ?? '-' }}</td>
+                    <td style="width:25%">{{ $e->workshopCategory->title ?? '-' }}</td>
+
+                    <td>{{ $e->workshopSupplier->business_first_name ?? '-' }}</td>
                 </tr>
                 <tr>
                     <th>Description</th>

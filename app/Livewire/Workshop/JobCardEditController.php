@@ -34,6 +34,8 @@ class JobCardEditController extends Component
 {
     use WithPagination, WithFileUploads;
 
+    // Listeners will be defined later (including vehicleAdded)
+
     protected $paginationTheme = 'bootstrap';
 
     public $isEdit = false, $showModal = false;
@@ -117,13 +119,53 @@ class JobCardEditController extends Component
     public $selectedItemsAccessoryVoice = [];
     public $selectedItemsWorkNoteVoice = [], $notes, $showCustomerVoiceInput = false, $customerVoiceInpt, $accessoryData, $showAccessoriesInput = false, $accessoriesVoicesInput, $showWorkNoteInput = false, $workNotInpt, $worknotVoicesData;
 
-    public $showLabourCharge, $title, $labour_type,  $outsource_price, $tax_type, $tax_percentage, $price, $total_price, $labourId, $extra_charges_dropdown, $customer_data;
+    public $showLabourCharge, $title, $labour_type, $outsource_price, $tax_type, $tax_percentage, $price, $total_price, $labourId, $extra_charges_dropdown, $customer_data;
+
+    /**
+     * Load modifications when the stock modal is opened.
+     */
+    public function updatedShowstock($value)
+    {
+        if ($value) {
+            // Load all modifications for the dropdown. This mirrors the logic used in the sparepart components.
+            $this->modifications = Modification::all();
+        }
+    }
+
+    /**
+     * Handle the vehicleAdded event from the VehicleSelector component.
+     * Reload the modifications list so the newly added vehicle appears in the dropdown.
+     */
+    public function vehicleAdded($modificationId)
+    {
+        // Refresh the modifications collection used in the stock order modal
+        $this->modifications = Modification::all();
+        // Optionally, pre-select the newly added modification
+        $this->suitable_for = array_merge($this->suitable_for ?? [], [$modificationId]);
+        $this->dispatch('swal:toast', [
+            'type' => 'success',
+            'message' => 'Vehicle added and available for selection.',
+        ]);
+    }
+
+    /**
+     * Remove a vehicle from the selected compatible vehicles list.
+     * $index corresponds to the position in the $suitable_for array.
+     */
+    public function removeCompatibleVehicle($index)
+    {
+        if (is_array($this->suitable_for) && array_key_exists($index, $this->suitable_for)) {
+            unset($this->suitable_for[$index]);
+            // Reindex array to keep numeric keys sequential
+            $this->suitable_for = array_values($this->suitable_for);
+        }
+    }
 
     public $puchase_price;
 
     //spare part purchase price
     public $purchase_price;
-    protected $listeners = ['delete', 'showModal', 'deleteDentImage', 'saveImage', 'closejobcard'];
+    protected $listeners = ['vehicleAdded', 'delete', 'showModal', 'deleteDentImage', 'saveImage', 'closejobcard'];
 
     protected $rules = [
         'name' => 'required|string',
@@ -193,7 +235,7 @@ class JobCardEditController extends Component
             } elseif ($gstType === 'include' && $gstPercentage > 0) {
                 // GST Include: GST is already included in the amount, extract GST
                 // $gstAmount = ($baseTotal * $gstPercentage) / (100 + $gstPercentage);
-                $gstAmount = ($baseTotal * $gstPercentage) /100;
+                $gstAmount = ($baseTotal * $gstPercentage) / 100;
                 $finalAmount = $baseTotal; // Amount already includes GST
             } else {
                 // No GST
@@ -210,7 +252,7 @@ class JobCardEditController extends Component
             } else {
                 // If GST is excluded: Product Cost = Selling Price + Cost Amount (GST)
                 // $productCost = round($finalAmount + $gstAmount, 2);
-                $productCost = round($finalAmount , 2);
+                $productCost = round($finalAmount, 2);
             }
 
             $this->extraCharges[] = [
@@ -221,14 +263,14 @@ class JobCardEditController extends Component
                 'amount' => $extracharge->amount,
                 'gst_type' => $extracharge->gst_type,
                 'gst_percentage' => $extracharge->gst,
-               'labour_type' => $extracharge->labour_type ?? null, // ✅ Add this
-    'outsource_price' => $extracharge->outsource_price ?? null,
-     'qty' => $extracharge->qty ?? 1,
-     'cost_amount' => $costAmount,
-     'product_cost' => $productCost,
+                'labour_type' => $extracharge->labour_type ?? null, // ✅ Add this
+                'outsource_price' => $extracharge->outsource_price ?? null,
+                'qty' => $extracharge->qty ?? 1,
+                'cost_amount' => $costAmount,
+                'product_cost' => $productCost,
 
             ];
-           // dd($this->extraCharges);
+            // dd($this->extraCharges);
         }
 
         // echo "<prE>";print_r($jobcardData->jobCardSpareParts->toArray());
@@ -265,7 +307,7 @@ class JobCardEditController extends Component
                 'tax_percentage' => $taxPercentage,
                 'total_amount' => $jobcardLabel->total_amount,
                 'discount' => $jobcardLabel->discount,
-                'discount_type'=>$jobcardLabel->discount_type,
+                'discount_type' => $jobcardLabel->discount_type,
                 'final_amount' => $jobcardLabel->final_amount,
             ];
 
@@ -351,7 +393,7 @@ class JobCardEditController extends Component
         $this->stock_sp_type = 0;
 
         // $this->supervisors = WorkShopVendor::where('user_type', 21)->where('parent_id', $this->workshopId)->get();
-         $this->supervisors = WorkShopVendor::where('parent_id', $this->workshopId)->get();
+        $this->supervisors = WorkShopVendor::where('parent_id', $this->workshopId)->get();
         // dd($this->supervisors);
         $this->mechanic = WorkShopVendor::where('user_type', 32)->where('parent_id', $this->workshopId)->get();
     }
@@ -519,19 +561,19 @@ class JobCardEditController extends Component
         if ($modId) {
             $items_purchase_query = $items_purchase_query->where(function ($query) use ($modId) {
                 $query->where('spare_parts.forAllVehicles', 1)
-                      ->orWhereExists(function ($subQuery) use ($modId) {
-                          $subQuery->select(DB::raw(1))
-                                   ->from('spare_part_vehicle_modifications')
-                                   ->whereRaw('spare_part_vehicle_modifications.spare_part_id = spare_parts.id')
-                                   ->where('spare_part_vehicle_modifications.vehicle_modification_id', $modId);
-                      });
+                    ->orWhereExists(function ($subQuery) use ($modId) {
+                        $subQuery->select(DB::raw(1))
+                            ->from('spare_part_vehicle_modifications')
+                            ->whereRaw('spare_part_vehicle_modifications.spare_part_id = spare_parts.id')
+                            ->where('spare_part_vehicle_modifications.vehicle_modification_id', $modId);
+                    });
             });
         }
 
         $items_purchase = $items_purchase_query->select(
-                'spare_parts.*',
-                DB::raw("spare_part_labels.title as label_title")
-            )
+            'spare_parts.*',
+            DB::raw("spare_part_labels.title as label_title")
+        )
             ->get();
 
         $this->items_purchase[$index] = $items_purchase;
@@ -712,8 +754,8 @@ class JobCardEditController extends Component
     {
         // $api_key = env('RAZORPAY_KEY');
         // $api_secret = env('RAZORPAY_SECRET');
-$api_key = config('services.razorpay.key');
-$api_secret = config('services.razorpay.secret');
+        $api_key = config('services.razorpay.key');
+        $api_secret = config('services.razorpay.secret');
 
         $api = new Api($api_key, $api_secret);
 
@@ -748,7 +790,7 @@ $api_secret = config('services.razorpay.secret');
         ]);
 
 
-        $purchaseTotal = array_sum(array_map(function($row) {
+        $purchaseTotal = array_sum(array_map(function ($row) {
             return ($row['quantity_purchase'] ?? 1) * ($row['price_purchase'] ?? 0);
         }, $this->rows));
 
@@ -766,7 +808,8 @@ $api_secret = config('services.razorpay.secret');
         // echo "<pre>";print_r($this->rows);die;
         foreach ($this->rows as $row) {
             $sparePart = SparePart::find($row['item']);
-            if (!$sparePart) continue;
+            if (!$sparePart)
+                continue;
 
             $userId = $sparePart->user_id;
 
@@ -798,9 +841,9 @@ $api_secret = config('services.razorpay.secret');
                 \App\Models\Notification::create([
                     'user_id' => $vendorId,
                     'order_id' => $order->id,
-                    'title'   => '🛒 New Order Received',
+                    'title' => '🛒 New Order Received',
                     'message' => "Workshop has placed a new order (Order #{$order->id}). Please review the order items and accept or decline them.",
-                    'sound'   => 'order.mp3',
+                    'sound' => 'order.mp3',
                 ]);
             }
         }
@@ -810,7 +853,7 @@ $api_secret = config('services.razorpay.secret');
 
     public function storePurchase()
     {
-        $purchaseTotal = array_sum(array_map(function($row) {
+        $purchaseTotal = array_sum(array_map(function ($row) {
             return ($row['quantity_purchase'] ?? 1) * ($row['price_purchase'] ?? 0);
         }, $this->rows));
 
@@ -828,7 +871,8 @@ $api_secret = config('services.razorpay.secret');
         $mergedData = [];
         foreach ($this->rows as $row) {
             $sparePart = SparePart::find($row['item']);
-            if (!$sparePart) continue;
+            if (!$sparePart)
+                continue;
 
             $userId = $sparePart->user_id;
 
@@ -887,7 +931,7 @@ $api_secret = config('services.razorpay.secret');
 
             $this->calculateTotals();
         }
- 
+
         if ($order->is_confim == 1) {
             $vendorIds = \App\Models\OrderItem::where('order_id', $order->id)
                 ->pluck('user_id')
@@ -897,9 +941,9 @@ $api_secret = config('services.razorpay.secret');
                 \App\Models\Notification::create([
                     'user_id' => $vendorId,
                     'order_id' => $order->id,
-                    'title'   => '🛒 New Order Received',
+                    'title' => '🛒 New Order Received',
                     'message' => "Workshop has placed a new order (Order #{$order->id}). Please review the order items and accept or decline them.",
-                    'sound'   => 'order.mp3',
+                    'sound' => 'order.mp3',
                 ]);
             }
         }
@@ -930,14 +974,14 @@ $api_secret = config('services.razorpay.secret');
             // 'stock_brand_name' => 'required',
             'stock_sellPrice' => 'required|numeric',
             'stock_buy_price' => 'required|numeric',
-            'stock_quantity'=> 'required|numeric',
+            'stock_quantity' => 'required|numeric',
             // 'stock_hsn_code'=> 'required',
             // 'stock_rack_no'=> 'required',
-            'stock_unit'=> 'required',
-            'stock_category'=> 'required',
-            'stock_tax_type'=> 'required',
-            'stock_tax_percentage'=> 'required|numeric',
-        ],[
+            'stock_unit' => 'required',
+            'stock_category' => 'required',
+            'stock_tax_type' => 'required',
+            'stock_tax_percentage' => 'required|numeric',
+        ], [
             'stock_itemName.required' => 'Stock Item Name is required',
             'stock_brand_name.required' => 'Brand Name is required',
             'stock_sellPrice.required' => 'Selling Price is required',
@@ -956,18 +1000,18 @@ $api_secret = config('services.razorpay.secret');
         ]);
 
         $categoryType = 0;
-        if($this->showTable == 2){
+        if ($this->showTable == 2) {
             $categoryType = 2;
-        }elseif ($this->showTable == 3){
+        } elseif ($this->showTable == 3) {
             $categoryType = 4;
-        }elseif ($this->showTable == 5){
+        } elseif ($this->showTable == 5) {
             $categoryType = 1;
         }
 
         $sparePartLabel = SparePartLabel::firstOrCreate(
             [
                 'title' => $this->stock_itemName,
-                'spare_part_type' =>$categoryType
+                'spare_part_type' => $categoryType
             ]
         );
 
@@ -997,24 +1041,24 @@ $api_secret = config('services.razorpay.secret');
             $productStock->user_id = Auth::guard('workshop')->user()->id;
             $productStock->label_id = $sparePartLabel->id;
             $productStock->category_id = $categoryType;
-            $productStock->buy_price =$this->stock_buy_price;
+            $productStock->buy_price = $this->stock_buy_price;
             // $productStock->price =$price;
-            $productStock->price =$sellingAmount;
+            $productStock->price = $sellingAmount;
             $productStock->stock = $this->stock_quantity;
             $productStock->brand = $this->stock_brand_name;
             $productStock->hsn_code = $this->stock_hsn_code;
             $productStock->rack_no = $this->stock_rack_no;
-             $productStock->part_number = $this->stock_part_number;
-              $productStock->self_stock = 1;
-            if($this->showTable == 5){
             $productStock->part_number = $this->stock_part_number;
+            $productStock->self_stock = 1;
+            if ($this->showTable == 5) {
+                $productStock->part_number = $this->stock_part_number;
             }
             $productStock->categories_id = $this->stock_category; // Assuming this is the correct field name
             $productStock->unit_id = $this->stock_unit;
             $productStock->forAllVehicles = $this->forAllVehicles ? 1 : 0;
             $productStock->tax_percentage = $this->stock_tax_percentage;
             $productStock->tax_type = $this->stock_tax_type;
-            if($this->showTable == 2){
+            if ($this->showTable == 2) {
                 $productStock->sp_type = $this->stock_sp_type;
             }
             $productStock->save();
@@ -1035,9 +1079,9 @@ $api_secret = config('services.razorpay.secret');
 
         $data = [
             'id' => $sparePartLabel->id,
-            'part_name' => $sparePartLabel->title . ' (Current Stock: ' .  $productStock->stock . ')',
+            'part_name' => $sparePartLabel->title . ' (Current Stock: ' . $productStock->stock . ')',
             'quantity' => 1,
-            'unit_price' =>$productStock->price,
+            'unit_price' => $productStock->price,
             'purchase_price' => $productStock->buy_price,
             'tax_type' => $productStock->tax_type ?? null,
             'tax_percentage' => $productStock->tax_percentage ?? null,
@@ -1090,7 +1134,7 @@ $api_secret = config('services.razorpay.secret');
 
         $this->calculateTotals();
 
-        $this->reset('stock_itemName', 'stock_brand_name', 'stock_sellPrice', 'stock_buy_price', 'stock_quantity', 'stock_hsn_code','stock_part_number', 'stock_rack_no', 'stock_unit', 'stock_category', 'stock_part_number', 'forAllVehicles', 'suitable_for','stock_tax_percentage','stock_tax_type');
+        $this->reset('stock_itemName', 'stock_brand_name', 'stock_sellPrice', 'stock_buy_price', 'stock_quantity', 'stock_hsn_code', 'stock_part_number', 'stock_rack_no', 'stock_unit', 'stock_category', 'stock_part_number', 'forAllVehicles', 'suitable_for', 'stock_tax_percentage', 'stock_tax_type');
         $this->resetErrorBag();
 
         $this->dispatch('swal:toast', [
@@ -1099,6 +1143,9 @@ $api_secret = config('services.razorpay.secret');
         ]);
 
         $this->showstock = false;
+        // Reset vehicle selection for next use
+        $this->suitable_for = [];
+        $this->forAllVehicles = false;
         $this->loadWorkshopStockDropdowns();
     }
 
@@ -1163,37 +1210,37 @@ $api_secret = config('services.razorpay.secret');
     // }
 
     public function recalculateSpareParts()
-{
-    foreach ($this->spareParts as $index => $part) {
-        $quantity = max(0, (int) ($part['quantity'] ?? 0));
-        $unitPrice = max(0, (float) ($part['unit_price'] ?? 0));
-        $discount = max(0, (float) ($part['discount'] ?? 0));
-        $discountType = $part['discount_type'] ?? 'fixed';
+    {
+        foreach ($this->spareParts as $index => $part) {
+            $quantity = max(0, (int) ($part['quantity'] ?? 0));
+            $unitPrice = max(0, (float) ($part['unit_price'] ?? 0));
+            $discount = max(0, (float) ($part['discount'] ?? 0));
+            $discountType = $part['discount_type'] ?? 'fixed';
 
-        $total = $quantity * $unitPrice;
-        $discountAmount = 0;
+            $total = $quantity * $unitPrice;
+            $discountAmount = 0;
 
-        if ($discountType === 'percent') {
-            $discountAmount = ($total * $discount) / 100;
-        } else {
-            $discountAmount = $discount;
+            if ($discountType === 'percent') {
+                $discountAmount = ($total * $discount) / 100;
+            } else {
+                $discountAmount = $discount;
+            }
+
+            $final = max(0, $total - $discountAmount);
+
+            $taxType = $part['tax_type'] ?? 'exclude';
+            $taxRate = (float) ($part['tax_percentage'] ?? 0);
+            $taxAmt = 0;
+            if ($taxType == 'exclude' && $taxRate > 0) {
+                $taxAmt = ($final * $taxRate) / 100;
+            }
+
+            $this->spareParts[$index]['total_amount'] = round($total, 2);
+            $this->spareParts[$index]['final_amount'] = round($final + $taxAmt, 2);
         }
 
-        $final = max(0, $total - $discountAmount);
-
-        $taxType = $part['tax_type'] ?? 'exclude';
-        $taxRate = (float)($part['tax_percentage'] ?? 0);
-        $taxAmt = 0;
-        if ($taxType == 'exclude' && $taxRate > 0) {
-            $taxAmt = ($final * $taxRate) / 100;
-        }
-
-        $this->spareParts[$index]['total_amount'] = round($total, 2);
-        $this->spareParts[$index]['final_amount'] = round($final + $taxAmt, 2);
+        $this->calculateTotals();
     }
-
-    $this->calculateTotals();
-}
 
 
     // public function recalculateLubes()
@@ -1212,30 +1259,30 @@ $api_secret = config('services.razorpay.secret');
     //     }
     // }
 
-  public function recalculateLubes()
-{
-    foreach ($this->lubes as $index => $lube) {
-        $quantity = $lube['quantity'] ?? 0;
-        $unitPrice = $lube['unit_price'] ?? 0;
-        $discount = $lube['discount'] ?? 0;
-        $discountType = $lube['discount_type'] ?? 'fixed';
+    public function recalculateLubes()
+    {
+        foreach ($this->lubes as $index => $lube) {
+            $quantity = $lube['quantity'] ?? 0;
+            $unitPrice = $lube['unit_price'] ?? 0;
+            $discount = $lube['discount'] ?? 0;
+            $discountType = $lube['discount_type'] ?? 'fixed';
 
-        $total = $quantity * $unitPrice;
+            $total = $quantity * $unitPrice;
 
-        if ($discountType === 'percent') {
-            $discountAmount = ($total * $discount) / 100;
-        } else {
-            $discountAmount = $discount;
+            if ($discountType === 'percent') {
+                $discountAmount = ($total * $discount) / 100;
+            } else {
+                $discountAmount = $discount;
+            }
+
+            $final = $total - $discountAmount;
+
+            $this->lubes[$index]['total_amount'] = round($total, 2);
+            $this->lubes[$index]['final_amount'] = round(max($final, 0), 2);
         }
 
-        $final = $total - $discountAmount;
-
-        $this->lubes[$index]['total_amount'] = round($total, 2);
-        $this->lubes[$index]['final_amount'] = round(max($final, 0), 2);
+        $this->calculateTotals(); // Optional: Recalculate overall totals if needed
     }
-
-    $this->calculateTotals(); // Optional: Recalculate overall totals if needed
-}
 
 
 
@@ -1255,130 +1302,130 @@ $api_secret = config('services.razorpay.secret');
     //     }
     // }
 
-public function recalculateAccessories()
-{
-    foreach ($this->accessoriess as $index => $accessory) {
-        $quantity = $accessory['quantity'] ?? 0;
-        $unitPrice = $accessory['unit_price'] ?? 0;
-        $discount = $accessory['discount'] ?? 0;
-        $discountType = $accessory['discount_type'] ?? 'fixed';
+    public function recalculateAccessories()
+    {
+        foreach ($this->accessoriess as $index => $accessory) {
+            $quantity = $accessory['quantity'] ?? 0;
+            $unitPrice = $accessory['unit_price'] ?? 0;
+            $discount = $accessory['discount'] ?? 0;
+            $discountType = $accessory['discount_type'] ?? 'fixed';
 
-        $total = $quantity * $unitPrice;
+            $total = $quantity * $unitPrice;
 
-        if ($discountType === 'percent') {
-            $discountAmount = ($total * $discount) / 100;
-        } else {
-            $discountAmount = $discount;
+            if ($discountType === 'percent') {
+                $discountAmount = ($total * $discount) / 100;
+            } else {
+                $discountAmount = $discount;
+            }
+
+            $final = $total - $discountAmount;
+
+            $this->accessoriess[$index]['total_amount'] = round($total, 2);
+            $this->accessoriess[$index]['final_amount'] = round(max($final, 0), 2);
         }
 
-        $final = $total - $discountAmount;
-
-        $this->accessoriess[$index]['total_amount'] = round($total, 2);
-        $this->accessoriess[$index]['final_amount'] = round(max($final, 0), 2);
+        $this->calculateTotals();
     }
 
-    $this->calculateTotals();
-}
 
+    public function recalculateExtraCharges()
+    {
+        $subtotal = 0;
 
-public function recalculateExtraCharges()
-{
-    $subtotal = 0;
+        foreach ($this->extraCharges as $index => $extracharges) {
+            $qty = isset($extracharges['qty']) ? (int) $extracharges['qty'] : 1;
+            $amount = isset($extracharges['amount']) ? (float) $extracharges['amount'] : 0;
+            $gstPercentage = isset($extracharges['gst_percentage']) ? (float) $extracharges['gst_percentage'] : 0;
+            $gstType = $extracharges['gst_type'] ?? 'exclude';
 
-    foreach ($this->extraCharges as $index => $extracharges) {
-        $qty = isset($extracharges['qty']) ? (int) $extracharges['qty'] : 1;
-        $amount = isset($extracharges['amount']) ? (float) $extracharges['amount'] : 0;
-        $gstPercentage = isset($extracharges['gst_percentage']) ? (float) $extracharges['gst_percentage'] : 0;
-        $gstType = $extracharges['gst_type'] ?? 'exclude';
+            $baseTotal = $qty * $amount;
+            $gstAmount = 0;
+            $finalAmount = 0;
 
-        $baseTotal = $qty * $amount;
-        $gstAmount = 0;
-        $finalAmount = 0;
+            if ($gstType === 'exclude' && $gstPercentage > 0) {
+                // GST Exclude: GST is added to base amount
+                $gstAmount = ($baseTotal * $gstPercentage) / 100;
+                $finalAmount = $baseTotal + $gstAmount;
+            } elseif ($gstType === 'include' && $gstPercentage > 0) {
+                // GST Include: GST is already included in the amount, extract GST
+                // $gstAmount = ($baseTotal * $gstPercentage) / (100 + $gstPercentage);
+                $gstAmount = ($baseTotal * $gstPercentage) / 100;
+                $finalAmount = $baseTotal; // Amount already includes GST
+            } else {
+                // No GST
+                $finalAmount = $baseTotal;
+            }
 
-        if ($gstType === 'exclude' && $gstPercentage > 0) {
-            // GST Exclude: GST is added to base amount
-            $gstAmount = ($baseTotal * $gstPercentage) / 100;
-            $finalAmount = $baseTotal + $gstAmount;
-        } elseif ($gstType === 'include' && $gstPercentage > 0) {
-            // GST Include: GST is already included in the amount, extract GST
-            // $gstAmount = ($baseTotal * $gstPercentage) / (100 + $gstPercentage);
-            $gstAmount = ($baseTotal * $gstPercentage) / 100;
-            $finalAmount = $baseTotal; // Amount already includes GST
-        } else {
-            // No GST
-            $finalAmount = $baseTotal;
+            // Calculate Cost Amount (GST amount) - This should show the GST amount
+            $this->extraCharges[$index]['cost_amount'] = round($gstAmount, 2);
+
+            // Calculate Product Cost based on GST type
+            if ($gstType === 'include') {
+                // If GST is included: Product Cost = Selling Price - Cost Amount (GST)
+                // $this->extraCharges[$index]['product_cost'] = round($finalAmount - $gstAmount, 2);
+                $this->extraCharges[$index]['product_cost'] = round($baseTotal - $gstAmount, 2);
+            } else {
+                // If GST is excluded: Product Cost = Selling Price + Cost Amount (GST)
+                // $this->extraCharges[$index]['product_cost'] = round($finalAmount + $gstAmount, 2);
+                // $this->extraCharges[$index]['product_cost'] = round($baseTotal + $gstAmount, 2);
+                $this->extraCharges[$index]['product_cost'] = round($baseTotal, 2);
+            }
+
+            // ✅ Charge now reflects the full row amount (qty * rate + GST)
+            $this->extraCharges[$index]['charge'] = round($finalAmount, 2);
+
+            // ✅ Also store base and final separately
+            $this->extraCharges[$index]['total_amount'] = round($baseTotal, 2);      // Without GST
+            $this->extraCharges[$index]['final_amount'] = round($finalAmount, 2);    // With GST
+
+            $subtotal += $finalAmount;
         }
 
-        // Calculate Cost Amount (GST amount) - This should show the GST amount
-        $this->extraCharges[$index]['cost_amount'] = round($gstAmount, 2);
-
-        // Calculate Product Cost based on GST type
-        if ($gstType === 'include') {
-            // If GST is included: Product Cost = Selling Price - Cost Amount (GST)
-            // $this->extraCharges[$index]['product_cost'] = round($finalAmount - $gstAmount, 2);
-            $this->extraCharges[$index]['product_cost'] = round($baseTotal - $gstAmount, 2);
-        } else {
-            // If GST is excluded: Product Cost = Selling Price + Cost Amount (GST)
-            // $this->extraCharges[$index]['product_cost'] = round($finalAmount + $gstAmount, 2);
-            // $this->extraCharges[$index]['product_cost'] = round($baseTotal + $gstAmount, 2);
-            $this->extraCharges[$index]['product_cost'] = round($baseTotal, 2);
-        }
-
-        // ✅ Charge now reflects the full row amount (qty * rate + GST)
-        $this->extraCharges[$index]['charge'] = round($finalAmount, 2);
-
-        // ✅ Also store base and final separately
-        $this->extraCharges[$index]['total_amount'] = round($baseTotal, 2);      // Without GST
-        $this->extraCharges[$index]['final_amount'] = round($finalAmount, 2);    // With GST
-
-        $subtotal += $finalAmount;
+        $this->subtotal = round($subtotal, 2);
     }
-
-    $this->subtotal = round($subtotal, 2);
-}
 
 
 
 
     //jobcardtotalcards
     public function calculateTotals()
-{
-    $this->recalculateExtraCharges();
+    {
+        $this->recalculateExtraCharges();
 
-    // Ensure purchase/tax meta is present on all item arrays (handles post-status changes)
-    $this->hydrateLineItemMeta();
+        // Ensure purchase/tax meta is present on all item arrays (handles post-status changes)
+        $this->hydrateLineItemMeta();
 
-    $this->totalAmount = 0;
-    $this->final_amount = 0;
+        $this->totalAmount = 0;
+        $this->final_amount = 0;
 
-    foreach ($this->spareParts as $part) {
-        $this->final_amount += (float) ($part['final_amount'] ?? 0);
+        foreach ($this->spareParts as $part) {
+            $this->final_amount += (float) ($part['final_amount'] ?? 0);
+        }
+
+        foreach ($this->lubes as $lube) {
+            $this->final_amount += (float) ($lube['final_amount'] ?? 0);
+        }
+
+        foreach ($this->accessoriess as $accessory) {
+            $this->final_amount += (float) ($accessory['final_amount'] ?? 0);
+        }
+
+        foreach ($this->extraCharges as $charge) {
+            $this->final_amount += (float) ($charge['final_amount'] ?? 0);
+        }
+
+        // Keep totalAmount aligned with the visible category totals (final amounts)
+        $this->totalAmount = $this->final_amount;
+        $final = max(0, $this->final_amount);
+        $advance = max(0, (float) ($this->advance ?? 0));
+
+        $this->hidden_balance_amount = max(0, $final - $advance);
+        $this->balance_amount = max(0, $final - $advance);
+
+        $this->final_paid = 0;
+        $this->final_discount = 0;
+
     }
-
-    foreach ($this->lubes as $lube) {
-        $this->final_amount += (float) ($lube['final_amount'] ?? 0);
-    }
-
-    foreach ($this->accessoriess as $accessory) {
-        $this->final_amount += (float) ($accessory['final_amount'] ?? 0);
-    }
-
-    foreach ($this->extraCharges as $charge) {
-        $this->final_amount += (float) ($charge['final_amount'] ?? 0);
-    }
-
-    // Keep totalAmount aligned with the visible category totals (final amounts)
-    $this->totalAmount = $this->final_amount;
-    $final = max(0, $this->final_amount);
-    $advance = max(0, (float) ($this->advance ?? 0));
-
-    $this->hidden_balance_amount = max(0, $final - $advance);
-    $this->balance_amount = max(0, $final - $advance);
-
-    $this->final_paid = 0;
-    $this->final_discount = 0;
-
-}
 
 
     public function updatedAdvance($value)
@@ -1408,197 +1455,197 @@ public function recalculateExtraCharges()
     }
 
 
-public function updatedSparePartsData($id)
-{
-    $price = $this->spare_parts_price;
+    public function updatedSparePartsData($id)
+    {
+        $price = $this->spare_parts_price;
 
-    $labels = SparePartLabel::with([
-        'productStocks' => function ($qry) use ($price) {
-            $qry->where('price', $price);
+        $labels = SparePartLabel::with([
+            'productStocks' => function ($qry) use ($price) {
+                $qry->where('price', $price);
+            }
+        ])->find($id);
+
+        $defaultRow = [
+            'id' => $id,
+            'quantity' => 1,
+            'unit_price' => $price,
+            'purchase_price' => 0,
+            'tax_type' => null,
+            'tax_percentage' => null,
+            'discount' => 0,
+            'discount_type' => 'fixed', // default is fixed
+        ];
+
+        if (empty($labels->productStocks->toArray()) || $labels->productStocks[0]->stock <= 0) {
+            $this->dispatch('swal:toast', [
+                'type' => 'error',
+                'message' => 'This part is out of stock!',
+            ]);
+            $this->spare_parts_data = "";
+            return;
         }
-    ])->find($id);
 
-    $defaultRow = [
-        'id' => $id,
-        'quantity' => 1,
-        'unit_price' => $price,
-        'purchase_price' => 0,
-        'tax_type' => null,
-        'tax_percentage' => null,
-        'discount' => 0,
-        'discount_type' => 'fixed', // default is fixed
-    ];
+        $stock = $labels->productStocks[0];
+        $defaultRow['part_name'] = $labels->title . ' (Current Stock: ' . $stock->stock . ')';
+        $defaultRow['purchase_price'] = $stock->buy_price ?? 0;
+        $defaultRow['tax_type'] = $stock->tax_type ?? null;
+        $defaultRow['tax_percentage'] = $stock->tax_percentage ?? null;
 
-    if (empty($labels->productStocks->toArray()) || $labels->productStocks[0]->stock <= 0) {
-        $this->dispatch('swal:toast', [
-            'type' => 'error',
-            'message' => 'This part is out of stock!',
-        ]);
-        $this->spare_parts_data = "";
-        return;
-    }
+        $total = $defaultRow['quantity'] * $defaultRow['unit_price'];
+        $discount = 0;
 
-    $stock = $labels->productStocks[0];
-    $defaultRow['part_name'] = $labels->title . ' (Current Stock: ' . $stock->stock . ')';
-    $defaultRow['purchase_price'] = $stock->buy_price ?? 0;
-    $defaultRow['tax_type'] = $stock->tax_type ?? null;
-    $defaultRow['tax_percentage'] = $stock->tax_percentage ?? null;
-
-    $total = $defaultRow['quantity'] * $defaultRow['unit_price'];
-    $discount = 0;
-
-    if ($defaultRow['discount_type'] === 'percent') {
-        $discount = ($total * $defaultRow['discount']) / 100;
-    } else {
-        $discount = $defaultRow['discount']; // since it's fixed
-    }
-
-    $final = $total - $discount;
-
-    $taxType = $defaultRow['tax_type'] ?? 'exclude';
-    $taxRate = (float)($defaultRow['tax_percentage'] ?? 0);
-    $taxAmt = 0;
-    if ($taxType == 'exclude' && $taxRate > 0) {
-        $taxAmt = ($final * $taxRate) / 100;
-    }
-
-    $defaultRow['total_amount'] = round($total, 2);
-    $defaultRow['final_amount'] = round(max($final + $taxAmt, 0), 2);
-
-    $this->spareParts[] = $defaultRow;
-
-    $this->dispatch('swal:toast', [
-        'type' => 'success',
-        'message' => 'Spare Part Row added Successfully!',
-    ]);
-
-    $this->calculateTotals();
-}
-
-
-
-public function updatedLubesData($id)
-{
-    $price = $this->lubes_data_price;
-
-    $labels = SparePartLabel::with([
-        'productStocks' => function ($qry) use ($price) {
-            $qry->where('price', $price);
+        if ($defaultRow['discount_type'] === 'percent') {
+            $discount = ($total * $defaultRow['discount']) / 100;
+        } else {
+            $discount = $defaultRow['discount']; // since it's fixed
         }
-    ])->find($id);
 
-    $defaultRow = [
-        'id' => $id,
-        'quantity' => 1,
-        'unit_price' => $price,
-        'purchase_price' => 0,
-        'tax_type' => null,
-        'tax_percentage' => null,
-        'discount' => 0,
-        'discount_type' => 'fixed', // default discount type
-    ];
+        $final = $total - $discount;
 
-    if (empty($labels->productStocks->toArray()) || $labels->productStocks[0]->stock <= 0) {
+        $taxType = $defaultRow['tax_type'] ?? 'exclude';
+        $taxRate = (float) ($defaultRow['tax_percentage'] ?? 0);
+        $taxAmt = 0;
+        if ($taxType == 'exclude' && $taxRate > 0) {
+            $taxAmt = ($final * $taxRate) / 100;
+        }
+
+        $defaultRow['total_amount'] = round($total, 2);
+        $defaultRow['final_amount'] = round(max($final + $taxAmt, 0), 2);
+
+        $this->spareParts[] = $defaultRow;
+
         $this->dispatch('swal:toast', [
-            'type' => 'error',
-            'message' => 'This lube is out of stock!',
+            'type' => 'success',
+            'message' => 'Spare Part Row added Successfully!',
         ]);
+
+        $this->calculateTotals();
+    }
+
+
+
+    public function updatedLubesData($id)
+    {
+        $price = $this->lubes_data_price;
+
+        $labels = SparePartLabel::with([
+            'productStocks' => function ($qry) use ($price) {
+                $qry->where('price', $price);
+            }
+        ])->find($id);
+
+        $defaultRow = [
+            'id' => $id,
+            'quantity' => 1,
+            'unit_price' => $price,
+            'purchase_price' => 0,
+            'tax_type' => null,
+            'tax_percentage' => null,
+            'discount' => 0,
+            'discount_type' => 'fixed', // default discount type
+        ];
+
+        if (empty($labels->productStocks->toArray()) || $labels->productStocks[0]->stock <= 0) {
+            $this->dispatch('swal:toast', [
+                'type' => 'error',
+                'message' => 'This lube is out of stock!',
+            ]);
+            $this->lubes_data = "";
+            return;
+        }
+
+        $stock = $labels->productStocks[0];
+        $defaultRow['part_name'] = $labels->title . ' (Current Stock: ' . $stock->stock . ')';
+        $defaultRow['purchase_price'] = $stock->buy_price ?? 0;
+        $defaultRow['tax_type'] = $stock->tax_type ?? null;
+        $defaultRow['tax_percentage'] = $stock->tax_percentage ?? null;
+
+        // Calculate total and final amount based on discount type
+        $total = $defaultRow['quantity'] * $defaultRow['unit_price'];
+        $discount = 0;
+
+        if ($defaultRow['discount_type'] === 'percent') {
+            $discount = ($total * $defaultRow['discount']) / 100;
+        } else {
+            $discount = $defaultRow['discount']; // fixed discount
+        }
+
+        $final = $total - $discount;
+
+        $defaultRow['total_amount'] = round($total, 2);
+        $defaultRow['final_amount'] = round(max($final, 0), 2);
+
+        $this->lubes[] = $defaultRow;
+
+        $this->dispatch('swal:toast', [
+            'type' => 'success',
+            'message' => 'Lubes Row added Successfully!',
+        ]);
+
         $this->lubes_data = "";
-        return;
+        $this->calculateTotals();
     }
 
-    $stock = $labels->productStocks[0];
-    $defaultRow['part_name'] = $labels->title . ' (Current Stock: ' . $stock->stock . ')';
-    $defaultRow['purchase_price'] = $stock->buy_price ?? 0;
-    $defaultRow['tax_type'] = $stock->tax_type ?? null;
-    $defaultRow['tax_percentage'] = $stock->tax_percentage ?? null;
 
-    // Calculate total and final amount based on discount type
-    $total = $defaultRow['quantity'] * $defaultRow['unit_price'];
-    $discount = 0;
+    public function updatedAccessoryData($id)
+    {
+        $price = $this->accessory_data_price;
 
-    if ($defaultRow['discount_type'] === 'percent') {
-        $discount = ($total * $defaultRow['discount']) / 100;
-    } else {
-        $discount = $defaultRow['discount']; // fixed discount
-    }
+        $labels = SparePartLabel::with([
+            'productStocks' => function ($qry) use ($price) {
+                $qry->where('price', $price);
+            }
+        ])->find($id);
 
-    $final = $total - $discount;
+        $defaultRow = [
+            'id' => $id,
+            'quantity' => 1,
+            'unit_price' => $price,
+            'purchase_price' => 0,
+            'tax_type' => null,
+            'tax_percentage' => null,
+            'discount' => 0,
+            'discount_type' => 'fixed', // default discount type
+        ];
 
-    $defaultRow['total_amount'] = round($total, 2);
-    $defaultRow['final_amount'] = round(max($final, 0), 2);
-
-    $this->lubes[] = $defaultRow;
-
-    $this->dispatch('swal:toast', [
-        'type' => 'success',
-        'message' => 'Lubes Row added Successfully!',
-    ]);
-
-    $this->lubes_data = "";
-    $this->calculateTotals();
-}
-
-
-public function updatedAccessoryData($id)
-{
-    $price = $this->accessory_data_price;
-
-    $labels = SparePartLabel::with([
-        'productStocks' => function ($qry) use ($price) {
-            $qry->where('price', $price);
+        if (empty($labels->productStocks->toArray()) || $labels->productStocks[0]->stock <= 0) {
+            $this->dispatch('swal:toast', [
+                'type' => 'error',
+                'message' => 'This accessory is out of stock!',
+            ]);
+            $this->accessory_data = "";
+            return;
         }
-    ])->find($id);
 
-    $defaultRow = [
-        'id' => $id,
-        'quantity' => 1,
-        'unit_price' => $price,
-        'purchase_price' => 0,
-        'tax_type' => null,
-        'tax_percentage' => null,
-        'discount' => 0,
-        'discount_type' => 'fixed', // default discount type
-    ];
+        $stock = $labels->productStocks[0];
+        $defaultRow['part_name'] = $labels->title . ' (Current Stock: ' . $stock->stock . ')';
+        $defaultRow['purchase_price'] = $stock->buy_price ?? 0;
+        $defaultRow['tax_type'] = $stock->tax_type ?? null;
+        $defaultRow['tax_percentage'] = $stock->tax_percentage ?? null;
 
-    if (empty($labels->productStocks->toArray()) || $labels->productStocks[0]->stock <= 0) {
+        // Calculate totals
+        $total = $defaultRow['quantity'] * $defaultRow['unit_price'];
+
+        if ($defaultRow['discount_type'] === 'percent') {
+            $discount = ($total * $defaultRow['discount']) / 100;
+        } else {
+            $discount = $defaultRow['discount'];
+        }
+
+        $final = $total - $discount;
+
+        $defaultRow['total_amount'] = round($total, 2);
+        $defaultRow['final_amount'] = round(max($final, 0), 2);
+
+        $this->accessoriess[] = $defaultRow;
+
         $this->dispatch('swal:toast', [
-            'type' => 'error',
-            'message' => 'This accessory is out of stock!',
+            'type' => 'success',
+            'message' => 'Accessory Row added Successfully!',
         ]);
-        $this->accessory_data = "";
-        return;
+
+        $this->calculateTotals();
     }
-
-    $stock = $labels->productStocks[0];
-    $defaultRow['part_name'] = $labels->title . ' (Current Stock: ' . $stock->stock . ')';
-    $defaultRow['purchase_price'] = $stock->buy_price ?? 0;
-    $defaultRow['tax_type'] = $stock->tax_type ?? null;
-    $defaultRow['tax_percentage'] = $stock->tax_percentage ?? null;
-
-    // Calculate totals
-    $total = $defaultRow['quantity'] * $defaultRow['unit_price'];
-
-    if ($defaultRow['discount_type'] === 'percent') {
-        $discount = ($total * $defaultRow['discount']) / 100;
-    } else {
-        $discount = $defaultRow['discount'];
-    }
-
-    $final = $total - $discount;
-
-    $defaultRow['total_amount'] = round($total, 2);
-    $defaultRow['final_amount'] = round(max($final, 0), 2);
-
-    $this->accessoriess[] = $defaultRow;
-
-    $this->dispatch('swal:toast', [
-        'type' => 'success',
-        'message' => 'Accessory Row added Successfully!',
-    ]);
-
-    $this->calculateTotals();
-}
 
 
     public function updatedExtraChargesDropdown($id)
@@ -1646,18 +1693,18 @@ public function updatedAccessoryData($id)
                 'label' => $labels->title,
                 // 'charge' => number_format($labels->total, 2),
                 // 'charge' => number_format((float) $labels->total, 2),
-                 'charge' => (float) $labels->total,
+                'charge' => (float) $labels->total,
                 'amount' => $labels->price,
                 'gst_type' => $labels->gst_type,
                 'gst_percentage' => $labels->gst,
                 // 'charge_type' => 1,
                 'mechanic_id' => '',
-                 'labour_type' => $labels->labour_type, // <-- must be set
-    'charge_type' => $labels->labour_type === 'outsource' ? 2 : 1,      // ✅ added
-            'outsource_price' => $labels->outsource_price,
-            'qty' => 1,
-            'cost_amount' => $costAmount,
-            'product_cost' => $productCost,
+                'labour_type' => $labels->labour_type, // <-- must be set
+                'charge_type' => $labels->labour_type === 'outsource' ? 2 : 1,      // ✅ added
+                'outsource_price' => $labels->outsource_price,
+                'qty' => 1,
+                'cost_amount' => $costAmount,
+                'product_cost' => $productCost,
             ];
 
             $this->dispatch('swal:toast', [
@@ -1715,12 +1762,13 @@ public function updatedAccessoryData($id)
         }
     }
 
-    public function addStockRows()
+    public function addStockRows($type = 2)
     {
         $this->resetErrorBag();
         $this->showPurchase = false;
         $this->isPurchase = false;
         $this->showstock = true;
+        $this->showTable = $type;
         $this->units = Unit::all();
         $this->categories = Category::all();
         $this->modifications = Modification::where('status', 1)->get();
@@ -2083,33 +2131,34 @@ public function updatedAccessoryData($id)
         $this->dispatch('swal:toast', ['type' => 'success', 'title' => 'Accessories added successfully']);
     }
 
-      public function updateSelectedItemsWorkNotesVoice($value){
-        $selectedValue[] =  $value;
+    public function updateSelectedItemsWorkNotesVoice($value)
+    {
+        $selectedValue[] = $value;
         $this->workVoices = array_merge($selectedValue, $this->workVoices);
-            $this->workVoices = array_filter($this->workVoices, function($value) {
-                return !empty($value);
-            });
-            $this->workVoices = array_unique(array_values($this->workVoices));
+        $this->workVoices = array_filter($this->workVoices, function ($value) {
+            return !empty($value);
+        });
+        $this->workVoices = array_unique(array_values($this->workVoices));
 
-            JobCardsInspection::where('jobcard_number', $this->jobcardNumbers)
-        ->where('is_customer_voice', 0)
-        ->delete();
-            foreach($this->workVoices as $value){
+        JobCardsInspection::where('jobcard_number', $this->jobcardNumbers)
+            ->where('is_customer_voice', 0)
+            ->delete();
+        foreach ($this->workVoices as $value) {
 
-                JobCardsInspection::create([
-                    'jobcard_number' => $this->jobcardNumbers,
-                    'customer_voice' => $value,
-                    'is_customer_voice' => 0,
-                    'user_id' => Auth::guard('workshop')->user()->id,
-                ]);
-            }
+            JobCardsInspection::create([
+                'jobcard_number' => $this->jobcardNumbers,
+                'customer_voice' => $value,
+                'is_customer_voice' => 0,
+                'user_id' => Auth::guard('workshop')->user()->id,
+            ]);
+        }
 
-            $this->dispatch('swal:toast', ['type' => 'success', 'title' => 'Voice added successfully']);
-            $cardInspirationCountWorkNotes = JobCardsInspection::where('jobcard_number', $this->jobcardNumbers)
+        $this->dispatch('swal:toast', ['type' => 'success', 'title' => 'Voice added successfully']);
+        $cardInspirationCountWorkNotes = JobCardsInspection::where('jobcard_number', $this->jobcardNumbers)
             ->where('is_customer_voice', 0)
             ->count();
-           $this->workNoteCount = $cardInspirationCountWorkNotes;
-            $this->fetchWorkNoteVoicesData();
+        $this->workNoteCount = $cardInspirationCountWorkNotes;
+        $this->fetchWorkNoteVoicesData();
     }
 
     public function removeAccessorieField($index)
@@ -3051,22 +3100,22 @@ public function updatedAccessoryData($id)
         // }
         $customMessages = customErrorMsg();
 
-// Conditionally add mechanic_id validation for In House charges
-foreach ($this->extraCharges as $key => $charge) {
-    if (isset($charge['charge_type']) && $charge['charge_type'] == 1) { // 1 = In House
-        $valArr["extraCharges.$key.mechanic_id"] = 'required';
-    }
-}
+        // Conditionally add mechanic_id validation for In House charges
+        foreach ($this->extraCharges as $key => $charge) {
+            if (isset($charge['charge_type']) && $charge['charge_type'] == 1) { // 1 = In House
+                $valArr["extraCharges.$key.mechanic_id"] = 'required';
+            }
+        }
 
-try {
-    $validatedData = $this->validate($valArr, $customMessages);
-} catch (\Illuminate\Validation\ValidationException $e) {
-    $errorMessage = $e->validator->errors()->first();
-    $this->dispatch('toastr-error', [
-        'message' => $errorMessage,
-    ]);
-    return;
-}
+        try {
+            $validatedData = $this->validate($valArr, $customMessages);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $errorMessage = $e->validator->errors()->first();
+            $this->dispatch('toastr-error', [
+                'message' => $errorMessage,
+            ]);
+            return;
+        }
 
 
         $items = array_merge(
@@ -3104,10 +3153,10 @@ try {
             array_column($this->accessoriess, 'discount'),
         );
 
-          $discountType = array_merge(
+        $discountType = array_merge(
             array_column($this->spareParts, 'discount_type'),
-         array_column($this->lubes, 'discount_type'),
-               array_column($this->accessoriess, 'discount_type'),
+            array_column($this->lubes, 'discount_type'),
+            array_column($this->accessoriess, 'discount_type'),
         );
 
         $finalAmount = array_merge(
@@ -3235,7 +3284,7 @@ try {
                     foreach ($items as $itemKey => $itemValue) {
                         $sparePart = SparePart::where('label_id', $itemValue)->first();
                         $labelName = SparePartLabel::select('title')->find($itemValue);
-            $item = new JobCardSparePart;
+                        $item = new JobCardSparePart;
                         $item->jobcard_id = $jobcard->id;
                         $item->stock_label_id = $itemValue;
                         // product_stock_id is not applicable when using spare_parts stock; set null
@@ -3269,8 +3318,9 @@ try {
                             if (property_exists($item, 'tax_percentage') && ($item->tax_percentage === null || $item->tax_percentage === '')) {
                                 $item->tax_percentage = $metaPart->tax_percentage ?? ($metaStock->tax_percentage ?? null);
                             }
-                        } catch (\Throwable $e) { /* ignore */ }
-                        
+                        } catch (\Throwable $e) { /* ignore */
+                        }
+
                         $item->save();
                     }
                 }
@@ -3294,10 +3344,10 @@ try {
                     $extraCharge->amount = $charge['amount'];
                     $extraCharge->gst_type = $charge['gst_type'];
                     $extraCharge->gst = $charge['gst_percentage'];
-                      $extraCharge->outsource_price = $charge['charge_type'] == 2 ? ($charge['outsource_price'] ?? 0) : null;
-                        $extraCharge->qty = isset($charge['qty']) ? (int) $charge['qty'] : 1;
+                    $extraCharge->outsource_price = $charge['charge_type'] == 2 ? ($charge['outsource_price'] ?? 0) : null;
+                    $extraCharge->qty = isset($charge['qty']) ? (int) $charge['qty'] : 1;
 
-                        //dd($extraCharge);
+                    //dd($extraCharge);
                     $extraCharge->save();
                 }
             }
@@ -3467,7 +3517,7 @@ try {
         } elseif ($this->tax_type == 'exclude' && $taxPercentage) {
             $tax = ($sellingAmount * $taxPercentage) / 100;
             $price = $sellingAmount + $tax;
-           // dd($price);
+            // dd($price);
         } else {
             $price = $sellingAmount;
         }
@@ -3527,30 +3577,30 @@ try {
         }
     }
 
-//     private function calculatePrice()
+    //     private function calculatePrice()
 // {
 //     $basePrice = 0;
 
-//     if ($this->labour_type === 'inhouse') {
+    //     if ($this->labour_type === 'inhouse') {
 //         $basePrice = floatval($this->price);
 //     } elseif ($this->labour_type === 'outsource') {
 //         $basePrice = floatval($this->price) + floatval($this->outsource_price);
 //     }
 
-//     $taxPercentage = floatval($this->tax_percentage);
+    //     $taxPercentage = floatval($this->tax_percentage);
 //     $total = $basePrice;
 
-//     if ($this->tax_type === 'exclude' && $taxPercentage > 0) {
+    //     if ($this->tax_type === 'exclude' && $taxPercentage > 0) {
 //         $tax = ($basePrice * $taxPercentage) / 100;
 //         $total += $tax;
 //     }
 
-//     // If tax is included, we assume the price already contains it
+    //     // If tax is included, we assume the price already contains it
 //     $this->total_price = round($total, 2);
 // }
 
 
-//     public function storelabourcharge()
+    //     public function storelabourcharge()
 //     {
 // // dd("jdjf");
 //         $validate = [
@@ -3559,9 +3609,9 @@ try {
 //         ];
 
 
-//         $this->validate($validate);
+    //         $this->validate($validate);
 
-//         $staff = LabourCharge::create([
+    //         $staff = LabourCharge::create([
 //             'title' => $this->title,
 //             'price' => $this->price,
 //             'gst' => $this->tax_percentage,
@@ -3571,53 +3621,53 @@ try {
 //             'status' => 1,
 //         ]);
 
-//         $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Labour change added successfully!']);
+    //         $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Labour change added successfully!']);
 //         $this->reset('title', 'price', 'tax_percentage', 'tax_type', 'total_price');
 
-//         $this->updatedExtraChargesDropdown($staff->id);
+    //         $this->updatedExtraChargesDropdown($staff->id);
 //         $this->showLabourCharge = false;
 //     }
 
-public function storelabourcharge()
-{
-    // dd($this->all());
-    $rules = [
-        'title' => 'required|string',
-        'labour_type' => 'required|in:inhouse,outsource',
-        'price' => 'required|numeric|min:1',
-        'tax_type' => 'nullable|in:include,exclude',
-        'tax_percentage' => 'nullable|numeric|min:0|max:100',
-    ];
+    public function storelabourcharge()
+    {
+        // dd($this->all());
+        $rules = [
+            'title' => 'required|string',
+            'labour_type' => 'required|in:inhouse,outsource',
+            'price' => 'required|numeric|min:1',
+            'tax_type' => 'nullable|in:include,exclude',
+            'tax_percentage' => 'nullable|numeric|min:0|max:100',
+        ];
 
-    if ($this->labour_type === 'outsource') {
-        $rules['outsource_price'] = 'required|numeric|min:1';
+        if ($this->labour_type === 'outsource') {
+            $rules['outsource_price'] = 'required|numeric|min:1';
+        }
+
+        $this->validate($rules);
+        //dd($this->title, $this->labour_type,$this->puchase_price, $this->price,$this->tax_percentage);
+        $staff = LabourCharge::create([
+            'title' => $this->title,
+            'labour_type' => $this->labour_type,
+            'puchase_price' => $this->puchase_price,
+            'price' => $this->price,
+            'outsource_price' => $this->labour_type === 'outsource' ? $this->outsource_price : null,
+            'gst' => $this->tax_percentage,
+            'gst_type' => $this->tax_type,
+            'user_id' => $this->workshopId,
+            'total' => $this->total_price,
+            'profit' => $this->labour_type === 'outsource'
+                ? ($this->outsource_price - $this->price)
+                : null,
+
+            'status' => 1,
+        ]);
+
+        $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Labour charge added successfully!']);
+        $this->reset('title', 'puchase_price', 'price', 'outsource_price', 'tax_percentage', 'tax_type', 'labour_type', 'total_price');
+
+        $this->updatedExtraChargesDropdown($staff->id);
+        $this->showLabourCharge = false;
     }
-
-    $this->validate($rules);
-    //dd($this->title, $this->labour_type,$this->puchase_price, $this->price,$this->tax_percentage);
-    $staff = LabourCharge::create([
-        'title' => $this->title,
-        'labour_type' => $this->labour_type,
-        'puchase_price'=>$this->puchase_price,
-        'price' => $this->price,
-        'outsource_price' => $this->labour_type === 'outsource' ? $this->outsource_price : null,
-        'gst' => $this->tax_percentage,
-        'gst_type' => $this->tax_type,
-        'user_id' => $this->workshopId,
-        'total' => $this->total_price,
-        'profit' => $this->labour_type === 'outsource'
-    ? ($this->outsource_price - $this->price)
-    : null,
-
-        'status' => 1,
-    ]);
-
-    $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Labour charge added successfully!']);
-    $this->reset('title','puchase_price', 'price', 'outsource_price', 'tax_percentage', 'tax_type', 'labour_type', 'total_price');
-
-    $this->updatedExtraChargesDropdown($staff->id);
-    $this->showLabourCharge = false;
-}
 
 
 
@@ -3830,9 +3880,9 @@ public function storelabourcharge()
                 \App\Models\Notification::create([
                     'user_id' => $vendorId,
                     'order_id' => $order->id,
-                    'title'   => '🛒 New Order Received',
+                    'title' => '🛒 New Order Received',
                     'message' => "Workshop has placed a new order (Order #{$order->id}). Please review the order items and accept or decline them.",
-                    'sound'   => 'order.mp3',
+                    'sound' => 'order.mp3',
                 ]);
             }
         }

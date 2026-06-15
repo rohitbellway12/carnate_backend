@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Workshop;
 
-use App\Models\{City, Staff, Country, State, Branch, WorkShopVendor,Suppliers};
+use App\Models\{City, Staff, Country, State, Branch, WorkShopVendor,Suppliers, WorkshopSupplier};
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use Illuminate\Support\Facades\Auth;
@@ -44,8 +44,8 @@ public $newSupplier = [
         $this->workshopId = Auth::guard('workshop')->user()->id; 
         $this->user = WorkShopVendor::where('id', $this->workshopId)->first();
         // $this->suppliers = Staff::all();
-        $this->suppliers = Suppliers::all();
-        $this->categories = ExpenseCategory::all();
+        $this->suppliers = WorkshopSupplier::where('user_id', $this->workshopId)->get();
+        $this->categories = \App\Models\WorkshopExpenseCategory::all();
     }
 
     public function updatedTotalAmount()
@@ -70,13 +70,13 @@ public $newSupplier = [
 
         $parentIds = $user->parent_id == 0 ? [$this->workshopId] : [$this->workshopId, $user->parent_id];
 
-        $items = Expense::with('category', 'supplier')
+        $items = Expense::with('workshopCategory', 'workshopSupplier')
             ->whereIn('parent_id', $parentIds);
             if($this->searchfilter){
                 $items = $items->where(function ($query) {
                     $query->Where('bill_number', 'like', '%' . $this->searchfilter . '%')
-                    ->OrwhereHas('supplier', function ($query) {
-                        $query->where('name', 'like', '%' . $this->searchfilter . '%'); 
+                    ->OrwhereHas('workshopSupplier', function ($query) {
+                        $query->where('business_first_name', 'like', '%' . $this->searchfilter . '%'); 
                     });
 
                 });
@@ -244,11 +244,11 @@ public function delete()
     
         $this->validate($valArr);
 
-        $category = ExpenseCategory::create([
-            'title' => $this->category_label,
+        $category = \App\Models\WorkshopExpenseCategory::create([
+        'title' => $this->category_label,
         ]);
     
-        $this->categories = ExpenseCategory::all();
+        $this->categories = \App\Models\WorkshopExpenseCategory::all();
         $this->category_id = $category->id; 
         $this->dispatch('swal:toast', ['message' => 'Category added successfully!']);
         $this->resetForm();
@@ -289,8 +289,14 @@ public function saveSupplier()
         'newSupplier.lastname' => 'required|string|max:255',
     ]);
 
-    $supplier = Suppliers::create($this->newSupplier);
-    $this->suppliers = Suppliers::all(); // Refresh supplier list
+    $supplier = WorkshopSupplier::create([
+        'business_first_name' => $this->newSupplier['name'],
+        'owner_first_name' => $this->newSupplier['lastname'],
+        'mobile_no' => '',
+        'contact_1' => '',
+        'user_id' => $this->workshopId,
+    ]);
+    $this->suppliers = WorkshopSupplier::where('user_id', $this->workshopId)->get();
     $this->supplier_id = $supplier->id; // Auto-select the newly added
     $this->showSupplierModal = false;
 }

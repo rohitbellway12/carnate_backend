@@ -12,7 +12,7 @@ class VehicleSelector extends Component
 {
     public $brands = [], $variants = [], $years = [], $modifications = [], $all_modifications = [];
     public $brand_name, $variant_name, $selected_year, $search_vehicle, $selectedVehicleName;
-    
+
     // API coordinate properties
     public $selectedBrandId, $selectedModelId, $modificationId;
 
@@ -43,22 +43,22 @@ class VehicleSelector extends Component
         $this->years = [];
         $this->variants = [];
         $this->selectedVehicleName = '';
-        
+
         if (empty($value)) {
             return;
         }
-        
+
         $brandId = null;
         $decodedValue = @json_decode($value, true);
-        
+
         if ($decodedValue && is_array($decodedValue) && isset($decodedValue['id'])) {
             $brandId = $decodedValue['id'];
         }
-        
+
         if (empty($brandId)) {
             return;
         }
-        
+
         try {
             $this->selectedBrandId = $brandId;
             $vehicleService = new RapidApiVehicleService();
@@ -79,24 +79,24 @@ class VehicleSelector extends Component
         $this->search_vehicle = '';
         $this->modificationId = null;
         $this->selectedVehicleName = '';
-        
+
         if ($value === '' || !isset($this->variants[$value])) {
             return;
         }
-        
+
         $variant = $this->variants[$value];
         $modelId = $variant['id'] ?? null;
         $modelName = $variant['name'] ?? null;
         $modelYearFrom = $variant['modelYearFrom'] ?? null;
         $modelYearTo = $variant['modelYearTo'] ?? null;
-        
+
         if ($modelId && $modelYearFrom) {
-            $yearFrom = (int)substr($modelYearFrom, 0, 4);
-            $yearTo = $modelYearTo ? (int)substr($modelYearTo, 0, 4) : (int)date('Y');
-            
+            $yearFrom = (int) substr($modelYearFrom, 0, 4);
+            $yearTo = $modelYearTo ? (int) substr($modelYearTo, 0, 4) : (int) date('Y');
+
             $yearsArray = range($yearFrom, $yearTo);
             $this->years = array_reverse($yearsArray);
-            
+
             $this->selectedModelId = $modelId;
             $this->selectedVehicleName = $modelName;
 
@@ -116,16 +116,16 @@ class VehicleSelector extends Component
         $this->search_vehicle = '';
         $this->modificationId = null;
         $this->selectedVehicleName = '';
-        
+
         if (empty($value) || empty($this->all_modifications)) {
             $this->modifications = [];
             return;
         }
-        
-        $selectedYear = (int)$value;
-        
+
+        $selectedYear = (int) $value;
+
         $this->modifications = collect($this->all_modifications)
-            ->filter(function($item) use ($selectedYear) {
+            ->filter(function ($item) use ($selectedYear) {
                 $yearFrom = $item['yearFrom'] ?? 0;
                 $yearTo = $item['yearTo'] ?? date('Y');
                 return $selectedYear >= $yearFrom && $selectedYear <= $yearTo;
@@ -136,16 +136,16 @@ class VehicleSelector extends Component
 
     public function updatedSearchVehicle($id)
     {
-        if(empty($id)) {
+        if (empty($id)) {
             $this->selectedVehicleName = '';
             $this->modificationId = null;
             return;
         }
 
         $mod = collect($this->all_modifications)->firstWhere('id', $id);
-        
-        if($mod){
-            $this->modificationId = (object)[
+
+        if ($mod) {
+            $this->modificationId = (object) [
                 'id' => $mod['id'],
                 'brand_name' => is_array($this->brand_name) ? $this->brand_name['name'] : (collect($this->brands)->firstWhere('id', $this->selectedBrandId)['name'] ?? ''),
                 'variant_name' => is_array($this->variant_name) ? $this->variant_name['name'] : (collect($this->variants)->firstWhere('id', $this->selectedModelId)['name'] ?? ''),
@@ -156,7 +156,7 @@ class VehicleSelector extends Component
             $brand = $this->modificationId->brand_name ?? '';
             $model = $this->modificationId->variant_name ?? '';
             $modName = $this->modificationId->title ?? '';
-            
+
             $yearRange = ($mod['yearFrom'] ?? '') . '-' . ($mod['yearTo'] ?? '');
             $fuel = $mod['fuelType'] ? ' - ' . $mod['fuelType'] : '';
 
@@ -198,7 +198,7 @@ class VehicleSelector extends Component
         $mod = collect($this->all_modifications)->firstWhere('id', $this->search_vehicle);
         $fuelType = $mod ? ($mod['fuelType'] ?? null) : null;
         $typeEngineName = $mod ? ($mod['name'] ?? null) : null;
-        
+
         $startYear = substr($mod['yearFrom'] ?? '', 0, 4);
         $endYear = substr($mod['yearTo'] ?? '', 0, 4);
         $yearRange = $startYear;

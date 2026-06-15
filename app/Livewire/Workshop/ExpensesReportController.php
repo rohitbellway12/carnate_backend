@@ -81,15 +81,15 @@ class ExpensesReportController extends Component
 
     protected function getBaseQuery()
     {
-        return Expense::with(['category', 'supplier'])
+        return Expense::with(['workshopCategory', 'workshopSupplier'])
             ->where('parent_id', $this->workshopId)
             ->when(trim($this->search) !== '', function ($q) {
                 $s = trim($this->search);
                 $q->where(function ($sub) use ($s) {
                     $sub->where('bill_number', 'LIKE', "%$s%")
                         ->orWhere('description', 'LIKE', "%$s%")
-                        ->orWhereHas('supplier', fn($qs) => $qs->where('name', 'LIKE', "%$s%"))
-                        ->orWhereHas('category', fn($qc) => $qc->where('title', 'LIKE', "%$s%"));
+                        ->orWhereHas('workshopSupplier', fn($qs) => $qs->where('business_first_name', 'LIKE', "%$s%"))
+                        ->orWhereHas('workshopCategory', fn($qc) => $qc->where('title', 'LIKE', "%$s%"));
                 });
             })
             ->when($this->fromDate && $this->toDate, fn($q) =>
@@ -114,7 +114,7 @@ class ExpensesReportController extends Component
 
         $detail = null;
         if ($this->viewExpenseId) {
-            $detail = Expense::with(['category', 'supplier'])
+            $detail = Expense::with(['workshopCategory', 'workshopSupplier'])
                 ->where('parent_id', $this->workshopId)
                 ->find($this->viewExpenseId);
         }

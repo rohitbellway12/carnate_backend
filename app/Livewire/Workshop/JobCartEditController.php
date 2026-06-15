@@ -1886,12 +1886,13 @@ public function updatedAccessoryData($id)
         }
     }
 
-    public function addStockRows()
+    public function addStockRows($type = 2)
     {
         $this->resetErrorBag();
         $this->showPurchase = false;
         $this->isPurchase = false;
         $this->showstock = true;
+        $this->showTable = $type;
         $this->units = Unit::all();
         $this->categories = Category::all();
         $this->modifications = Modification::where('status', 1)->get();

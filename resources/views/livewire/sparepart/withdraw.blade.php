@@ -100,6 +100,7 @@
                                         <tr>
                                             <th>S.No.</th>
                                             <th>Amount</th>
+                                            <th>Transaction ID / UTR</th>
                                             <th>Status</th>
                                             <th>Date Withdraw</th>
                                         </tr>
@@ -109,6 +110,7 @@
                                             <tr>
                                                 <td>{{ $withdraws->total() - ($withdraws->firstItem() + $index) + 1 }}</td>
                                                 <td>{{ $withdraw->amount }}</td>
+                                                <td>{{ $withdraw->transaction_id ?? '-' }}</td>
                                                 <td>
                                                     @switch($withdraw->status)
                                                         @case(0)

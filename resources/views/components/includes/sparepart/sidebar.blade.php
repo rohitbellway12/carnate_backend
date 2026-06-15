@@ -26,13 +26,33 @@ if (Auth::guard('sparepart')->check()) {
                         </div>
                         <ul class="metismenu mm-show" id="menu">
                             @if (!$sparePart || !$sparePart->roles->count() || @$sparePart->hasPermissionTo('dashboard-show'))
-                            <li>
-                                <a href="{{ route('sparepart.dashboard') }}">
-                                    <div class="parent-icon"><i class="bx bx-home-circle"></i>
+                                <li>
+                                    <a href="{{ route('sparepart.dashboard') }}">
+                                        <div class="parent-icon"><i class="bx bx-home-circle"></i>
+                                        </div>
+                                        <div class="menu-title">Dashboard</div>
+                                    </a>
+                                </li>
+                            @endif
+                            @if (@$sparePart->hasPermissionTo('expenses-show'))
+                                <li>
+                                    <div class="dropdown w-100">
+                                        <a href="#">
+                                            <div class="parent-icon"><i class="fas fa-file-invoice fs-5"></i>
+                                            </div>
+                                            <div class="menu-title w-100">Expenses Master</div><span
+                                                class="fa fa-chevron-right dropdown-right-icon icon"> </span>
+                                        </a>
+                                        <div class="dropdown-content">
+                                            <a href="{{ route('sparepart.expenses') }}" class="ms-3"
+                                                style="background-color: unset;">Expenses</a>
+                                            <a href="{{ route('sparepart.expense.category') }}" class="ms-3"
+                                                style="background-color: unset;">Expense Category</a>
+                                            <a href="{{ route('sparepart.expense.supplier') }}" class="ms-3"
+                                                style="background-color: unset;">Expense Supplier</a>
+                                        </div>
                                     </div>
-                                    <div class="menu-title">Dashboard</div>
-                                </a>
-                            </li>
+                                </li>
                             @endif
                             @if (@$sparePart->hasPermissionTo('countersale-show'))
                                 <li>
@@ -43,6 +63,7 @@ if (Auth::guard('sparepart')->check()) {
                                     </a>
                                 </li>
                             @endif
+                           
                             <li class="d-none">
                                 <div class="dropdown w-100">
                                     <a href="#">
@@ -107,7 +128,7 @@ if (Auth::guard('sparepart')->check()) {
                                     </a>
                                 </li>
                             @endif
-                            <!-- manish -->
+
                             <li>
                                 <div class="dropdown w-100">
                                     <a href="#">
@@ -118,14 +139,16 @@ if (Auth::guard('sparepart')->check()) {
                                     </a>
                                     <div class="dropdown-content">
 
-                                            <a href="{{ route('sparepart.suppliers') }}"
-                                                style="background-color: unset;">Suppliers</a>
-                                                <a href="{{ route('sparepart.purchaseorder') }}"
-                                                style="background-color: unset;">Purchase Order</a>
-                                                <a href="{{ route('sparepart.stock.list') }}" style="background-color: unset;"> Stock List </a>
+                                        <a href="{{ route('sparepart.suppliers') }}"
+                                            style="background-color: unset;">Suppliers</a>
+                                        <a href="{{ route('sparepart.purchaseorder') }}"
+                                            style="background-color: unset;">Purchase Order</a>
+                                        <a href="{{ route('sparepart.stock.list') }}" style="background-color: unset;">
+                                            Stock List </a>
                                     </div>
                                 </div>
                             </li>
+                           
                             @if (@$sparePart->hasPermissionTo('unit-show'))
                                 <li>
                                     <a href="{{ route('sparepart.unit') }}">
@@ -194,30 +217,32 @@ if (Auth::guard('sparepart')->check()) {
                                 </li>
                             @endif
                             @if (!$sparePart || !$sparePart->roles->count() || @$sparePart->hasPermissionTo('report-show'))
-                            <li>
-                                <div class="dropdown w-100">
-                                    <a href="#">
-                                        <div class="parent-icon"><i class="fas fa-chart-line fs-5"></i>
+                                <li>
+                                    <div class="dropdown w-100">
+                                        <a href="#">
+                                            <div class="parent-icon"><i class="fas fa-chart-line fs-5"></i>
+                                            </div>
+                                            <div class="menu-title w-100">Reports</div><span
+                                                class="fa fa-chevron-right dropdown-right-icon icon"> </span>
+                                        </a>
+                                        <div class="dropdown-content">
+                                            <a href="{{ route('sparepart.report.orders') }}"
+                                                style="background-color: unset;">Orders Report</a>
+                                            <a href="{{ route('sparepart.report.countersale') }}"
+                                                style="background-color: unset;">Counter Sales Report</a>
+                                            <a href="{{ route('sparepart.report.payments') }}"
+                                                style="background-color: unset;">Payments Report</a>
+                                            <a href="{{ route('sparepart.report.stock') }}"
+                                                style="background-color: unset;">Stock Report</a>
+                                            <a href="{{ route('sparepart.report.commission') }}"
+                                                style="background-color: unset;">Commission Report</a>
+                                            <a href="{{ route('sparepart.report.salary') }}"
+                                                style="background-color: unset;">Salary Report</a>
+                                            <a href="{{ route('sparepart.report.expenses') }}"
+                                                style="background-color: unset;">Expenses Report</a>
                                         </div>
-                                        <div class="menu-title w-100">Reports</div><span
-                                            class="fa fa-chevron-right dropdown-right-icon icon"> </span>
-                                    </a>
-                                    <div class="dropdown-content">
-                                        <a href="{{ route('sparepart.report.orders') }}"
-                                            style="background-color: unset;">Orders Report</a>
-                                        <a href="{{ route('sparepart.report.countersale') }}"
-                                            style="background-color: unset;">Counter Sales Report</a>
-                                        <a href="{{ route('sparepart.report.payments') }}"
-                                            style="background-color: unset;">Payments Report</a>
-                                        <a href="{{ route('sparepart.report.stock') }}"
-                                            style="background-color: unset;">Stock Report</a>
-                                        <a href="{{ route('sparepart.report.commission') }}"
-                                            style="background-color: unset;">Commission Report</a>
-                                        <a href="{{ route('sparepart.report.salary') }}"
-                                            style="background-color: unset;">Salary Report</a>
                                     </div>
-                                </div>
-                            </li>
+                                </li>
                             @endif
                             <li>
                                 <a href="{{ route('sparepart.resetpassword') }}">
@@ -228,28 +253,12 @@ if (Auth::guard('sparepart')->check()) {
                             </li>
 
 
-                             {{-- <li>
-                                    <div class="dropdown w-100">
-                                        <a href="javascript:void(0)">
-                                            <div class="parent-icon"><i class="fa-solid fa-circle-info"></i></div>
-                                            <div class="menu-title w-100">Support</div>
-                                            <span class="fa fa-chevron-right dropdown-right-icon icon"></span>
-                                        </a>
-                                        <div class="dropdown-content">
-                                            <a href="#" class="ms-3" style="background-color: unset;">+91 8147 938 343</a>
-                                            <a href="#" class="ms-3" style="background-color: unset;">carnateindia@gmail.com</a>
-
-                                        </div>
-                                    </div>
-                                </li> --}}
-
-
                             @if (!$sparePart || !$sparePart->roles->count() || @$sparePart->hasPermissionTo('support-show'))
                                 <li style="list-style:none; margin:8px 0;">
-    <div class="dropdown w-100" style="position:relative;">
+                                    <div class="dropdown w-100" style="position:relative;">
 
-        <a href="javascript:void(0)"
-            style="
+                                        <a href="javascript:void(0)"
+                                            style="
                 display:flex;
                 align-items:center;
                 justify-content:space-between;
@@ -262,9 +271,9 @@ if (Auth::guard('sparepart')->check()) {
                 transition:0.3s;
             ">
 
-            <div style="display:flex;align-items:center;">
-                <div class="parent-icon"
-                    style="
+                                            <div style="display:flex;align-items:center;">
+                                                <div class="parent-icon"
+                                                    style="
                         width:38px;
                         height:38px;
                         border-radius:50%;
@@ -274,21 +283,21 @@ if (Auth::guard('sparepart')->check()) {
                         justify-content:center;
                         margin-right:12px;
                     ">
-                    <i class="fa-solid fa-circle-info"></i>
-                </div>
+                                                    <i class="fa-solid fa-circle-info"></i>
+                                                </div>
 
-                <div class="menu-title"
-                    style="font-size:16px;font-weight:600;letter-spacing:0.5px;">
-                    Support
-                </div>
-            </div>
+                                                <div class="menu-title"
+                                                    style="font-size:16px;font-weight:600;letter-spacing:0.5px;">
+                                                    Support
+                                                </div>
+                                            </div>
 
-            <span class="fa fa-chevron-down"
-                style="font-size:13px;color:#fff;"></span>
-        </a>
+                                            <span class="fa fa-chevron-down"
+                                                style="font-size:13px;color:#fff;"></span>
+                                        </a>
 
-        <div class="dropdown-content"
-            style="
+                                        <div class="dropdown-content"
+                                            style="
                 background:#fff;
                 margin-top:8px;
                 border-radius:12px;
@@ -296,8 +305,8 @@ if (Auth::guard('sparepart')->check()) {
                 box-shadow:0 8px 20px rgba(0,0,0,0.12);
             ">
 
-            <a href="tel:+918147938343"
-                style="
+                                            <a href="tel:+918147938343"
+                                                style="
                     display:flex;
                     align-items:center;
                     gap:10px;
@@ -306,12 +315,12 @@ if (Auth::guard('sparepart')->check()) {
                     text-decoration:none;
                     border-bottom:1px solid #f1f1f1;
                 ">
-                <i class="fa-solid fa-phone" style="color:#4ca1af;"></i>
-                +91 8147 938 343
-            </a>
+                                                <i class="fa-solid fa-phone" style="color:#4ca1af;"></i>
+                                                +91 8147 938 343
+                                            </a>
 
-            <a href="mailto:carnateindia@gmail.com"
-                style="
+                                            <a href="mailto:carnateindia@gmail.com"
+                                                style="
                     display:flex;
                     align-items:center;
                     gap:10px;
@@ -319,13 +328,13 @@ if (Auth::guard('sparepart')->check()) {
                     color:#333;
                     text-decoration:none;
                 ">
-                <i class="fa-solid fa-envelope" style="color:#4ca1af;"></i>
-                carnateindia@gmail.com
-            </a>
+                                                <i class="fa-solid fa-envelope" style="color:#4ca1af;"></i>
+                                                carnateindia@gmail.com
+                                            </a>
 
-        </div>
-    </div>
-</li>
+                                        </div>
+                                    </div>
+                                </li>
                             @endif
 
 

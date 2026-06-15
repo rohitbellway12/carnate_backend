@@ -256,17 +256,33 @@
             });
         };
 
+        function destroyAllSearchableSelects(root) {
+            if (!window.jQuery || !jQuery.fn.select2) {
+                return;
+            }
+
+            jQuery(root || document).find('select.searchable-select').addBack('select.searchable-select').each(function() {
+                let select = jQuery(this);
+
+                if (select.hasClass('select2-hidden-accessible')) {
+                    try {
+                        select.select2('destroy');
+                    } catch (e) {}
+                }
+            });
+        }
+
         document.addEventListener('livewire:init', function() {
             window.initSearchableSelects();
 
-            Livewire.hook('morphed', function() {
-                window.initSearchableSelects();
+            Livewire.hook('morph.updating', function({ el }) {
+                destroyAllSearchableSelects(el);
+            });
+
+            Livewire.hook('morphed', function({ el }) {
                 window.setTimeout(function() {
-                    window.initSearchableSelects();
-                }, 100);
-                window.setTimeout(function() {
-                    window.initSearchableSelects();
-                }, 300);
+                window.initSearchableSelects(el);
+                }, 50);
             });
         });
 

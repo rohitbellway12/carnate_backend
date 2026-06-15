@@ -106,11 +106,11 @@
         <div class="d-flex align-items-center">
             <select class="form-select me-2" wire:model="supplier_id" style="width: 85%;">
                 <option value="" selected disabled>-- select name --</option>
-                @foreach ($suppliers as $supplier)
-                    <option value="{{ $supplier->id }}">
-                        {{ $supplier->name . ' ' . $supplier->lastname }}
-                    </option>
-                @endforeach
+                    @foreach ($suppliers as $supplier)
+                        <option value="{{ $supplier->id }}">
+                            {{ $supplier->business_first_name }}
+                        </option>
+                    @endforeach
             </select>
 
             <button type="button" class="btn btn-sm btn-primary" wire:click="openSupplierModal" style="
@@ -280,9 +280,9 @@
                             @foreach ($items as $index => $item)
                                 <tr>
                                     <td>{{ $items->total() - ($items->firstItem() + $index) + 1 }}</td>
-                                     <td  wire:click="edit({{ $item->id }})">{{ $item->supplier?->name .' '. $item->supplier?->lastname }}</td>
+                                     <td  wire:click="edit({{ $item->id }})">{{ $item->workshopSupplier?->business_first_name }}</td>
                                     <td  wire:click="edit({{ $item->id }})">{{ $item->bill_number }}</td>
-                                    <td  wire:click="edit({{ $item->id }})"> {{ @$item->category?->title  }} </td>
+                                     <td  wire:click="edit({{ $item->id }})"> {{ @$item->workshopCategory?->title }} </td>
                                     <td  wire:click="edit({{ $item->id }})"> {{ $item->total_amount  }} </td>
                                     <td  wire:click="edit({{ $item->id }})"> {{ $item->balance_amount  }} </td>
                                    

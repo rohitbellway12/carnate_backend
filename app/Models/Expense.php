@@ -18,7 +18,23 @@ class Expense extends Model
 // 		return $this->belongsTo(WorkShopVendor::class,'parent_id');
 // 	}
 	
-		public function supplier(){
-		return $this->belongsTo(Suppliers::class,'supplier_id');
-	}
+    public function supplier(){
+        return $this->belongsTo(Suppliers::class,'supplier_id');
+    }
+
+    public function workshopSupplier(){
+        return $this->belongsTo(WorkshopSupplier::class,'supplier_id');
+    }
+
+    public function sparePartSupplier(){
+        return $this->belongsTo(SparePartSupplier::class,'supplier_id');
+    }
+
+    public function sparePartCategory(){
+        return $this->belongsTo(SparePartExpenseCategory::class,'category_id');
+    }
+
+    public function workshopCategory(){
+        return $this->belongsTo(WorkshopExpenseCategory::class,'category_id');
+    }
 }

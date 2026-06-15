@@ -42,6 +42,7 @@
                             <th>S.No.</th>
                             <th>User</th>
                             <th>Amount</th> 
+                            <th>Transaction ID / UTR</th>
                             <th>Status</th> 
                             @if (@$admin->hasPermissionTo('withdraw-edit') || @$admin->hasPermissionTo('withdraw-delete')) 
                             <th>Actions</th>
@@ -54,16 +55,17 @@
                             <td>{{ $withdraws->total() - ($withdraws->firstItem() + $index) + 1 }}</td>
                             <td>{{ @$withdraw->SparePartVendor->name .' '.  @$withdraw->SparePartVendor->lastname  }}</td> 
                             <td> {{ $withdraw->amount }} </td>
+                            <td> {{ $withdraw->transaction_id ?? '-' }} </td>
                             <td>
                                 @switch($withdraw->status)
                                     @case(0)
                                         <span class="badge bg-danger">Processing</span>
                                     @break
-
+ 
                                     @case(1)
                                         <span class="badge bg-success">Complete</span>
                                     @break
-
+ 
                                     @case(2)
                                     <span class="badge bg-danger">Declined</span>
                                 @break
@@ -71,10 +73,10 @@
                             </td>
                             @if (@$admin->hasPermissionTo('withdraw-edit') || @$admin->hasPermissionTo('withdraw-delete')) 
                             <td>
-
+ 
                              @if($withdraw->status == 0)
                              @if (@$admin->hasPermissionTo('withdraw-edit')) 
-                             <a wire:click="edit({{ $withdraw->id }},1,{{ $withdraw->amount}},{{ $withdraw->user_id}})" class="btn btn-sm p-0">  <span class="btn btn-sm btn-success">Approve</span>  <span class="small"></span></a>
+                             <a wire:click="confirmApprove({{ $withdraw->id }},{{ $withdraw->amount}},{{ $withdraw->user_id}})" class="btn btn-sm p-0">  <span class="btn btn-sm btn-success">Approve</span>  <span class="small"></span></a>
                              @endif
                              @if (@$admin->hasPermissionTo('withdraw-delete')) 
                              <a wire:click="edit({{ $withdraw->id }},2,{{ $withdraw->amount}},{{ $withdraw->user_id}})" class="btn btn-sm p-0">  <span class="btn btn-sm btn-danger">Decline</span>  <span class="small"></span></a>
@@ -101,6 +103,43 @@
         @endif
     </div>
 
+    <!-- Approve Withdraw Modal -->
+    <div class="modal @if ($showApproveModal) show @endif" tabindex="-1"
+        style="opacity: 1; background-color: #0606068c; display: @if ($showApproveModal) block @else none @endif">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <form wire:submit.prevent="approveWithdraw">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Approve Withdrawal Request</h5>
+                        <button type="button" class="btn-close" wire:click="$set('showApproveModal', false)"
+                            data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body py-3">
+                        @csrf
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Amount</label>
+                            <div>₹{{ number_format($selectedWithdrawAmount, 2) }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="transaction_id" class="form-label fw-bold">Transaction ID / UTR Number <span class="text-danger">*</span></label>
+                            <input type="text" id="transaction_id" class="form-control" wire:model="transaction_id" placeholder="Enter Transaction ID or UTR number" required>
+                            @error('transaction_id')
+                                <div class="text-danger mt-1 small">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" wire:click="$set('showApproveModal', false)"
+                            data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success">
+                            Approve
+                            <i class="spinner-border spinner-border-sm" wire:loading wire:target="approveWithdraw"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 @section('footerscript')
 @endsection

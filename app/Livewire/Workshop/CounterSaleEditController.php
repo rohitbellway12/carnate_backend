@@ -18,7 +18,7 @@ class CounterSaleEditController extends Component
     protected $paginationTheme = 'bootstrap';
 
 
-    public $isEdit = false, $showModal = false;
+    public $isEdit = false, $showModal = false, $is_walkin_customer = false;
     public $name, $lastname, $email, $password, $mobile_no, $branch_name, $landline_no, $country_id, $state_id, $city_id, $address, $gender, $birth_date, $display_name, $branches;
     public $staffId, $workshopId, $jobId, $vehicles, $km_reading, $fual_level, $imagePath, $dentImageId, $mechanic, $sparePartLabel, $isAddvehicle, $unit_price, $sms_alert, $pdftype, $viewtype, $items_purchase, $showstock, $isOpen, $vehicle_brand_id_data, $vehicle_type_id_data, $vehicle_type_id, $vehicledatacollection, $extra_charges, $spare_parts_data, $search_customer_voice, $search_accessory, $search_work_notes,$item,$search_vehicle,$selectedVehicleName,$transaction_number,$countersalenumber,$note;
 
@@ -92,7 +92,7 @@ class CounterSaleEditController extends Component
 
 
     public $showCustomerAlert = false;
-    protected $listeners = ['delete', 'showModal', 'deleteDentImage', 'saveImage','selectedCustomer'];
+    protected $listeners = ['delete', 'showModal', 'deleteDentImage', 'saveImage', 'selectedCustomer'];
 
     protected $rules = [
         'name' => 'required|string',
@@ -152,7 +152,12 @@ class CounterSaleEditController extends Component
         $this->total_amount = $counterSales->total;
         $this->balance_amount = $counterSales->balance_amount;
         $this->customer_name = $counterSales->customer_id;
-         $this->customers = CounterCustomers::where('user_id',$this->workshopeId)->get();
+        $this->customers = CounterCustomers::where('user_id',$this->workshopeId)->get();
+
+        $walkin = CounterCustomers::where('id', $this->customer_name)->first();
+        if ($walkin && $walkin->name == 'Walk-in Customer' && $walkin->mobile_no === null) {
+            $this->is_walkin_customer = true;
+        }
 
         $this->customerVoicesData = DB::table('job_cards_inspections')
         ->select('customer_voice', DB::raw('MAX(is_customer_voice) as is_customer_voice'))
@@ -190,6 +195,22 @@ class CounterSaleEditController extends Component
         $this->customer_name = $customer_id;
 
         return true;
+    }
+
+    public function updatedIsWalkinCustomer($value)
+    {
+        if ($value) {
+            $walkIn = CounterCustomers::firstOrCreate([
+                'user_id' => $this->workshopeId,
+                'name' => 'Walk-in Customer',
+                'mobile_no' => null
+            ]);
+            $this->customer_name = $walkIn->id;
+            $this->dispatch('set-customer-select2', ['id' => $walkIn->id, 'text' => 'Walk-in Customer']);
+        } else {
+            $this->customer_name = null;
+            $this->dispatch('set-customer-select2', ['id' => '', 'text' => '']);
+        }
     }
 
     public function addCustomer()

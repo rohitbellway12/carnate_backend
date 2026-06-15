@@ -131,52 +131,7 @@
                                     </div>
                                 </div>
                             @endif
-                            {{--  <div class="d-flex flex-wrap gap-1">
-                                @foreach ($customerVoices as $index => $voice)
-                                    @if (!empty($voice))
-                                        <div class="">
-                                            <span class="badge bg-primary position-relative mb-2 py-1"
-                                                style="padding-right: 1.8rem; font-size:13px;">
-                                                {{ $voice }}
-                                                <a class="btn-close btn-close-white position-absolute"
-                                                    style="top: 1px; right: 5px; width: 0.8rem; height: 0.8rem; background: unset; opacity: 1; cursor: pointer;"
-                                                    aria-label="Close"
-                                                    wire:click="removeCustomerVoice({{ $index }})">
-                                                    <i class="fa-solid fa-xmark text-dark"></i>
-                                                </a>
 
-                                            </span>
-                                        </div>
-                                    @endif
-                                @endforeach
-                            </div> --}}
-
-                            {{-- <div class="col-6 d-none">
-                                <select id="search_customer_voice" wire:model="search_customer_voice"
-                                    class="form-select select2" data-property="search_customer_voice"></select>
-                            </div> --}}
-                            {{-- <div class="col-12">
-                                <div class="my-3 w-100 m-auto">
-                                    <div class="card bg-light">
-                                        <div class="card-body pb-2">
-                                            <p class="text-center" style="font-size:18px;"><b>Search Customer Voice</b></p>
-                                           <input type="text" class="form-control"
-                                                wire:model.live="search_customer_voice" placeholder="Search Voice...">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div> --}}
-                            {{-- @foreach ($customerVoices as $index => $voice)
-                                <div class="mb-3 col-lg-12 dynamic-field">
-                                    <div class="row">
-                                        <div class="col-11">
-                                            @error("customerVoices.$index")
-                                                <span class="text-danger">{{ $message }}</span>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach --}}
                             <div class="d-flex flex-wrap gap-1">
                                 @foreach ($customerVoices as $index => $voice)
                                     @if (!empty($voice))
@@ -232,14 +187,7 @@
                             </div>
                         </div>
                     </div>
-                    {{-- <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary"
-                            wire:click="$set('showCustomerVoice', false)" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">
-                            {{ $addCustomerVoice ? 'Save' : 'Save' }}
-                            <i class="spinner-border spinner-border-sm" wire:loading></i>
-                        </button>
-                    </div> --}}
+
                 </form>
             </div>
         </div>
@@ -377,18 +325,6 @@
                                     @endif
                                 @endforeach
                             </div>
-
-                            {{--   <div class="col-12">
-                                <div class="my-3 w-100 m-auto">
-                                    <div class="card bg-light">
-                                        <div class="card-body pb-2">
-                                            <p class="text-center"><b>Search Accessory</b></p>
-                                            <input type="text" class="form-control"
-                                                wire:model.live="search_accessory" placeholder="Search Accessory...">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div> --}}
                             <div class="col-12 position-relative">
                                 <!-- Search Input -->
                                 <input type="text" class="form-control" placeholder="Search Accessory..."
@@ -644,9 +580,18 @@
                                             {{ $customer_data->cust_type == 1 ? 'M/S ' . ($customer_data->company_name ?? $fullName) : trim(($customer_data->name ?? '') . ' ' . ($customer_data->lastname ?? '')) }}
                                         </td>
 
-                                        <td style="white-space: nowrap;"><b>Vehicle Name</b></td>
+                                        <td style="white-space: normal; word-break: break-word;"><b>Vehicle Name &
+                                                Color</b>
+                                        </td>
                                         <td style="width: 25%;">
-                                            {{ $vehicle_data->brand . '/' . $vehicle_data->variant . '/' . $vehicle_data->modification }}
+                                            @if (!empty($vehicle_data) && !empty($vehicle_data->brand))
+                                                {{ $vehicle_data->brand . '/' . $vehicle_data->variant . '/' . $vehicle_data->modification }}
+                                                @if (!empty($vehicle_data->vehicle_color))
+                                                    ({{ $vehicle_data->vehicle_color }})
+                                                @endif
+                                            @else
+                                                <span class="text-muted">—</span>
+                                            @endif
                                         </td>
                                     </tr>
 
@@ -662,8 +607,8 @@
                                         <td><b>Address</b></td>
                                         <td>{{ $customer_data->address ?? '' }}</td>
 
-                                        <td><b>Chassis No.</b></td>
-                                        <td>{{ $vehicle_data->chassis_no ?? '' }}</td>
+                                        <td><b>Chassis No. </b></td>
+                                        <td>{{ $vehicle_data->chassis_no ?? '' }} </td>
                                     </tr>
 
                                     <tr>

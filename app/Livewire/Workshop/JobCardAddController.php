@@ -69,7 +69,7 @@ class JobCardAddController extends Component
 
     public $isVehical, $showVehical, $isBrand, $showBrand, $isModel, $showModel, $isFuel, $showFuel, $vehicleDetails;
     public $vehicle_id, $vehicleBrand, $modelName, $fuel_id, $odometerReading, $numberPlate, $chassisNo, $modelYear, $noOfGear;
-    public $dateOfManufacturing, $gearbox, $gearboxNo, $engineN, $engineSize, $engine, $keyNo, $engineNo, $isOpen, $property_photos = [];
+    public $vehicle_color, $gearbox, $gearboxNo, $engineN, $engineSize, $engine, $keyNo, $engineNo, $isOpen, $property_photos = [];
     public $isEdits = false;
     public $fields = [];
     public $vehicleType = '';
@@ -239,7 +239,7 @@ class JobCardAddController extends Component
         $this->modifications = [];
         $this->all_modifications = [];
 
-        $this->reset('modificationId', 'show_company_name', 'cust_type', 'search_vehicle', 'vehicle_type_id', 'modelName', 'selectedVehicleName', 'states', 'cities', 'name', 'lastname', 'mobile_no', 'address', 'insurance_name', 'policy_expiry_date', 'gst_no', 'country_id', 'state_id', 'city_id', 'email', 'birth_date', 'user_title', 'numberPlate', 'fuel_id', 'chassisNo', 'modelYear', 'noOfGear', 'dateOfManufacturing', 'gearbox', 'gearboxNo', 'engineNo', 'engineSize', 'engine', 'keyNo', 'pickup_address', 'drop_address', 'driver_name', 'driver_number', 'policy_number', 'brand_name', 'variant_name', 'selected_year');
+        $this->reset('modificationId', 'show_company_name', 'cust_type', 'search_vehicle', 'vehicle_type_id', 'modelName', 'selectedVehicleName', 'states', 'cities', 'name', 'lastname', 'mobile_no', 'address', 'insurance_name', 'policy_expiry_date', 'gst_no', 'country_id', 'state_id', 'city_id', 'email', 'birth_date', 'user_title', 'numberPlate', 'fuel_id', 'chassisNo', 'modelYear', 'noOfGear', 'vehicle_color', 'gearbox', 'gearboxNo', 'engineNo', 'engineSize', 'engine', 'keyNo', 'pickup_address', 'drop_address', 'driver_name', 'driver_number', 'policy_number', 'brand_name', 'variant_name', 'selected_year');
 
     }
 
@@ -961,9 +961,16 @@ class JobCardAddController extends Component
 
     public function updatedCustomerName($vehicleId)
     {
-
-
+        // When a vehicle is selected, store its ID and load its color for display
         $this->vehicle_id = $vehicleId;
+
+        // Retrieve the vehicle record to get the color (if it exists)
+        $vehicle = Vehicle::find($vehicleId);
+        if ($vehicle) {
+            $this->vehicle_color = $vehicle->vehicle_color ?? '';
+        } else {
+            $this->vehicle_color = '';
+        }
 
         return true;
     }
@@ -1116,7 +1123,7 @@ class JobCardAddController extends Component
         $vehicle->modification = $this->modificationId->title ?? null;
         $vehicle->number_plate = $this->numberPlate;
         $vehicle->chassis_no = $this->chassisNo;
-        $vehicle->date_of_manufacturing = $this->dateOfManufacturing;
+        $vehicle->vehicle_color = $this->vehicle_color;
         $vehicle->engineno = $this->engineNo;
         $vehicle->driver_name = $this->driver_name;
         $vehicle->driver_number = $this->driver_number;
@@ -1139,7 +1146,7 @@ class JobCardAddController extends Component
             'message' => 'Customer added successfully!',
         ]);
 
-        $this->reset('vehicle_type_id', 'modelName', 'selectedVehicleName', 'states', 'cities', 'name', 'lastname', 'mobile_no', 'address', 'insurance_name', 'policy_expiry_date', 'gst_no', 'country_id', 'state_id', 'city_id', 'email', 'birth_date', 'user_title', 'numberPlate', 'fuel_id', 'chassisNo', 'modelYear', 'noOfGear', 'dateOfManufacturing', 'gearbox', 'gearboxNo', 'engineNo', 'engineSize', 'engine', 'keyNo', 'pickup_address', 'drop_address', 'driver_name', 'driver_number', 'policy_number');
+        $this->reset('vehicle_type_id', 'modelName', 'selectedVehicleName', 'states', 'cities', 'name', 'lastname', 'mobile_no', 'address', 'insurance_name', 'policy_expiry_date', 'gst_no', 'country_id', 'state_id', 'city_id', 'email', 'birth_date', 'user_title', 'numberPlate', 'fuel_id', 'chassisNo', 'modelYear', 'noOfGear', 'vehicle_color', 'gearbox', 'gearboxNo', 'engineNo', 'engineSize', 'engine', 'keyNo', 'pickup_address', 'drop_address', 'driver_name', 'driver_number', 'policy_number');
         $this->showModal = false;
     }
 

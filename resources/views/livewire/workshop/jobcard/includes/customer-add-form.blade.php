@@ -199,10 +199,9 @@
                 @enderror
             </div>
             <div class="col-md-6">
-                <label class="form-label">Date of Manufacturing</label>
-                <input type="date" wire:model="dateOfManufacturing" class="form-control"
-                    max="{{ \Carbon\Carbon::today()->toDateString() }}" onclick="this.showPicker()">
-                @error('dateOfManufacturing')
+                <label class="form-label">Vehicle Color</label>
+                <input type="text" wire:model="vehicle_color" class="form-control" placeholder="Enter Vehicle Color">
+                @error('vehicle_color')
                     <span class="text-danger">{{ $message }}</span>
                 @enderror
             </div>

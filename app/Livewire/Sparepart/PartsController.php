@@ -23,7 +23,7 @@ class PartsController extends Component
 
     protected $paginationTheme = 'bootstrap';
 
-    public $isEdit = false, $showModal = false, $selectAll = false, $isView = false;
+    public $isEdit = false, $showModal = false, $selectAll = false, $isView = false, $step = 'list';
     public $name, $brand, $unit, $stock, $description, $image_id, $imagePreview, $imageId, $uploadedImageId, $uniqueId, $part_number, $sp_type;
     public $partId, $sparepartId, $reflectedPrice, $showPartModel, $sparePartLabels, $part_label;
     public $articleId, $oemNumbers = [], $oem_list, $brandFilter = '';
@@ -45,8 +45,9 @@ class PartsController extends Component
     public $online_price = 0, $offline_price = 0;
     public $imageName, $imageImage, $image, $searchfilter;
     public $brand_name, $variant_name, $selected_year, $modification_id;
-    public $brands = [], $variants = [], $years = [], $filter_modifications = [], $modifications = [];
-    protected $listeners = ['delete'];
+    public $brands = [], $variants = [], $years = [], $filter_modifications = [];
+    public $modifications;
+    protected $listeners = ['delete', 'vehicleAdded' => 'addSuitableVehicle', 'removeVehicle' => 'removeSuitableVehicle'];
     public $units, $categories;
     /** @var string[] Top-level product group names from TecDoc API (Body, Electrics, …) */
     public array $apiRootCategoryNames = [];
@@ -72,7 +73,7 @@ class PartsController extends Component
         'category' => 'nullable|integer',
     ];
 
-    public function mount()
+    public function mount($id = null)
     {
         $this->sparepartId = Auth::guard('sparepart')->user()->id;
         $this->resetForm();
@@ -95,6 +96,7 @@ class PartsController extends Component
 
         $this->variants = [];
         $this->years = [];
+        $this->modifications = collect();
 
         $this->units = Unit::all();
         SparePartCategoryService::syncParentsFromApi();
@@ -103,6 +105,18 @@ class PartsController extends Component
         $this->suppliers = SparePartSupplier::orderBy('id', 'desc')
             ->where('user_id', Auth::guard('sparepart')->id())
             ->get();
+
+        // Check active route to initialize state dynamically
+        $routeName = request()->route()?->getName();
+        if ($routeName === 'sparepart.parts.create') {
+            $this->create();
+        } elseif ($routeName === 'sparepart.parts.edit' && $id) {
+            $this->edit($id);
+        } elseif ($routeName === 'sparepart.parts.view' && $id) {
+            $this->view($id);
+        } else {
+            $this->step = 'list';
+        }
     }
 
     public function updatedBrandName($value)
@@ -202,6 +216,51 @@ class PartsController extends Component
         }
     }
 
+    /**
+     * Add a vehicle from the VehicleSelector component (emits 'vehicleAdded' event).
+     */
+    public function addSuitableVehicle($modificationId)
+    {
+        $modificationId = (string) $modificationId;
+        if (!is_array($this->suitable_for)) {
+            $this->suitable_for = [];
+        }
+        if (!in_array($modificationId, $this->suitable_for)) {
+            $this->suitable_for[] = $modificationId;
+        }
+
+        if ($modificationId) {
+            $mod = Modification::find($modificationId);
+            if ($mod) {
+                if (!$this->modifications->contains('id', $mod->id)) {
+                    $this->modifications->push($mod);
+                }
+            }
+        }
+    }
+
+    /**
+     * Remove a vehicle by modification ID from the selected list.
+     */
+    public function removeSuitableVehicle($modificationId)
+    {
+        $this->suitable_for = array_values(array_filter(
+            $this->suitable_for,
+            fn($id) => $id != $modificationId
+        ));
+    }
+
+    /**
+     * Remove a vehicle by index from the selected list.
+     */
+    public function removeCompatibleVehicle($index)
+    {
+        if (isset($this->suitable_for[$index])) {
+            unset($this->suitable_for[$index]);
+        }
+        $this->suitable_for = array_values($this->suitable_for);
+    }
+
     public function render()
     {
         $parts = Part::with('label', 'unit')->where('spare_part_type', 2)->where('user_id', $this->sparepartId);
@@ -270,8 +329,24 @@ class PartsController extends Component
 
         $parts = $parts->orderBy('created_at', 'desc')->paginate(10);
 
+        // Load all active modifications for the manual vehicle selector dropdown
+        $modifications = Modification::where('status', 1)->get();
+
+        // Merge any manually selected modifications that may be custom/inactive
+        if (!empty($this->suitable_for)) {
+            $selectedMods = Modification::whereIn('id', $this->suitable_for)->get();
+            foreach ($selectedMods as $mod) {
+                if (!$modifications->contains('id', $mod->id)) {
+                    $modifications->push($mod);
+                }
+            }
+        }
+
+        $this->modifications = $modifications;
+
         return view('livewire.sparepart.part', [
             'parts' => $parts,
+            'modifications' => $modifications,
         ]);
     }
 
@@ -280,12 +355,13 @@ class PartsController extends Component
         $this->resetForm();
         $this->isEdit = false;
         $this->isView = false;
-        $this->showModal = true;
+        $this->step = 'create';
         $this->reset('selling_amount', 'tax_type', 'category', 'part_number', 'forAllVehicles', 'suitable_for');
         $this->reflectedPrice = 0;
         $this->customerPrice = 0;
         $this->part_image_url = null;
         $this->api_compatible_vehicles = [];
+        $this->modifications = collect();
     }
 
     public function store()
@@ -517,9 +593,9 @@ class PartsController extends Component
         $logEntry = json_encode($logData, JSON_PRETTY_PRINT) . "\n" . str_repeat('-', 80) . "\n";
         file_put_contents($logFile, $logEntry, FILE_APPEND | LOCK_EX);
 
-        $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Part added successfully!']);
+        session()->flash('message', 'Part added successfully!');
         $this->resetForm();
-        $this->showModal = false;
+        return redirect()->route('sparepart.parts');
     }
 
     public function edit($id)
@@ -579,7 +655,7 @@ class PartsController extends Component
         $image = UploadImage::find($part->image);
         $this->imageImage = $image ? $image->file : null;
 
-        $this->showModal = true;
+        $this->step = 'edit';
 
         if ($part->forAllVehicles == 1) {
             $this->forAllVehicles = true;
@@ -587,7 +663,7 @@ class PartsController extends Component
         } else {
             // Load from pivot table
             $sparePartVehicleModification = SparePartVehicleModification::where('spare_part_id', $part->id)->get();
-            $this->suitable_for = $sparePartVehicleModification->pluck('vehicle_modification_id')->toArray();
+            $this->suitable_for = array_map('strval', $sparePartVehicleModification->pluck('vehicle_modification_id')->toArray());
             
             // Load modifications so they display in the edit/view modal
             if (!empty($this->suitable_for)) {
@@ -605,6 +681,7 @@ class PartsController extends Component
         $this->edit($id);
         $this->isEdit = false;
         $this->isView = true;
+        $this->step = 'view';
     }
 
     public function update()
@@ -823,9 +900,9 @@ class PartsController extends Component
         $logEntry = json_encode($logData, JSON_PRETTY_PRINT) . "\n" . str_repeat('-', 80) . "\n";
         file_put_contents($logFile, $logEntry, FILE_APPEND | LOCK_EX);
 
-        $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Part updated successfully!']);
+        session()->flash('message', 'Part updated successfully!');
         $this->resetForm();
-        $this->showModal = false;
+        return redirect()->route('sparepart.parts');
     }
 
 
@@ -951,7 +1028,9 @@ class PartsController extends Component
         $this->offline_price = 0;
         $this->apiCategoryName = '';
         $this->selectAll = false;
+        $this->modifications = collect();
     }
+
 
     public function updatedSellingamount($value)
     {
@@ -1185,7 +1264,7 @@ class PartsController extends Component
                         }
 
                         $this->api_compatible_vehicles[] = [
-                            'id'               => $v['vehicleId'] ?? $v['id'],
+                            'id'               => (string) ($v['vehicleId'] ?? $v['id']),
                             'manufacturerName' => $v['manufacturerName'] ?? $v['brand'] ?? 'Unknown',
                             'modelName'        => $v['modelName'] ?? $v['model'] ?? 'Standard',
                             'typeEngineName'   => $engineName,
@@ -1194,7 +1273,7 @@ class PartsController extends Component
                     }
                     
                     // Auto-select fetched compatible vehicles
-                    $this->suitable_for = array_column($this->api_compatible_vehicles, 'id');
+                    $this->suitable_for = array_map('strval', array_column($this->api_compatible_vehicles, 'id'));
                     $this->selectAll = true;
                     
                 } else {
@@ -1324,9 +1403,9 @@ class PartsController extends Component
     {
         if ($value) {
             if (!empty($this->api_compatible_vehicles)) {
-                $this->suitable_for = array_column($this->api_compatible_vehicles, 'id');
+                $this->suitable_for = array_map('strval', array_column($this->api_compatible_vehicles, 'id'));
             } else {
-                $this->suitable_for = Modification::where('status', 1)->pluck('id')->toArray();
+                $this->suitable_for = array_map('strval', Modification::where('status', 1)->pluck('id')->toArray());
             }
         } else {
             $this->suitable_for = [];

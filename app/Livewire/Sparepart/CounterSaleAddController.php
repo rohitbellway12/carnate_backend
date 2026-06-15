@@ -21,7 +21,7 @@ class CounterSaleAddController extends Component
     protected $paginationTheme = 'bootstrap';
 
 
-    public $isEdit = false, $showModal = false;
+    public $isEdit = false, $showModal = false, $is_walkin_customer = false;
     public $name, $lastname, $email, $password, $mobile_no, $branch_name, $landline_no, $country_id, $state_id, $city_id, $address, $gender, $birth_date, $display_name, $branches;
     public $staffId, $workshopId, $jobId, $vehicles, $km_reading, $fual_level, $imagePath, $dentImageId, $mechanic, $sparePartLabel, $isAddvehicle, $unit_price, $sms_alert, $pdftype, $viewtype, $items_purchase, $showstock, $isOpen, $vehicle_brand_id_data, $vehicle_type_id_data, $vehicle_type_id, $vehicledatacollection, $extra_charges, $spare_parts_data, $search_customer_voice, $search_accessory, $search_work_notes, $item, $search_vehicle, $selectedVehicleName, $transaction_number, $countersalenumber, $note, $gst_no;
 
@@ -174,6 +174,22 @@ class CounterSaleAddController extends Component
         $this->customer_name = $customer_id;
 
         return true;
+    }
+
+    public function updatedIsWalkinCustomer($value)
+    {
+        if ($value) {
+            $walkIn = CounterCustomers::firstOrCreate([
+                'user_id' => $this->sparePartId,
+                'name' => 'Walk-in Customer',
+                'mobile_no' => null
+            ]);
+            $this->customer_name = $walkIn->id;
+            $this->dispatch('set-customer-select2', ['id' => $walkIn->id, 'text' => 'Walk-in Customer']);
+        } else {
+            $this->customer_name = null;
+            $this->dispatch('set-customer-select2', ['id' => '', 'text' => '']);
+        }
     }
 
     public function addCustomer()

@@ -41,6 +41,24 @@ $admin = App\Models\Admin::where('id', $id)->first();
                                     </a>
                                 </li>
                             @endif
+                             @if (@$admin->hasPermissionTo('expense-category-show') || @$admin->hasPermissionTo('expenses-show'))
+                                <li>
+                                    <div class="dropdown w-100">
+                                        <a href="#">
+                                            <div class="parent-icon"><i class="fas fa-money-bill-wave fs-5"></i></div>
+                                            <div class="menu-title w-100">Expenses</div><span class="fa fa-chevron-right dropdown-right-icon icon"></span>
+                                        </a>
+                                        <div class="dropdown-content">
+                                            @if (@$admin->hasPermissionTo('expense-category-show'))
+                                                <a href="{{ route('admin.expense.category') }}" style="background-color: unset;">Expense Category</a>
+                                            {{-- @endif
+                                            @if (@$admin->hasPermissionTo('expenses-show')) --}}
+                                                <a href="{{ route('admin.expenses') }}" style="background-color: unset;">Expenses</a>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </li>
+                            @endif
                             <li class="">
 
                                 <div class="dropdown w-100">
@@ -70,15 +88,7 @@ $admin = App\Models\Admin::where('id', $id)->first();
                                     </div>
                                 </div>
                             </li>
-                            @if (@$admin->hasPermissionTo('expense-category-show'))
-                                <li>
-                                    <a href="{{ route('admin.expense.category') }}">
-                                        <div class="parent-icon"><i class="fas fa-chart-pie fs-5"></i>
-                                        </div>
-                                        <div class="menu-title">Expense category</div>
-                                    </a>
-                                </li>
-                            @endif
+                           
                             @if (@$admin->hasPermissionTo('customer-show'))
                                 <li>
                                     <a href="{{ route('admin.customer') }}">
@@ -201,6 +211,7 @@ $admin = App\Models\Admin::where('id', $id)->first();
                                         <a href="{{ route('admin.report.jobcards') }}" style="background-color: unset;">Job Cards Report</a>
                                         <a href="{{ route('admin.report.orders') }}" style="background-color: unset;">Orders Report</a>
                                         <a href="{{ route('admin.report.payments') }}" style="background-color: unset;">Payments Report</a>
+                                        <a href="{{ route('admin.report.expenses') }}" style="background-color: unset;">Expenses Report</a>
                                     </div>
                                 </div>
                             </li>

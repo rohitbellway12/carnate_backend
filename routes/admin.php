@@ -24,6 +24,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('spare-part-unit', SparePartUnitController::class)->name('spare.part.unit');
         Route::get('spare-part-category', SparePartCategoryController::class)->name('spare.part.category');
         Route::get('expense-category', ExpenseCategoryController::class)->name('expense.category');
+        // Admin expenses management
+        Route::get('expenses', \App\Livewire\Admin\ExpensesController::class)->name('expenses');
         Route::get('customer', CustomerController::class)->name('customer');
         Route::get('job-card', JobCardController::class)->name('job.card');
         Route::get('vehicle', VehicleController::class)->name('vehicle');
@@ -50,6 +52,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('report/jobcards', \App\Livewire\Admin\JobCardsReportController::class)->name('report.jobcards');
         Route::get('report/orders', \App\Livewire\Admin\OrdersReportController::class)->name('report.orders');
         Route::get('report/payments', \App\Livewire\Admin\PaymentsReportController::class)->name('report.payments');
+        Route::get('report/expenses', \App\Livewire\Admin\ExpensesReportController::class)->name('report.expenses');
         
         Route::get('profile', ProfileController::class)->name('profile')->withoutMiddleware('admin'); 
     });

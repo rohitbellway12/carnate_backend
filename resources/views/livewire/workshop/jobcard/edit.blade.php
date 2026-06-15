@@ -82,99 +82,6 @@
     </style>
 
 
-    {{-- <div class="modal @if ($showLabourCharge) show @endif" tabindex="-1"
-        style="opacity:1; background-color:#0606068c; display:@if ($showLabourCharge) block @endif">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <form wire:submit.prevent="storelabourcharge">
-                    <div class="modal-header">
-                        <h4 class="modal-title">Create Labour Charge</h4>
-                        <button type="button" class="btn-close" wire:click="$set('showLabourCharge', false)"
-                            data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body py-3">
-                        @csrf
-
-                        <div class="row g-3">
-                             Name
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">Title<sup class="text-danger">*</sup></label>
-                                    <input type="text" wire:model="title" class="form-control"
-                                        placeholder="Enter Title">
-                                </div>
-                                @error('title')
-                                    <span class="text-danger error">{{ $message }}</span>
-    @enderror
-</div>
-
-<div class="col-md-6">
-    <div class="form-group">
-        <label class="form-label">Price<sup class="text-danger">*</sup></label>
-        <input type="number" wire:model.live="price" class="form-control"
-            placeholder="Enter Price" min="1" step="1">
-    </div>
-    @error('price')
-    <span class="text-danger error">{{ $message }}</span>
-    @enderror
-</div>
-
-<div class="col-md-6">
-    <div class="form-group">
-        <label class="form-label">Tax Type</label>
-        <select id="tax_type" class="form-select" wire:model.live="tax_type"
-            id="tax_type">
-            <option value="">Select Tax Type</option>
-            <option value="include">Include All Taxes</option>
-            <option value="exclude">Exclude All Taxes</option>
-        </select>
-        @error('tax_type')
-        <span class="text-danger error">{{ $message }}</span>
-        @enderror
-    </div>
-</div>
-
-Percentage Input Section (Shown based on selection)
-@if ($tax_type == 'include' || $tax_type == 'exclude')
-<div class="col-md-6">
-    <div class="form-group">
-        <label class="form-label">
-            {{ $tax_type == 'include' ? 'Include Tax Percentage' : 'Exclude Tax Percentage' }}
-        </label>
-        <div class="input-group">
-            <input type="number" wire:model.live="tax_percentage" class="form-control"
-                placeholder="Enter Percentage" id="tax_percentage">
-            <span class="input-group-text">%</span>
-        </div>
-        @error('tax_percentage')
-        <span class="text-danger error">{{ $message }}</span>
-        @enderror
-    </div>
-</div>
-@endif
-<div class="col-md-6">
-    <div class="form-group">
-        <label class="form-label">Total Price<sup class="text-danger">*</sup></label>
-        <input type="text" wire:model="total_price" class="form-control" readonly>
-    </div>
-    @error('total_price')
-    <span class="text-danger error">{{ $message }}</span>
-    @enderror
-</div>
-</div>
-</div>
-<div class="modal-footer">
-    <button type="button" class="btn btn-secondary" wire:click="$set('showLabourCharge', false)"
-        data-bs-dismiss="modal">Cancel</button>
-    <button type="submit" class="btn btn-primary">
-        {{ $isEdit ? 'Update' : 'Create' }}
-        <i class="spinner-border spinner-border-sm" wire:loading></i>
-    </button>
-</div>
-</form>
-</div>
-</div>
-</div> --}}
 
     <div class="modal @if ($showLabourCharge) show @endif" tabindex="-1"
         style="opacity:1; background-color:#0606068c; display:@if ($showLabourCharge) block @endif">
@@ -230,17 +137,6 @@ Percentage Input Section (Shown based on selection)
                                     @enderror
                                 </div>
                             @endif
-                            {{-- Inhouse/Primary Price --}}
-                            {{-- <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">Purches Price<sup class="text-danger">*</sup></label>
-                                    <input type="number" wire:model.live="puchase_price" class="form-control"
-                                        placeholder="Enter Price" min="1" step="1">
-                                </div>
-                                @error('price')
-                                    <span class="text-danger error">{{ $message }}</span>
-                                @enderror
-                            </div> --}}
 
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -1452,24 +1348,34 @@ Percentage Input Section (Shown based on selection)
                             <div class="nav toggle">
                                 <a href="{{ route('workshop.jobcard') }}" class="d-flex align-items-center">
                                     <img src="{{ asset('supplier/Back Arrow.png') }}" class="back-arrow me-2">
-                                    <div class="breadcrumb-title pe-2 text-dark d-flex align-items-center" style="border: none;">
+                                    <div class="breadcrumb-title pe-2 text-dark d-flex align-items-center"
+                                        style="border: none;">
                                         Edit Job-Card
                                         @switch($jobcardData->status)
                                             @case(0)
-                                                <span class="badge bg-danger ms-3" style="font-size: 14px;"><i class="fa-solid fa-unlock me-1"></i> Open</span>
-                                                @break
+                                                <span class="badge bg-danger ms-3" style="font-size: 14px;"><i
+                                                        class="fa-solid fa-unlock me-1"></i> Open</span>
+                                            @break
+
                                             @case(1)
-                                                <span class="badge bg-primary ms-3" style="font-size: 14px;"><i class="fa-solid fa-circle-check me-1"></i> Confirmed</span>
-                                                @break
+                                                <span class="badge bg-primary ms-3" style="font-size: 14px;"><i
+                                                        class="fa-solid fa-circle-check me-1"></i> Confirmed</span>
+                                            @break
+
                                             @case(2)
-                                                <span class="badge bg-success ms-3" style="font-size: 14px;"><i class="fa-solid fa-flag-checkered me-1"></i> Completed</span>
-                                                @break
+                                                <span class="badge bg-success ms-3" style="font-size: 14px;"><i
+                                                        class="fa-solid fa-flag-checkered me-1"></i> Completed</span>
+                                            @break
+
                                             @case(3)
-                                                <span class="badge bg-info ms-3" style="font-size: 14px;"><i class="fa-solid fa-close me-1"></i> Closed</span>
-                                                @break
+                                                <span class="badge bg-info ms-3" style="font-size: 14px;"><i
+                                                        class="fa-solid fa-close me-1"></i> Closed</span>
+                                            @break
+
                                             @case(4)
-                                                <span class="badge bg-warning ms-3" style="font-size: 14px;"><i class="fa-solid fa-cogs me-1"></i> Process</span>
-                                                @break
+                                                <span class="badge bg-warning ms-3" style="font-size: 14px;"><i
+                                                        class="fa-solid fa-cogs me-1"></i> Process</span>
+                                            @break
                                         @endswitch
                                     </div>
                                 </a>
@@ -1549,9 +1455,17 @@ Percentage Input Section (Shown based on selection)
                                                 {{ $customer_data->cust_type == 1 ? 'M/S ' . ($customer_data->company_name ?? $fullName) : trim(($customer_data->name ?? '') . ' ' . ($customer_data->lastname ?? '')) }}
                                             </td>
 
-                                            <td style="white-space: nowrap;"><b>Vehicle Name</b></td>
+                                            <td style="white-space: normal; word-break: break-word;"><b>Vehicle Name &
+                                                    Color</b></td>
                                             <td style="width: 25%;">
-                                                {{ $vehicle_data->brand . '/' . $vehicle_data->variant . '/' . $vehicle_data->modification }}
+                                                @if (!empty($vehicle_data) && !empty($vehicle_data->brand))
+                                                    {{ $vehicle_data->brand . '/' . $vehicle_data->variant . '/' . $vehicle_data->modification }}
+                                                    @if (!empty($vehicle_data->vehicle_color))
+                                                        ({{ $vehicle_data->vehicle_color }})
+                                                    @endif
+                                                @else
+                                                    <span class="text-muted">—</span>
+                                                @endif
                                             </td>
                                         </tr>
 
@@ -1928,7 +1842,8 @@ Percentage Input Section (Shown based on selection)
 
                                             <td>
                                                 <select wire:model="extraCharges.{{ $index }}.mechanic_id"
-                                                    class="form-select mechanic-id" data-index="{{ $index }}"
+                                                    class="form-select mechanic-id"
+                                                    data-index="{{ $index }}"
                                                     @if ($extraCharges[$index]['charge_type'] == 2 || $mechanic->isEmpty()) disabled @endif>
                                                     <option value="">--Choose Mechanic--</option>
                                                     @foreach ($mechanic as $item)
@@ -2141,7 +2056,7 @@ Percentage Input Section (Shown based on selection)
 
                                                         <button type="button"
                                                             class="btn btn-outline-secondary add-spare-btn ms-4"
-                                                            wire:click="addStockRows">+</button>
+                                                            wire:click="addStockRows(2)">+</button>
 
                                                         <button type="button" style="width:180px"
                                                             class="btn btn-outline-secondary add-spare-btn ms-2"
@@ -2286,7 +2201,7 @@ Percentage Input Section (Shown based on selection)
 
                                                         <button type="button"
                                                             class="btn btn-outline-secondary add-spare-btn ms-4"
-                                                            wire:click="addStockRows">+</button>
+                                                            wire:click="addStockRows(3)">+</button>
 
                                                         <button type="button" style="width:180px"
                                                             class="btn btn-outline-secondary add-spare-btn ms-2"
@@ -2432,7 +2347,7 @@ Percentage Input Section (Shown based on selection)
 
                                                         <button type="button"
                                                             class="btn btn-outline-secondary add-spare-btn ms-4"
-                                                            wire:click="addStockRows">+</button>
+                                                            wire:click="addStockRows(5)">+</button>
 
                                                         <button type="button" style="width:180px"
                                                             class="btn btn-outline-secondary add-spare-btn ms-2"
@@ -2889,8 +2804,7 @@ Percentage Input Section (Shown based on selection)
                             <button id="breakBtn" class="btn btn-danger">Break</button>
                             <button id="eraseBtn" class="btn btn-secondary">Erase</button>
                             <button id="clearBtn" class="btn btn-light">Clear All</button>
-                            <button id="saveBtn" class="btn btn-primary mt-2"> <small> Save Image </small<
-                                        /button>
+                            <button id="saveBtn" class="btn btn-primary mt-2"> <small> Save Image </small></button>
                         </div>
 
                         <!-- Car Image -->
@@ -3516,27 +3430,7 @@ Percentage Input Section (Shown based on selection)
         })
 
         function initSelect2() {
-            $('.livewire-select2-dropdown').select2({
-                placeholder: 'Select your option'
-            }).on('change', function(e) {
-                let elementName = $(this).attr('id');
-                var data = $(this).select2("val");
-                @this.set(elementName, data);
-            });
-
-            $('#name').select2({
-                placeholder: "Select Name"
-            }).on('change', function() {
-                @this.set('name', $(this).val());
-            });
-
-
-            $('#suitable_for').select2({
-                placeholder: "Select vehicle"
-            }).on('change', function() {
-                @this.set('suitable_for', $(this).val());
-            });
-
+            // Select2 elements are handled by searchable-select-script
         }
     </script>
     <script>
