@@ -106,78 +106,6 @@ class OrderController extends Component
                 $order->save();
             }            
 
-            // echo "<prE>";print_r($order_item->order->user_id);die;    
-
-
-        // if ($status == 1) {
-
-        //     $sparepartStock = $spare_part = SparePart::where('id', $order_item->spare_part_id)->first();
-        //     $spare_part->stock = $spare_part->stock - $order_item->quantity;
-        //     $spare_part->save();
-
-        //     $stockProduct = ProductStock::where(['label_id' => $spare_part->label_id, 'price' => $order_item->price,'user_id'=>$order_item->order->user_id])->first();
-        //     if (empty($stockProduct)) {
-        //         $stockProducts = new ProductStock;
-        //         $stockProducts->label_id = $spare_part->label_id;
-        //         $stockProducts->category_id = $order_item->category;
-        //         $stockProducts->stock = $order_item->quantity;
-        //         $stockProducts->price = $order_item->price;
-        //         $stockProducts->user_id = $order_item->order->user_id;
-        //         $stockProducts->save();
-        //     } else {
-        //         $stockProduct->stock = $stockProduct->stock + $order_item->quantity;
-        //         $stockProduct->price = $order_item->price;
-        //         $stockProduct->save();
-        //     }
-
-        //     $stockHistory = new StockHistory;
-        //     $stockHistory->label_id = $spare_part->label_id;
-        //     $stockHistory->spare_part_id = $order_item->spare_part_id;
-        //     $stockHistory->category = $order_item->category;
-        //     $stockHistory->user_id = $this->currentUser->id;
-        //     $stockHistory->last_stock = $sparepartStock->stock;
-        //     $stockHistory->current_stock = $sparepartStock->stock - $order_item->quantity;
-        //     $stockHistory->stock_type = 'removal';
-        //     $stockHistory->remarks = "Stock removal for order accept";
-        //     $stockHistory->save();
-
-        //     $payableAmount = $order_item->total_amount;
-
-        //     $commision = getCommission($order_item->category);
-        //     if (!empty($commision)) {
-        //         $payableAmount = $order_item->total_amount - (($order_item->total_amount * $commision) / 100);
-        //     }
-
-        //     if ($payableAmount > 0) {
-        //         $wallet = new Wallet;
-        //         $wallet->amount = $payableAmount;
-        //         $wallet->type = 0;
-        //         $wallet->total = $this->currentUser->wallet + $payableAmount;
-        //         $wallet->user_id = $this->currentUser->id;
-        //         $wallet->order_id = $order_item->order?->id ?? 0;
-        //         $wallet->save();
-
-        //         $this->currentUser->increment('wallet', $payableAmount);
-        //     }
-
-        // }
-
-
-        // $order = Order::where('id', $order_item->order_id)->first();
-        // if (!in_array('2', $order_status) && in_array('1', $order_status) && in_array('0', $order_status)) {
-        //     $order->status = 3;
-        //     $order->save();
-        // } elseif (in_array('2', $order_status) && in_array('1', $order_status) && !in_array('0', $order_status)) {
-        //     $order->status = 4;
-        //     $order->save();
-        // } elseif (!in_array('2', $order_status) && in_array('1', $order_status) && !in_array('0', $order_status)) {
-        //     $order->status = 1;
-        //     $order->save();
-        // } elseif (in_array('2', $order_status) && !in_array('1', $order_status) && !in_array('0', $order_status)) {
-        //     $order->status = 2;
-        //     $order->save();
-        // }
-
         // Notify workshop about acceptance/rejection
         if ($order_item->order) {
             $workshopId = $order_item->order->workShopVendor?->id ?? null;
@@ -185,16 +113,16 @@ class OrderController extends Component
                 $partName = $order_item->SpareParts->name ?? 'Spare part';
                 $vendorName = $this->currentUser->name ?? $this->currentUser->company_name ?? 'Spare part vendor';
                 
-                if ($status == 1) {
-                    $title = '✅ Order Item Accepted';
-                    $message = "Good news! Spare parts vendor '{$vendorName}' has accepted your order item for '{$partName}' (Order #{$order_item->order_id}). Your part is being prepared.";
-                } elseif ($status == 2) {
-                    $title = '❌ Order Item Declined';
-                    $message = "Spare parts vendor '{$vendorName}' has declined your order item for '{$partName}' (Order #{$order_item->order_id}). Please check the reason and take action.";
-                } else {
-                    $title = '⏳ Order Item Delayed';
-                    $message = "Spare parts vendor '{$vendorName}' has reported a delay for your order item '{$partName}' (Order #{$order_item->order_id}). Please check for updates.";
-                }
+               if ($status == 1) {
+    $title = '✅ Order Accepted';
+    $message = "Your order item '{$partName}' for Order #{$order_item->order_id} has been Accepted and is currently being processed.";
+} elseif ($status == 2) {
+    $title = '❌ Order Update Required';
+    $message = "Your order item '{$partName}' for Order #{$order_item->order_id} was not approved. Please review the order details.";
+} else {
+    $title = '⏳ Order Processing Delay';
+    $message = "Processing of your order item '{$partName}' for Order #{$order_item->order_id} is taking longer than expected. We will update you once there is progress.";
+}
 
                 Notification::create([
                     'user_id' => $workshopId,
@@ -270,13 +198,13 @@ class OrderController extends Component
             if ($workshopId) {
                 $partName = $order_item->SpareParts->name ?? 'Spare part';
                 $vendorName = $this->currentUser->name ?? $this->currentUser->company_name ?? 'Spare part vendor';
-                Notification::create([
-                    'user_id' => $workshopId,
-                    'order_id' => $order_item->order_id,
-                    'title'   => '🚚 Order Item Handed Over',
-                    'message' => "Spare parts vendor '{$vendorName}' has handed over '{$partName}' for Order #{$order_item->order_id}. Please confirm receipt.",
-                    'sound'   => 'handover.mp3',
-                ]);
+               Notification::create([
+    'user_id'  => $workshopId,
+    'order_id' => $order_item->order_id,
+    'title'    => '📦 Item Delivered',
+    'message'  => "Your order item '{$partName}' (Order #{$order_item->order_id}) has been delivered. Please verify and confirm receipt.",
+    'sound'    => 'handover.mp3',
+]);
             }
         }
 

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
 use Razorpay\Api\Api;
 use Livewire\Attributes\On;
+use App\Models\Notification;
 
 #[Layout('components.layouts.workshop-app')]  
 class PaidOrderController extends Component
@@ -150,13 +151,13 @@ class PaidOrderController extends Component
                     $workshopUser = Auth::guard('workshop')->user();
                     $workshopName = ($workshopUser->name ?? $workshopUser->company_name ?? 'Workshop');
                     
-                    \App\Models\Notification::create([
-                        'user_id'  => $sparepartVendorId,
-                        'order_id' => $order_item->order_id,
-                        'title'    => '✅ Item Received by Workshop',
-                        'message'  => "Workshop '{$workshopName}' has confirmed receipt of '{$partName}' for Order #{$order_item->order_id}. The item has been received successfully.",
-                        'sound'    => 'received.mp3',
-                    ]);
+                 Notification::create([
+    'user_id'  => $sparepartVendorId,
+    'order_id' => $order_item->order_id,
+    'title'    => '📦 Item Received',
+    'message'  => "The item '{$partName}' for Order #{$order_item->order_id} has been received and confirmed successfully.",
+    'sound'    => 'received.mp3',
+]);
                 }
             }
         } catch (\Exception $e) {

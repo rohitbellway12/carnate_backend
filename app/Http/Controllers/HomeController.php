@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Models\Notification;
+use App\Models\Admin;
 
 use Illuminate\Http\Request;
 
@@ -83,7 +84,34 @@ public function getSparePartNotifications()
         ], 500);
     }
 }
+    /**
+     * Return notifications for admin users (guard: admin).
+     */
+   public function getAdminNotifications()
+{
+    try {
 
+        $adminIds = Admin::where('role_type', 21)->pluck('id');
+
+        $notifications = Notification::whereIn('user_id', $adminIds)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'data'   => $notifications,
+        ]);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'status'  => false,
+            'message' => $e->getMessage(),
+        ], 500);
+    }
+}
+
+   
 public function markNotificationAsRead($id)
 {
     try {
@@ -151,4 +179,37 @@ public function markSparePartNotificationAsRead($id)
         ], 500);
     }
 }
+
+    public function markAdminNotificationAsRead($id)
+    {
+        try {
+            $adminIds = Admin::where('role_type', 21)->pluck('id');
+
+            $notification = Notification::where('id', $id)
+                ->whereIn('user_id', $adminIds)
+                ->first();
+
+            if ($notification) {
+                $notification->is_read = true;
+                $notification->save();
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Notification marked as read'
+                ]);
+            }
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Notification not found'
+            ], 404);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
+

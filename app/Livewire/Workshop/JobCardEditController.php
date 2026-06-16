@@ -837,15 +837,15 @@ class JobCardEditController extends Component
                 ->pluck('user_id')
                 ->unique()
                 ->filter();
-            foreach ($vendorIds as $vendorId) {
-                \App\Models\Notification::create([
-                    'user_id' => $vendorId,
-                    'order_id' => $order->id,
-                    'title' => '🛒 New Order Received',
-                    'message' => "Workshop has placed a new order (Order #{$order->id}). Please review the order items and accept or decline them.",
-                    'sound' => 'order.mp3',
-                ]);
-            }
+           foreach ($vendorIds as $vendorId) {
+    \App\Models\Notification::create([
+        'user_id'  => $vendorId,
+        'order_id' => $order->id,
+        'title'    => '🛒 New Order Received',
+        'message'  => "A new order (Order #{$order->id}) is awaiting your review. Please accept or decline the assigned items.",
+        'sound'    => 'order.mp3',
+    ]);
+}
         }
 
         $this->storePurchase();
@@ -937,15 +937,15 @@ class JobCardEditController extends Component
                 ->pluck('user_id')
                 ->unique()
                 ->filter();
-            foreach ($vendorIds as $vendorId) {
-                \App\Models\Notification::create([
-                    'user_id' => $vendorId,
-                    'order_id' => $order->id,
-                    'title' => '🛒 New Order Received',
-                    'message' => "Workshop has placed a new order (Order #{$order->id}). Please review the order items and accept or decline them.",
-                    'sound' => 'order.mp3',
-                ]);
-            }
+           foreach ($vendorIds as $vendorId) {
+    \App\Models\Notification::create([
+        'user_id'  => $vendorId,
+        'order_id' => $order->id,
+        'title'    => '🛒 New Order Received',
+        'message'  => "A new order (Order #{$order->id}) is awaiting your review. Please accept or decline the assigned items.",
+        'sound'    => 'order.mp3',
+    ]);
+}
         }
 
 
@@ -3877,14 +3877,14 @@ class JobCardEditController extends Component
                 ->unique()
                 ->filter();
             foreach ($vendorIds as $vendorId) {
-                \App\Models\Notification::create([
-                    'user_id' => $vendorId,
-                    'order_id' => $order->id,
-                    'title' => '🛒 New Order Received',
-                    'message' => "Workshop has placed a new order (Order #{$order->id}). Please review the order items and accept or decline them.",
-                    'sound' => 'order.mp3',
-                ]);
-            }
+    \App\Models\Notification::create([
+        'user_id'  => $vendorId,
+        'order_id' => $order->id,
+        'title'    => '🛒 New Order Received',
+        'message'  => "A new order (Order #{$order->id}) is awaiting your review. Please accept or decline the assigned items.",
+        'sound'    => 'order.mp3',
+    ]);
+}
         }
     }
 }

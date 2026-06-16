@@ -168,7 +168,9 @@
         // Try to get vendor from the CounterSale record first
         $vendor = null;
         if (isset($countersales->sparepart_id) && $countersales->sparepart_id) {
-            $vendor = App\Models\SparePartVendor::with(['profileImage', 'SignImage'])->find($countersales->sparepart_id);
+            $vendor = App\Models\SparePartVendor::with(['profileImage', 'SignImage'])->find(
+                $countersales->sparepart_id,
+            );
         } elseif (isset($countersales->workshop_id) && $countersales->workshop_id) {
             $vendor = App\Models\WorkShopVendor::with(['profileImage', 'SignImage'])->find($countersales->workshop_id);
         }
@@ -195,70 +197,123 @@
 
     <div class="container">
         <div class="inner-container header">
-        {{-- Top Header Section --}}
-        <table style="width: 100%; border: none; margin-bottom: 20px;">
-            <tr>
-                <td style="width: 30%; border: none; vertical-align: top;">
-                    @if ($logoImage)
-                        <img src="{{ $logoImage }}" alt="Logo" style="max-width: 150px; height: auto;">
-                    @endif
-                </td>
-                <td style="width: 40%; border: none; vertical-align: top; text-align: center;">
-                    <div style="font-size: 16px; font-weight: bold; background-color: #B6CDEF; color: #000; padding: 8px 15px; border: 1px solid #000; display: inline-block; text-transform: uppercase;">
-                        {{ ($logo && $logo->is_gst == 1) ? 'TAX INVOICE' : 'CASH INVOICE' }}
-                    </div>
-                </td>
-                <td style="width: 30%; border: none; vertical-align: top; text-align: right;">
-                    <p style="margin: 0 0 5px 0; font-size: 12px; color: #000;">
-                        <strong>Invoice Number:-</strong> {{ $countersales->countersale_number }}
-                    </p>
-                    <p style="margin: 5px 0; font-size: 12px;">
-                        <strong>Date:-</strong> {{ date('d-m-Y h:i A', strtotime($countersales->created_at)) }}
-                    </p>
-                    <p style="margin: 2px 0; font-size: 12px;">
-                        <strong>Total Items:-</strong> {{ count($countersales->counterSalesSpareParts) }}
-                    </p>
-                </td>
-            </tr>
-        </table>
+            {{-- Top Header Section --}}
+            <table style="width: 100%; border: none; margin-bottom: 20px;">
+                <tr>
+                    <td style="width: 30%; border: none; vertical-align: top;">
+                        @if ($logoImage)
+                            <img src="{{ $logoImage }}" alt="Logo" style="max-width: 150px; height: auto;">
+                        @endif
+                    </td>
+                    <td style="width: 40%; border: none; vertical-align: top; text-align: center;">
+                        <div
+                            style="font-size: 16px; font-weight: bold; background-color: #B6CDEF; color: #000; padding: 8px 15px; border: 1px solid #000; display: inline-block; text-transform: uppercase;">
+                            {{ $logo && $logo->is_gst == 1 ? 'TAX INVOICE' : 'CASH INVOICE' }}
+                        </div>
+                    </td>
+                    <td style="width: 30%; border: none; vertical-align: top; text-align: right;">
+                        <p style="margin: 0 0 5px 0; font-size: 12px; color: #000;">
+                            <strong>Invoice Number:-</strong> {{ $countersales->countersale_number }}
+                        </p>
+                        <p style="margin: 5px 0; font-size: 12px;">
+                            <strong>Date:-</strong> {{ date('d-m-Y h:i A', strtotime($countersales->created_at)) }}
+                        </p>
+                        <p style="margin: 2px 0; font-size: 12px;">
+                            <strong>Total Items:-</strong> {{ count($countersales->counterSalesSpareParts) }}
+                        </p>
+                    </td>
+                </tr>
+            </table>
 
-        {{-- Bill From / Bill To Section --}}
-        <table class="table" style="margin-bottom: 20px;">
-            <thead>
-                <tr>
-                    <th style="width: 50%; background-color: #B6CDEF; color: #000; font-weight: bold;">Bill From</th>
-                    <th style="width: 50%; background-color: #B6CDEF; color: #000; font-weight: bold;">Bill To</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="vertical-align: top; padding: 10px; width: 50%;">
-                        @php $vendor = Auth::guard('sparepart')->user(); @endphp
-                        <h3 style="margin: 0 0 5px 0; color: #663399; font-size: 16px;">{{ $logo?->branch_name ?? ($vendor->company_name ?? $vendor->name) }}</h3>
-                        <p style="margin: 2px 0; font-size: 10px; color: #666; font-style: italic;">{{ $logo?->tagline }}</p>
-                        <div style="font-size: 11px; line-height: 1.4; margin-top: 8px;">
-                            <p style="margin: 2px 0;"><strong>Address:</strong> {{ $vendor->address }}</p>
-                            <p style="margin: 2px 0;"><strong>Phone:</strong> {{ $vendor->mobile_no }}</p>
-                            <p style="margin: 2px 0;"><strong>Email:</strong> {{ $vendor->email }}</p>
+            {{-- Bill From / Bill To Section --}}
+            <table class="table"
+                style="width:100%; border-collapse: collapse; margin-bottom: 20px; border:1px solid #000;">
+
+                <thead>
+                    <tr>
+                        <th
+                            style="width:50%; background:#B6CDEF; padding:10px; text-align:left; border:1px solid #000;">
+                            Bill From (Seller)
+                        </th>
+                        <th
+                            style="width:50%; background:#B6CDEF; padding:10px; text-align:left; border:1px solid #000;">
+                            Bill To (Buyer)
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+
+                        {{-- ================= BILL FROM ================= --}}
+                        <td
+                            style="vertical-align: top; padding:12px; font-size:11px; line-height:1.6; border:1px solid #000;">
+
+                            @php
+                                $vendor = Auth::guard('sparepart')->user();
+                            @endphp
+
+                            <div style="font-size:13px; font-weight:bold; color:#663399; margin-bottom:5px;">
+                                {{ $logo?->branch_name ?? ($vendor->company_name ?? $vendor->name) }}
+                            </div>
+
+                            <div style="margin-bottom:4px;">
+                                <strong>Company Name:-</strong>
+                                {{ $logo?->branch_name ?? ($vendor->company_name ?? $vendor->name) }}
+                            </div>
+
+                            <div style="margin-bottom:4px;">
+                                <strong>Email:-</strong> {{ $vendor->email ?? '-' }}
+                            </div>
+
+                            <div style="margin-bottom:4px;">
+                                <strong>Address:-</strong>
+                                {{ $vendor->address ?? '-' }}
+
+                                {{ $vendor->cityName?->name ?? '-' }},<br>
+                                {{ $vendor->stateName?->name ?? '-' }}, {{ $vendor->pincode ?? '-' }}
+                                {{ $vendor->countryName?->name ?? '-' }}
+                            </div>
+
                             @if ($logo && $logo->is_gst == 1 && !empty($logo->gst_number))
-                                <p style="margin: 2px 0;"><strong>GSTIN:</strong> {{ $logo->gst_number }}</p>
+                                <div style="margin-bottom:4px;">
+                                    <strong>GST Number:-</strong> {{ $logo->gst_number }}
+                                </div>
                             @endif
-                        </div>
-                    </td>
-                    <td style="vertical-align: top; padding: 10px; width: 50%;">
-                        <div style="font-size: 11px; line-height: 1.4;">
-                            <p style="margin: 2px 0;"><strong>Name:</strong> {{ $countersales->Customer?->name }} {{ $countersales->Customer?->lastname }}</p>
-                            <p style="margin: 2px 0;"><strong>Mobile:</strong> {{ $countersales->Customer?->mobile_no ?? 'NA' }}</p>
-                            <p style="margin: 2px 0;"><strong>Email:</strong> {{ $countersales->Customer?->email ?? 'NA' }}</p>
-                            <p style="margin: 2px 0;"><strong>Address:</strong> {{ $countersales->Customer?->address ?? 'NA' }}</p>
-                            @if ($logo->is_gst == 1 && !empty($countersales->Customer?->gst_number))
-                                <p style="margin: 2px 0;"><strong>GSTIN:</strong> {{ $countersales->Customer?->gst_number }}</p>
-                            @endif
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+
+                        </td>
+
+                        {{-- ================= BILL TO ================= --}}
+                        <td
+                            style="vertical-align: top; padding:12px; font-size:11px; line-height:1.6; border:1px solid #000;">
+
+                            <div style="font-size:13px; font-weight:bold; margin-bottom:5px;">
+                                {{ $countersales->Customer?->name }} {{ $countersales->Customer?->lastname }}
+                            </div>
+
+                            <div style="margin-bottom:4px;">
+                                <strong>Mobile:-</strong> {{ $countersales->Customer?->mobile_no ?? 'NA' }}
+                            </div>
+
+                            <div style="margin-bottom:4px;">
+                                <strong>Email:-</strong> {{ $countersales->Customer?->email ?? 'NA' }}
+                            </div>
+
+                            <div style="margin-bottom:4px;">
+                                <strong>Address:-</strong>
+                                {{ $countersales->Customer?->address ?? 'NA' }}
+                            </div>
+
+                            <div style="margin-bottom:4px;">
+                                <strong>GST Number:-</strong>
+                                {{ $countersales->Customer?->gst_number ?? 'NA' }}
+                            </div>
+
+                        </td>
+
+                    </tr>
+                </tbody>
+            </table>
 
             @if (count($countersales->counterSalesSpareParts) > 0)
                 <div class="partCharges my-3"><strong>Parts Charges</strong></div>
@@ -312,7 +367,7 @@
                                     $__taxType = $__sp->tax_type ?? 'exclude';
                                     $__price = (float) ($counterSparePart->price ?? 0);
                                     $__quantity = (float) ($counterSparePart->quantity ?? 1);
-                                    
+
                                     // Unit Price is the base price shown
                                     $exclusiveUnitPrice = $__price;
 
@@ -335,9 +390,11 @@
                                         @if ($__rate > 0)
                                             {{ $__rate }}% {{ $__taxType == 'include' ? '(Inc)' : '(Exc)' }}<br>
                                             @if ($__taxType == 'include')
-                                                <span style="color:#c0392b;">(- {{ number_format($__taxAmt, 2) }})</span>
+                                                <span style="color:#c0392b;">(-
+                                                    {{ number_format($__taxAmt, 2) }})</span>
                                             @else
-                                                <span style="color:#27ae60;">(+ {{ number_format($__taxAmt, 2) }})</span>
+                                                <span style="color:#27ae60;">(+
+                                                    {{ number_format($__taxAmt, 2) }})</span>
                                             @endif
                                         @else
                                             0.00
@@ -351,9 +408,8 @@
                                 <td class="text-end" style="width:10px !important;">
                                     @php
                                         $__dispFinal = (float) ($counterSparePart->final_amount ?? 0);
-                                        $__dispTaxable = $__rate > 0
-                                            ? round($__dispFinal / (1 + $__rate / 100), 2)
-                                            : $__dispFinal;
+                                        $__dispTaxable =
+                                            $__rate > 0 ? round($__dispFinal / (1 + $__rate / 100), 2) : $__dispFinal;
                                     @endphp
                                     {{ number_format($__dispTaxable, 2) }}
                                 </td>
@@ -404,7 +460,7 @@
 
 
                     @php
-                        $colsCount = ($logo && $logo->is_gst == 1) ? 11 : 9;
+                        $colsCount = $logo && $logo->is_gst == 1 ? 11 : 9;
                     @endphp
                     <tr>
                         <td colspan="{{ $colsCount }}" class="text-end"><strong>Sub Total (Excl. Tax)</strong></td>
@@ -422,7 +478,8 @@
                         </tr>
                         <tr>
                             <td colspan="{{ $colsCount }}" class="text-end">ROUND OFF</td>
-                            <td class="text-end">{{ $roundOffParts > 0 ? '' : '(-)' }}{{ number_format(abs($roundOffParts), 2) }}</td>
+                            <td class="text-end">
+                                {{ $roundOffParts > 0 ? '' : '(-)' }}{{ number_format(abs($roundOffParts), 2) }}</td>
                         </tr>
                     @endif
                     <tfoot>

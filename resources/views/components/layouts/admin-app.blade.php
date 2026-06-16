@@ -181,6 +181,355 @@
                         "fa-chevron-down").addClass("fa-chevron-right");
             });
         });
+        // ==================== ADMIN NOTIFICATION HANDLING ====================
+
+let adminNotificationInterval = null;
+let adminIsFetching = false;
+
+function checkAdminNotifications() {
+
+    if (adminIsFetching) {
+        return;
+    }
+
+    const notifCountEl = document.getElementById('notif-count');
+    const notifListEl = document.getElementById('notification-list');
+
+    if (!notifCountEl || !notifListEl) {
+        return;
+    }
+
+    adminIsFetching = true;
+
+    fetch('/admin/get-notifications', {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => {
+
+        if (!response.ok) {
+            throw new Error(`HTTP Error ${response.status}`);
+        }
+
+        return response.json();
+    })
+    .then(data => {
+
+        if (!data.status) {
+            return;
+        }
+
+        const notifications = Array.isArray(data.data)
+            ? data.data
+            : [];
+
+        const unread = notifications.filter(
+            n => Number(n.is_read) === 0
+        );
+
+        // Badge Count
+        notifCountEl.textContent = unread.length;
+
+        // Dropdown List
+        notifListEl.innerHTML = '';
+
+        if (unread.length === 0) {
+
+            const li = document.createElement('li');
+
+            li.className =
+                'dropdown-item text-center text-muted small py-2';
+
+            li.textContent = 'No new notifications';
+
+            notifListEl.appendChild(li);
+
+        } else {
+
+            unread.slice(0, 10).forEach(notification => {
+
+                const li = document.createElement('li');
+
+                li.className =
+                    'dropdown-item border-bottom py-2';
+
+                li.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center gap-2">
+                        <div style="flex-grow:1;min-width:0;">
+                            <strong class="text-wrap d-block text-dark"
+                                style="font-size:.85rem;">
+                                ${escapeHtml(notification.title)}
+                            </strong>
+
+                            <small class="text-wrap text-secondary d-block"
+                                style="font-size:.75rem;line-height:1.2;">
+                                ${escapeHtml(notification.message)}
+                            </small>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-light border-0 p-1"
+                            onclick="event.stopPropagation(); markHeaderNotifAsReadSp(${notification.id})"
+                            title="Mark as read">
+
+                            <i class="bx bx-check text-success fs-5"></i>
+
+                        </button>
+                    </div>
+                `;
+
+                notifListEl.appendChild(li);
+
+            });
+        }
+
+        // ================= POPUP MODAL =================
+
+        const lastSeenId =
+            localStorage.getItem('lastAdminNotifId') || 0;
+
+        const newUnread = unread.filter(
+            n => Number(n.id) > Number(lastSeenId)
+        );
+
+        if (newUnread.length > 0) {
+
+            showAdminNotificationModal(newUnread[0]);
+
+            localStorage.setItem(
+                'lastAdminNotifId',
+                Math.max(...unread.map(n => n.id))
+            );
+        }
+
+    })
+    .catch(() => {})
+    .finally(() => {
+        adminIsFetching = false;
+    });
+}
+
+// ================= MARK AS READ =================
+
+function markHeaderNotifAsReadSp(id) {
+
+    fetch(`/admin/notifications/${id}/read`, {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector(
+                'meta[name="csrf-token"]'
+            ).content
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+
+        if (data.status) {
+
+            checkAdminNotifications();
+
+            if (typeof Livewire !== 'undefined') {
+                Livewire.dispatch('refreshNotifications');
+            }
+        }
+
+    })
+    .catch(() => {});
+}
+
+// ================= POPUP MODAL =================
+
+function showAdminNotificationModal(notification) {
+
+    const oldModal =
+        document.getElementById('adminNotificationModal');
+
+    if (oldModal) {
+        oldModal.remove();
+    }
+
+    const modalHtml = `
+        <div class="modal fade"
+            id="adminNotificationModal"
+            tabindex="-1"
+            data-bs-backdrop="static">
+
+            <div class="modal-dialog modal-dialog-centered">
+
+                <div class="modal-content">
+
+                    <div class="modal-body text-center py-4">
+
+                        <i class="fa-solid fa-bell"
+                            style="font-size:35px;color:#ffcc00;"></i>
+
+                        <h5 class="mt-3">
+                            ${escapeHtml(notification.title)}
+                        </h5>
+
+                        <p>
+                            ${escapeHtml(notification.message)}
+                        </p>
+
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            data-bs-dismiss="modal">
+
+                            OK
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML(
+        'beforeend',
+        modalHtml
+    );
+
+    const modalEl = document.getElementById(
+        'adminNotificationModal'
+    );
+    const modal = new bootstrap.Modal(modalEl);
+
+    modalEl.addEventListener('hide.bs.modal', () => {
+        if (
+            document.activeElement &&
+            modalEl.contains(document.activeElement)
+        ) {
+            document.activeElement.blur();
+        }
+    });
+
+    modalEl.addEventListener('hidden.bs.modal', () => {
+        modalEl.remove();
+
+        const bell = document.getElementById(
+            'adminNotificationDropdown'
+        );
+
+        if (bell) {
+            bell.focus({ preventScroll: true });
+        }
+    });
+
+    modal.show();
+}
+
+// ================= INTERVAL =================
+
+function startAdminNotificationInterval() {
+
+    if (adminNotificationInterval) {
+        return;
+    }
+
+    adminNotificationInterval =
+        setInterval(
+            checkAdminNotifications,
+            15000
+        );
+}
+
+function stopAdminNotificationInterval() {
+
+    if (adminNotificationInterval) {
+
+        clearInterval(
+            adminNotificationInterval
+        );
+
+        adminNotificationInterval = null;
+    }
+}
+
+// ================= INIT =================
+
+function initAdminNotifications() {
+
+    const checkInterval = setInterval(() => {
+
+        if (
+            document.getElementById('notif-count')
+        ) {
+
+            clearInterval(checkInterval);
+
+            checkAdminNotifications();
+
+            startAdminNotificationInterval();
+        }
+
+    }, 500);
+
+    setTimeout(() => {
+        clearInterval(checkInterval);
+    }, 3000);
+}
+
+// ================= HELPER =================
+
+function escapeHtml(text) {
+
+    if (!text) return '';
+
+    const div = document.createElement('div');
+
+    div.textContent = text;
+
+    return div.innerHTML;
+}
+
+// ================= LIVEWIRE =================
+
+if (typeof Livewire !== 'undefined') {
+
+    document.addEventListener(
+        'livewire:navigating',
+        () => {
+            stopAdminNotificationInterval();
+        }
+    );
+
+    document.addEventListener(
+        'livewire:navigated',
+        () => {
+            initAdminNotifications();
+        }
+    );
+}
+
+// ================= PAGE LOAD =================
+
+window.addEventListener(
+    'beforeunload',
+    function () {
+        stopAdminNotificationInterval();
+    }
+);
+
+document.addEventListener(
+    'DOMContentLoaded',
+    function () {
+        initAdminNotifications();
+    }
+);
     </script>
 
     @include('components.includes.searchable-select-script')

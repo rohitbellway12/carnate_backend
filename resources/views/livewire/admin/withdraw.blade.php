@@ -11,7 +11,13 @@
     <div class="card">
         <div class="card-body d-flex justify-content-between align-items-center">
             <div class="breadcrumb-title pe-2" style="border: none;"><i class="fas fa-coins fs-5"></i> Withdraw</div>
-           {{-- @if (@$admin->hasPermissionTo('withdraw-add')) 
+            {{-- Summary of amounts --}}
+            <div class="d-flex gap-4">
+                <div><strong>Total Amount:</strong> ₹{{ number_format($totalAmount ?? 0, 2) }}</div>
+                <div><strong>Withdrawn Amount:</strong> ₹{{ number_format($withdrawAmount ?? 0, 2) }}</div>
+                <div><strong>Balance Amount:</strong> ₹{{ number_format($balanceAmount ?? 0, 2) }}</div>
+            </div>
+            {{-- @if (@$admin->hasPermissionTo('withdraw-add')) 
             <div class="pe-3">
                 <a href="javascript:;" wire:click="create" class="btn btn-primary radius-30 mt-2 mt-lg-0"><i
                         class="bx bxs-plus-square"></i>Add</a>

@@ -73,7 +73,7 @@
                                     <!-- Last Name -->
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label class="form-label">Last Name<sup class="text-danger">*</sup></label>
+                                            <label class="form-label">Last Name <span class="text-muted" style="font-size:12px;">(Optional)</span></label>
                                             <input type="text" wire:model="lastname" class="form-control"
                                                 placeholder="Enter Last Name">
                                         </div>

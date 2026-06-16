@@ -27,6 +27,18 @@ class WorkShopVendor extends Authenticatable
         return $this->belongsTo(City::class, 'city_id');
     }
 
+    // Add this relationship
+    public function stateName()
+    {
+        return $this->belongsTo(State::class, 'state_id');
+    }
+
+    // Add this relationship
+    public function countryName()
+    {
+        return $this->belongsTo(Country::class, 'country_id');
+    }
+
     public function Role()
     {
         return $this->belongsTo(Role::class, 'user_type');
@@ -37,22 +49,18 @@ class WorkShopVendor extends Authenticatable
         return $this->belongsTo(UploadImage::class, 'branch_logo');
     }
 
-//     public function Image()
-// {
-//     return $this->hasOne(UploadImage::class, 'branch_logo'); // Adjust foreign key if needed
-// }
-
     public function parent()
     {
         return $this->belongsTo(WorkShopVendor::class, 'parent_id');
     }
+    
     public function SignImage()
     {
         return $this->belongsTo(UploadImage::class, 'branch_sign_logo');
     }
 
-            public function notifications()
-{
-    return $this->hasMany(Notification::class);
-}
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
 }

@@ -20,6 +20,19 @@ class SparePartVendor extends Authenticatable
     {
         return $this->belongsTo(City::class, 'city_id');
     }
+    
+
+    // Add this relationship
+    public function stateName()
+    {
+        return $this->belongsTo(State::class, 'state_id');
+    }
+
+    // Add this relationship
+    public function countryName()
+    {
+        return $this->belongsTo(Country::class, 'country_id');
+    }
 
     
     public function Role()

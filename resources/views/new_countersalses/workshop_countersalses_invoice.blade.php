@@ -209,15 +209,118 @@
             @endif
 
         {{-- Top Header Section --}}
-        <table style="width: 100%; border: none; margin-bottom: 20px;">
-            <tr>
-                <td style="width: 50%; border: none; vertical-align: top;">
-                    @if($logoImage)
-                        <img src="{{ $logoImage }}" alt="Logo" style="max-width: 150px; height: auto;">
-                    @endif
-                </td>
-                <td style="width: 50%; border: none; vertical-align: top; text-align: right;">
-                    <p style="margin: 0 0 5px 0; font-size: 12px; color: #000;">
+      <table width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:10px;">
+    <tr>
+
+        <!-- Logo -->
+        <td width="20%" valign="middle" align="left" style="padding:10px 0;">
+            @if($logoImage)
+                <img src="{{ $logoImage }}"
+                     style="max-width:120px; height:auto;">
+            @endif
+        </td>
+
+        <!-- Gap -->
+        <td width="5%"></td>
+
+        <!-- Company Details -->
+        <td width="75%" align="right" valign="top" style="padding:10px 0;">
+
+            @php
+                $vendor = Auth::guard('workshop')->user();
+            @endphp
+
+            <div style="
+    font-size:16px;
+    font-weight:bold;
+    color:#2c3e50;
+    margin-bottom:2px;">
+    {{ $logo->branch_name ?? 'Workshop' }}
+</div>
+
+@if(!empty($logo->tagline))
+    <div style="
+        font-size:12px;
+        color:#777;
+        font-style:italic;
+        margin-bottom:5px;">
+        {{ $logo->tagline }}
+    </div>
+@endif
+
+<!-- Line yaha -->
+<div style="
+    border-bottom:1px solid #000;
+    margin:5px 0 8px 0;
+"></div>
+
+<div style="font-size:12px; line-height:18px;">
+    <strong>Phone:</strong> {{ $logo->mobile_no ?? 'NA' }}
+</div>
+
+<div style="font-size:12px; line-height:18px;">
+    <strong>Email:</strong> {{ $logo->email ?? 'NA' }}
+</div>
+
+            <div style="font-size:12px; line-height:18px;">
+                <strong>Address:</strong>
+                {{ $vendor->address ?? '-' }},
+                {{ $vendor->cityName?->name ?? '-' }},
+                {{ $vendor->stateName?->name ?? '-' }},
+                {{ $vendor->countryName?->name ?? '-' }}
+                {{ $vendor->pincode ?? '-' }}
+            </div>
+
+            @if (($countersales->is_gst ?? ($logo->is_gst ?? 0)) == 1 && !empty($logo->gst))
+                <div style="font-size:12px; line-height:18px;">
+                    <strong>GSTIN:</strong>
+                    {{ $logo->gst }}
+                </div>
+            @endif
+
+        </td>
+    </tr>
+
+    <!-- Horizontal Line -->
+    {{-- <tr>
+        <td></td>
+            <td colspan="2">
+                <div style="
+                    border-bottom:1px solid #000;
+                    margin-top:5px;
+                    width:100%;
+                "></div>
+            </td>
+    </tr> --}}
+</table>
+
+        {{-- Bill From / Bill To Section --}}
+        <table class="table" style="margin-bottom: 20px;">
+            <thead>
+                <tr>
+                    <th style="width: 50%; background-color: #B6CDEF; color: #000; font-weight: bold;">Customer Details</th>
+                    <th style="width: 50%; background-color: #B6CDEF; color: #000; font-weight: bold;">Invoice Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    
+                    <td style="vertical-align: top; padding: 10px;">
+                      
+                        <div style="font-size: 11px; line-height: 1.4; margin-top: 8px;">
+                              <p style="margin: 2px 0;"><strong>Name:</strong> {{ $countersales->Customer?->name }} {{ $countersales->Customer?->lastname }}</p>
+                            <p style="margin: 2px 0;"><strong>Mobile:</strong> {{ $countersales->Customer?->mobile_no ?? 'NA' }}</p>
+                            <p style="margin: 2px 0;"><strong>Email:</strong> {{ $countersales->Customer?->email ?? 'NA' }}</p>
+                            <p style="margin: 2px 0;"><strong>Address:</strong> {{ $countersales->Customer?->address ?? 'NA' }}</p>
+                            @if (($countersales->is_gst ?? ($logo->is_gst ?? 0)) == 1 && !empty($countersales->Customer?->gst_number))
+                                <p style="margin: 2px 0;"><strong>GSTIN:</strong> {{ $countersales->Customer?->gst_number }}</p>
+                            @endif
+                            
+                        </div>
+                    </td>
+                    <td style="vertical-align: top; padding: 10px;">
+                        <div style="font-size: 11px; line-height: 1.4;">
+                               <p style="margin: 0 0 5px 0; font-size: 12px; color: #000;">
                         <strong>Invoice No:</strong> {{ $countersales->countersale_number }}
                     </p>
                     <p style="margin: 5px 0; font-size: 12px;">
@@ -226,41 +329,6 @@
                     <p style="margin: 2px 0; font-size: 12px;">
                         <strong>Total Items:-</strong> {{ count($countersales->counterSalesSpareParts) }}
                     </p>
-                </td>
-            </tr>
-        </table>
-
-        {{-- Bill From / Bill To Section --}}
-        <table class="table" style="margin-bottom: 20px;">
-            <thead>
-                <tr>
-                    <th style="width: 50%; background-color: #B6CDEF; color: #000; font-weight: bold;">Bill From</th>
-                    <th style="width: 50%; background-color: #B6CDEF; color: #000; font-weight: bold;">Bill To</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="vertical-align: top; padding: 10px;">
-                        <h3 style="margin: 0 0 5px 0; color: #663399; font-size: 16px;">{{ $logo->branch_name ?? 'Workshop' }}</h3>
-                        <p style="margin: 2px 0; font-size: 10px; color: #666; font-style: italic;">{{ $logo->tagline ?? '' }}</p>
-                        <div style="font-size: 11px; line-height: 1.4; margin-top: 8px;">
-                            <p style="margin: 2px 0;"><strong>Address:</strong> {{ $logo->address ?? 'NA' }}</p>
-                            <p style="margin: 2px 0;"><strong>Phone:</strong> {{ $logo->mobile_no ?? 'NA' }}</p>
-                            <p style="margin: 2px 0;"><strong>Email:</strong> {{ $logo->email ?? 'NA' }}</p>
-                            @if (($countersales->is_gst ?? ($logo->is_gst ?? 0)) == 1 && !empty($logo->gst))
-                                <p style="margin: 2px 0;"><strong>GSTIN:</strong> {{ $logo->gst }}</p>
-                            @endif
-                        </div>
-                    </td>
-                    <td style="vertical-align: top; padding: 10px;">
-                        <div style="font-size: 11px; line-height: 1.4;">
-                            <p style="margin: 2px 0;"><strong>Name:</strong> {{ $countersales->Customer?->name }} {{ $countersales->Customer?->lastname }}</p>
-                            <p style="margin: 2px 0;"><strong>Mobile:</strong> {{ $countersales->Customer?->mobile_no ?? 'NA' }}</p>
-                            <p style="margin: 2px 0;"><strong>Email:</strong> {{ $countersales->Customer?->email ?? 'NA' }}</p>
-                            <p style="margin: 2px 0;"><strong>Address:</strong> {{ $countersales->Customer?->address ?? 'NA' }}</p>
-                            @if (($countersales->is_gst ?? ($logo->is_gst ?? 0)) == 1 && !empty($countersales->Customer?->gst_number))
-                                <p style="margin: 2px 0;"><strong>GSTIN:</strong> {{ $countersales->Customer?->gst_number }}</p>
-                            @endif
                         </div>
                     </td>
                 </tr>

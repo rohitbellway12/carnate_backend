@@ -191,16 +191,18 @@
                     const unreadList = notifications.filter(n => n && n.is_read == 0);
                     
                     if (unreadList.length > 0) {
-                        const lastSeenId = localStorage.getItem('lastSparepartNotifId') || 0;
-                        const newUnread = unreadList.filter(n => n.id > lastSeenId);
-                        
-                        if (newUnread.length) {
-                            // Show persistent modal for new order notifications
-                            if (newUnread[0].title && (newUnread[0].title.includes('Order') || newUnread[0].title.includes('Payment') || newUnread[0].title.includes('Received'))) {
-                                showNotificationModal(newUnread[0]);
-                            }
-                            
-                            localStorage.setItem('lastSparepartNotifId', Math.max(...unreadList.map(n => n.id)));
+                        const lastSeenId = Number(localStorage.getItem('lastSparepartNotifId') || 0);
+                        const newUnread = unreadList.filter(n => Number(n.id) > lastSeenId);
+                        const hasShownThisLoad = sessionStorage.getItem('sparepartNotificationModalShown') === '1';
+                        const maxUnreadId = Math.max(...unreadList.map(n => Number(n.id)));
+                        const modalNotification = newUnread.length > 0
+                            ? newUnread[0]
+                            : (!hasShownThisLoad ? unreadList[0] : null);
+
+                        if (modalNotification) {
+                            showNotificationModal(modalNotification);
+                            sessionStorage.setItem('sparepartNotificationModalShown', '1');
+                            localStorage.setItem('lastSparepartNotifId', String(maxUnreadId));
                         }
                     }
                 })
@@ -249,6 +251,7 @@
                 existingModal.remove();
             }
             
+            const orderId = notification.order_id || null;
             const modalHtml = `
                 <div class="modal fade" id="orderNotificationModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
                     <div class="modal-dialog modal-dialog-centered">
@@ -257,7 +260,9 @@
                                 <i class="fa-solid fa-bell bell-icon" style="font-size: 35px; color: #ffcc00;"></i>
                                 <h5 class="mt-3">${escapeHtml(notification.title)}</h5>
                                 <p>${escapeHtml(notification.message)}</p>
-                                <button type="button" class="btn btn-primary" onclick="viewOrderAndCloseSp('${notification.order_id || 'null'}')">View Order</button>
+                                <button type="button" class="btn btn-primary" onclick="handleNotificationModalActionSp(${JSON.stringify(orderId)})">
+                                    ${orderId ? 'View Order' : 'OK'}
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -265,14 +270,34 @@
             `;
             
             document.body.insertAdjacentHTML('beforeend', modalHtml);
-            const modal = new bootstrap.Modal(document.getElementById('orderNotificationModal'));
+            const modalEl = document.getElementById('orderNotificationModal');
+            const modal = new bootstrap.Modal(modalEl);
+
+            modalEl.addEventListener('hide.bs.modal', () => {
+                if (document.activeElement && modalEl.contains(document.activeElement)) {
+                    document.activeElement.blur();
+                }
+            });
+
+            modalEl.addEventListener('hidden.bs.modal', () => {
+                modalEl.remove();
+
+                const bell = document.getElementById('notificationDropdown');
+                if (bell) {
+                    bell.focus({ preventScroll: true });
+                }
+            });
+
             modal.show();
         }
 
-        function viewOrderAndCloseSp(orderId) {
+        function handleNotificationModalActionSp(orderId) {
             const modal = bootstrap.Modal.getInstance(document.getElementById('orderNotificationModal'));
             if (modal) modal.hide();
-            window.location.href = `/sparepart/order`;
+
+            if (orderId) {
+                window.location.href = `/sparepart/order`;
+            }
         }
 
         // Helper function to escape HTML

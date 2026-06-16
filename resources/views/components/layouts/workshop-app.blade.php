@@ -228,14 +228,18 @@
 
                 const unreadList = notifications.filter(n => n && n.is_read == 0);
                 if (unreadList.length > 0) {
-                    const lastSeenId = localStorage.getItem('lastWorkshopNotifId') || 0;
-                    const newUnread = unreadList.filter(n => n.id > lastSeenId);
-                    if (newUnread.length) {
-                        if (newUnread[0].title && (newUnread[0].title.includes('Order') || newUnread[0].title
-                                .includes('Handover') || newUnread[0].title.includes('Payment'))) {
-                            showNotificationModal(newUnread[0]);
-                        }
-                        localStorage.setItem('lastWorkshopNotifId', Math.max(...unreadList.map(n => n.id)));
+                    const lastSeenId = Number(localStorage.getItem('lastWorkshopNotifId') || 0);
+                    const newUnread = unreadList.filter(n => Number(n.id) > lastSeenId);
+                    const hasShownThisLoad = sessionStorage.getItem('workshopNotificationModalShown') === '1';
+                    const maxUnreadId = Math.max(...unreadList.map(n => Number(n.id)));
+                    const modalNotification = newUnread.length > 0
+                        ? newUnread[0]
+                        : (!hasShownThisLoad ? unreadList[0] : null);
+
+                    if (modalNotification) {
+                        showNotificationModal(modalNotification);
+                        sessionStorage.setItem('workshopNotificationModalShown', '1');
+                        localStorage.setItem('lastWorkshopNotifId', String(maxUnreadId));
                     }
                 }
             })
@@ -284,6 +288,7 @@
                 existingModal.remove();
             }
             
+            const orderId = notification.order_id || null;
             const modalHtml = `
                 <div class="modal fade" id="orderNotificationModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
                     <div class="modal-dialog modal-dialog-centered">
@@ -292,7 +297,9 @@
                                 <i class="fa-solid fa-bell bell-icon" style="font-size: 35px; color: #ffcc00;"></i>
                                 <h5 class="mt-3">${escapeHtml(notification.title)}</h5>
                                 <p>${escapeHtml(notification.message)}</p>
-                                <button type="button" class="btn btn-primary" onclick="viewOrderAndClose(${notification.order_id || 'null'})">View Order</button>
+                                <button type="button" class="btn btn-primary" onclick="handleNotificationModalAction(${JSON.stringify(orderId)})">
+                                    ${orderId ? 'View Order' : 'OK'}
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -300,10 +307,35 @@
             `;
 
             document.body.insertAdjacentHTML('beforeend', modalHtml);
-            const modal = new bootstrap.Modal(document.getElementById('orderNotificationModal'));
+            const modalEl = document.getElementById('orderNotificationModal');
+            const modal = new bootstrap.Modal(modalEl);
+
+            modalEl.addEventListener('hide.bs.modal', () => {
+                if (document.activeElement && modalEl.contains(document.activeElement)) {
+                    document.activeElement.blur();
+                }
+            });
+
+            modalEl.addEventListener('hidden.bs.modal', () => {
+                modalEl.remove();
+
+                const bell = document.getElementById('notificationDropdown');
+                if (bell) {
+                    bell.focus({ preventScroll: true });
+                }
+            });
+
             modal.show();
         }
         
+        function handleNotificationModalAction(orderId) {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('orderNotificationModal'));
+            if (modal) modal.hide();
+
+            if (orderId) {
+                window.location.href = `/workshop/order-list`;
+            }
+        }
         function escapeHtml(text) {
             if (!text) return '';
             const div = document.createElement('div');

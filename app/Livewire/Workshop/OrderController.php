@@ -12,6 +12,7 @@ use Livewire\Attributes\Layout;
 use Razorpay\Api\Api;
 use Livewire\Attributes\On;
 use App\Models\Notification;
+use App\Models\Admin;
 
 #[Layout('components.layouts.workshop-app')]  
 class OrderController extends Component
@@ -215,15 +216,29 @@ public function createOrder($order_id, $total_amount)
  
         $finalOrderId = $order ? $order->id : $dbOrderId;
  
-        foreach ($vendorIds as $vendorId) {
-            Notification::create([
-                'user_id' => $vendorId,
-                'order_id' => $finalOrderId,
-                'title'   => '💰 Payment Received',
-                'message' => "Workshop '{$workshopName}' has successfully made a payment for Order #{$finalOrderId}. Please check your orders.",
-                'sound'   => 'payment.mp3',
-            ]);
-        }
+                  foreach ($vendorIds as $vendorId) {
+                Notification::create([
+                    'user_id'  => $vendorId,
+                    'order_id' => $finalOrderId,
+                    'title'    => '✅ Payment Confirmed',
+                    'message'  => "Payment for Order #{$finalOrderId} has been confirmed and recorded successfully.",
+                    'sound'    => 'payment.mp3',
+                ]);
+            }
+
+            $adminIds = Admin::where('role_type', 21)->pluck('id');
+ 
+        $finalOrderId = $order ? $order->id : $dbOrderId;
+ 
+                  foreach ($adminIds as $adminId) {
+                Notification::create([
+                    'user_id'  => $adminId,
+                    'order_id' => $finalOrderId,
+                    'title'    => '✅ Payment Confirmed',
+                    'message'  => "Payment for Order #{$finalOrderId} has been confirmed and recorded successfully.",
+                    'sound'    => 'payment.mp3',
+                ]);
+            }
  
         $this->dispatch('swal:toast', [
             'type' => 'success',
@@ -494,11 +509,11 @@ public function createOrder($order_id, $total_amount)
                     $workshopUser = Auth::guard('workshop')->user();
                     $workshopName = ($workshopUser->name ?? $workshopUser->company_name ?? 'Workshop');
                     
-                    Notification::create([
+                   Notification::create([
                         'user_id'  => $sparepartVendorId,
                         'order_id' => $order_item->order_id,
-                        'title'    => '✅ Item Received by Workshop',
-                        'message'  => "Workshop '{$workshopName}' has confirmed receipt of '{$partName}' for Order #{$order_item->order_id}. The item has been received successfully.",
+                        'title'    => '📦 Item Received',
+                        'message'  => "The item '{$partName}' for Order #{$order_item->order_id} has been received and confirmed successfully.",
                         'sound'    => 'received.mp3',
                     ]);
                 }

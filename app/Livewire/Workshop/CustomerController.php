@@ -344,7 +344,8 @@ public function store()
     // Validation rules
     $valArr = [
         'name' => "required",
-        'lastname' => "required",
+        // Last name is now optional
+        // 'lastname' => "nullable",
         'mobile_no' => "required|digits:10",
         'pincode' => "nullable|digits:6", // optional now
         'address' => "required",
@@ -352,7 +353,7 @@ public function store()
 
     $messages = [
         'name.required' => "The first name field is required.",
-        'lastname.required' => "The last name field is required.",
+        // 'lastname.required' => "The last name field is required.",
     ];
     $this->validate($valArr, $messages);
 
@@ -661,15 +662,16 @@ public function edit($id)
 public function update()
 {
     // Validation rules
-    $valArr = [
-        'name' => ['required', 'regex:/^[a-zA-Z\s]+$/'],
-        'lastname' => ['required', 'regex:/^[a-zA-Z\s]+$/'],
-        'mobile_no' => ['required', 'min:10'],
-        'address' => ['required'],
-        'search_vehicle' => ['required'],
-        // 'numberPlate' => ['required'],
-        // 'chassisNo' => ['required'],
-    ];
+        $valArr = [
+            'name' => ['required', 'regex:/^[a-zA-Z\s]+$/'],
+            // Last name is now optional; keep regex if provided
+            'lastname' => ['nullable', 'regex:/^[a-zA-Z\s]+$/'],
+            'mobile_no' => ['required', 'min:10'],
+            'address' => ['required'],
+            'search_vehicle' => ['required'],
+            // 'numberPlate' => ['required'],
+            // 'chassisNo' => ['required'],
+        ];
 
     $this->validate($valArr, [
         'name.required' => 'First name is required',

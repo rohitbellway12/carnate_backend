@@ -6,6 +6,8 @@ use Livewire\WithPagination;
 use App\Models\Wallet;
 use App\Models\Withdraw;
 use App\Models\SparePartVendor;
+use App\Models\Notification;
+use App\Models\Admin;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Layout;
@@ -109,13 +111,29 @@ class WithdrawController extends Component
         $sparePart = SparePartVendor::where('id', $this->user_id)->first();
         $sparePart->wallet = $amount;
         $sparePart->save();
+       
+        $vendorName = $sparePart->name ?? 'Spare-Part Vendor';
 
+        $adminIds = Admin::where('role_type' , 21)->pluck('id');
+
+        foreach ($adminIds as $adminId) {
+            Notification::create([
+                'user_id'  => $adminId,
+                'title'    => '🛠️ New Withdrawal Request',
+                'message'  => "Vendor {$vendorName} requested withdrawal of ₹{$this->withdraw}.",
+                'order_id' => null,
+                'sound'    => 'withdrawal.mp3',
+            ]);
+        }
+
+        // ------------------------------------------------------------
+        // 3️⃣  Reset form & show success toast (same as before)
+        // ------------------------------------------------------------
         $this->withdraw = '';
         $this->showModal = false;
         $this->dispatch('swal:toast', [
             'type' => 'success',
             'title' => 'Withdrawal submitted successfully.',
-
         ]);
 
     }

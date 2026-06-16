@@ -7,6 +7,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Payment;
 use App\Models\Withdraw;
+use App\Models\Notification;
 use Illuminate\Support\Facades\Auth;
 
 class WithdrawController extends Component
@@ -25,21 +26,26 @@ class WithdrawController extends Component
     }
     public function render()
     {
+        // Base query for withdraw records with vendor relationship
         $withdraws = Withdraw::with(['SparePartVendor']);
 
-            if ($this->searchfilter) {
-                $searchTerm = '%' . $this->searchfilter . '%';
+        // Apply search filter if provided
+        if ($this->searchfilter) {
+            $searchTerm = '%' . $this->searchfilter . '%';
+            $withdraws = $withdraws->whereHas('SparePartVendor', function ($query) use ($searchTerm) {
+                $query->whereRaw("CONCAT(name, '', lastname) LIKE ?", [$searchTerm]);
+            });
+        }
 
-                $withdraws = $withdraws->whereHas('SparePartVendor', function ($query) use ($searchTerm) {
-                    $query->whereRaw("CONCAT(name, '', lastname) LIKE ?", [$searchTerm]);
-                });
-            }
+        // Pagination
+        $withdraws = $withdraws->orderBy('created_at', 'desc')->paginate(10);
 
-            $withdraws = $withdraws->orderBy('created_at', 'desc')->paginate(10);
+        // Calculate totals for display
+        $totalAmount = Withdraw::sum('amount');
+        $withdrawAmount = Withdraw::where('status', 1)->sum('amount'); // Completed withdrawals
+        $balanceAmount = $totalAmount - $withdrawAmount;
 
-        
- 
-        return view('livewire.admin.withdraw', compact('withdraws'));
+        return view('livewire.admin.withdraw', compact('withdraws', 'totalAmount', 'withdrawAmount', 'balanceAmount'));
     }
 
     public function confirmApprove($id, $amount, $user_id)
@@ -62,6 +68,8 @@ class WithdrawController extends Component
         $withdraw->transaction_id = $this->transaction_id;
         $withdraw->save();
 
+        $this->notifySparePartVendor($withdraw, 'Withdrawal Approved', "Your withdrawal request of ₹{$withdraw->amount} has been approved. Transaction ID: {$this->transaction_id}.");
+
         $this->showApproveModal = false;
         $this->transaction_id = '';
 
@@ -82,6 +90,8 @@ class WithdrawController extends Component
         $withdraw->status = $status;
         $withdraw->save(); 
 
+        $this->notifySparePartVendor($withdraw, 'Withdrawal Declined', "Your withdrawal request of ₹{$withdraw->amount} has been declined by admin.");
+
         $sparepartvendor = SparePartVendor::where('id', $user_id)->first();
         if ($sparepartvendor) {
             $sparepartvendor->wallet = $sparepartvendor->wallet + $amount;
@@ -94,6 +104,17 @@ class WithdrawController extends Component
         ]);
  
 
+    }
+
+    private function notifySparePartVendor(Withdraw $withdraw, string $title, string $message)
+    {
+        Notification::create([
+            'user_id' => $withdraw->user_id,
+            'title' => $title,
+            'message' => $message,
+            'order_id' => null,
+            'sound' => 'withdrawal.mp3',
+        ]);
     }
     
     public function resetFilter(){

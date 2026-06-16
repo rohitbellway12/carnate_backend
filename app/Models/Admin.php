@@ -58,8 +58,19 @@ class Admin extends Authenticatable
                 'password' => 'hashed',
             ];
         }
-        public function cityName()
-        {
-            return $this->belongsTo(City::class, 'city_id');
-        }
+     // In App\Models\Admin.php
+public function cityName()
+{
+    return $this->belongsTo(City::class, 'city_id');
+}
+
+public function stateName()
+{
+    return $this->belongsTo(State::class, 'state_id');
+}
+
+public function countryName()
+{
+    return $this->belongsTo(Country::class, 'country_id');
+}
 }

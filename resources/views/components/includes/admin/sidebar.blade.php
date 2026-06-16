@@ -121,7 +121,7 @@ $admin = App\Models\Admin::where('id', $id)->first();
                                     <a href="{{ route('admin.plan') }}">
                                         <div class="parent-icon"><i class="fas fa-file-contract fs-5"></i>
                                         </div>
-                                        <div class="menu-title">Subsription Plan</div>
+                                        <div class="menu-title">Subscription Plan</div>
                                     </a>
                                 </li>
                             @endif

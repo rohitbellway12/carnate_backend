@@ -160,24 +160,73 @@
                     </tr>
                 </thead>
                 <tbody>
+                    @php
+                        $admin = App\Models\Admin::first();
+                    @endphp
                     <tr>
+                        {{-- <td style="vertical-align: top">
+                            <p class="p-0 m-0">
+                                <b> Company Name:- </b> {{ $admin->name }}
+                            </p>
+                            <p class="m-0">
+                                <b> Email:- </b> {{ $admin->email }}
+                            </p>
+
+                            @if ($admin->address)
+                                <p class="m-0">
+                                    <b> Address:- </b> {{ $admin->address }}
+                                </p>
+                            @endif
+
+                            @if ($admin->city_id)
+                                <p class="m-0">
+                                    <b> City:- </b> {{ $admin->cityName->name ?? '' }}
+                                </p>
+                            @endif
+
+                            @if ($admin->state_id)
+                                <p class="m-0">
+                                    <b> State:- </b> {{ $admin->stateName->name ?? '' }}
+                                </p>
+                            @endif
+
+                            @if ($admin->pincode)
+                                <p class="m-0">
+                                    <b> Pincode:- </b> {{ $admin->pincode }}
+                                </p>
+                            @endif
+
+                            @if ($admin->country_id)
+                                <p class="m-0">
+                                    <b> Country:- </b> {{ $admin->countryName->name ?? '' }}
+                                </p>
+                            @endif
+
+                            @if ($admin->gst_number)
+                                <p class="m-0">
+                                    <b> GST Number:- </b> {{ $admin->gst_number }}
+                                </p>
+                            @endif
+                        </td> --}}
                         <td style="vertical-align: top">
                             <p class="p-0 m-0">
                                 <b> Company Name:- </b> {{ $admin->name }}
                             </p>
-                            <p class=" m-0">
+                            <p class="m-0">
                                 <b> Email:- </b> {{ $admin->email }}
                             </p>
-                            @if ($admin->mobile_no)
-                                <p class=" m-0">
-                                    <b> Mobile No:- </b> {{ $admin->mobile_no }}
+
+                            @if ($admin->address || $admin->city_id || $admin->state_id || $admin->pincode || $admin->country_id)
+                                <p class="m-0">
+                                    <b> Address:- </b><br>
+                                    {{ $admin->address ? $admin->address : '' }}<br>
+                                    {{ $admin->cityName->name ?? '' }}{{ $admin->cityName && ($admin->stateName || $admin->pincode) ? ',' : '' }}<br>
+                                    {{ $admin->stateName->name ?? '' }}{{ $admin->stateName && $admin->pincode ? ',' : '' }}
+                                    {{ $admin->pincode ? $admin->pincode : '' }}
+                                    {{ $admin->countryName->name ?? '' }}
                                 </p>
                             @endif
-                            @if ($admin->address)
-                                <p class=" m-0">
-                                    <b> Address:- </b> {{ $admin->address }}
-                                </p>
-                            @endif
+
                             @if ($admin->gst_number)
                                 <p class="m-0">
                                     <b> GST Number:- </b> {{ $admin->gst_number }}
@@ -186,16 +235,46 @@
                         </td>
                         <td style="vertical-align: top">
                             @php $workshop = $order->workShopVendor; @endphp
+
                             <p class="m-0">
                                 <b> Company Name:- </b>
                                 {{ $workshop->company_name ?? ($workshop->branch_name ?? $workshop->name) }}
                             </p>
+
                             @php $workshopEmail = $workshop->branch_email ?? $workshop->email; @endphp
                             @if ($workshopEmail)
-                                <p class=" m-0">
+                                <p class="m-0">
                                     <b> Email:- </b> {{ $workshopEmail }}
                                 </p>
                             @endif
+
+                            {{-- Workshop Address --}}
+                            @php
+                                $workshopAddressParts = [];
+                                if ($workshop->address) {
+                                    $workshopAddressParts[] = $workshop->address;
+                                }
+                                if ($workshop->cityName) {
+                                    $workshopAddressParts[] = $workshop->cityName->name;
+                                }
+                                if ($workshop->stateName) {
+                                    $workshopAddressParts[] = $workshop->stateName->name;
+                                }
+                                if ($workshop->pincode) {
+                                    $workshopAddressParts[] = $workshop->pincode;
+                                }
+                                if ($workshop->countryName) {
+                                    $workshopAddressParts[] = $workshop->countryName->name;
+                                }
+                                $workshopCompleteAddress = implode(', ', $workshopAddressParts);
+                            @endphp
+
+                            @if ($workshopCompleteAddress)
+                                <p class="m-0">
+                                    <b> Address:- </b> {{ $workshopCompleteAddress }}
+                                </p>
+                            @endif
+
                             @php $workshopGst = $workshop->gst; @endphp
                             @if ($workshopGst)
                                 <p class="m-0">
@@ -236,8 +315,13 @@
                                 $hsn = $item->SpareParts->hsn_code ?? '-';
                                 $totalIncl = (float) $item->total_amount;
                                 $qty = (float) $item->quantity;
-                                $taxRate = (float) (($item->spare_tax > 0) ? $item->spare_tax : ($item->SpareParts->tax_percentage ?? 0));
-                                $taxType = !empty($item->spare_tax_type) ? $item->spare_tax_type : ($item->SpareParts->tax_type ?? 'exclude');
+                                $taxRate =
+                                    (float) ($item->spare_tax > 0
+                                        ? $item->spare_tax
+                                        : $item->SpareParts->tax_percentage ?? 0);
+                                $taxType = !empty($item->spare_tax_type)
+                                    ? $item->spare_tax_type
+                                    : $item->SpareParts->tax_type ?? 'exclude';
 
                                 $totalExcl = $totalIncl / (1 + $taxRate / 100);
                                 $unitPriceExcl = $totalExcl / $qty;
@@ -262,7 +346,8 @@
                                 <td class="text-center">{{ $qty }}</td>
                                 <td class="text-end">{{ number_format($unitPriceExcl, 2) }}</td>
                                 <td class="text-center">{{ $taxRate }}%
-                                    ({{ $taxType == 'include' ? 'Incl.' : 'Excl.' }})</td>
+                                    ({{ $taxType == 'include' ? 'Incl.' : 'Excl.' }})
+                                </td>
                                 <td class="text-end">{{ number_format($totalExcl, 2) }}</td>
                             </tr>
                         @endforeach

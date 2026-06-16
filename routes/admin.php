@@ -1,5 +1,6 @@
 <?php
-use App\Livewire\Admin\{CustomerController, SparePartVendorController, ResetPasswordController, WorkShopVendorController, SubAdminController, PaymentController, SparePartLabelController, SparePartUnitController, SparePartCategoryController, ExpenseCategoryController, JobCardController, PlanController, VehicleController, VehicleTypeController, VehicleBrandController, VehicleColorController, VehicleModelController, WithdrawController,VehicleFuelController,MakersTypeController,MakerController,ModelsController,ModelYearController,ModificationController,ManageAdminPermissions, ManageAdminRoles,OrderController,ProfileController};
+use App\Livewire\Admin\{CustomerController, SparePartVendorController, ResetPasswordController, WorkShopVendorController, SubAdminController, PaymentController, SparePartLabelController, SparePartUnitController, SparePartCategoryController, ExpenseCategoryController, JobCardController, PlanController, VehicleController, VehicleTypeController, VehicleBrandController, VehicleColorController, VehicleModelController, WithdrawController,VehicleFuelController,MakersTypeController,MakerController,ModelsController,ModelYearController,ModificationController,ManageAdminPermissions, ManageAdminRoles,OrderController,ProfileController,NotificationController};
+use App\Http\Controllers\HomeController;
 use App\Livewire\Admin\Auth\Login;
 use App\Livewire\Admin\Dashboard; 
 use Illuminate\Support\Facades\Route;
@@ -20,6 +21,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('reset-password', ResetPasswordController::class)->name('resetpassword');
         Route::get('payment', PaymentController::class)->name('payment');
         Route::get('withdraw', WithdrawController::class)->name('withdraw');
+     
+        Route::get('get-notifications', [HomeController::class, 'getAdminNotifications'])
+            ->name('get-notifications');
+    Route::get('notifications', NotificationController::class)->name('notifications');
+     Route::post('notifications/{id}/read', [HomeController::class, 'markAdminNotificationAsRead'])->name('notifications.read');
         Route::get('spare-part-label', SparePartLabelController::class)->name('spare.part.label');
         Route::get('spare-part-unit', SparePartUnitController::class)->name('spare.part.unit');
         Route::get('spare-part-category', SparePartCategoryController::class)->name('spare.part.category');

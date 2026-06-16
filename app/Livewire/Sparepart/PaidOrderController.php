@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\Layout;
+use App\Models\Notification;
 
 #[Layout('components.layouts.spare-part-app')]
 class PaidOrderController extends Component
@@ -218,13 +219,13 @@ class PaidOrderController extends Component
             if ($workshopId) {
                 $partName = $order_item->SpareParts->name ?? 'Spare part';
                 $vendorName = $this->currentUser->name ?? $this->currentUser->company_name ?? 'Spare part vendor';
-                \App\Models\Notification::create([
-                    'user_id' => $workshopId,
-                    'order_id' => $order_item->order_id,
-                    'title'   => '🚚 Order Item Handed Over',
-                    'message' => "Spare parts vendor '{$vendorName}' has handed over '{$partName}' for Order #{$order_item->order_id}. Please confirm receipt.",
-                    'sound'   => 'handover.mp3',
-                ]);
+                Notification::create([
+    'user_id'  => $workshopId,
+    'order_id' => $order_item->order_id,
+    'title'    => '📦 Item Delivered',
+    'message'  => "Your order item '{$partName}' (Order #{$order_item->order_id}) has been delivered. Please verify and confirm receipt.",
+    'sound'    => 'handover.mp3',
+]);
             }
         }
 
