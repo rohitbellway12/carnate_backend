@@ -20,8 +20,11 @@ class SharedSerialService
 	 */
 	public static function resolveCompanyCode(object $vendor): string
 	{
-		$name = $vendor->company_name ?? $vendor->branch_name ?? 'COM';
+		// The vendor model may store the company name in different attributes depending on the context.
+		// Prefer explicit fields, then fall back to a generic "name" field, and finally to a default.
+		$name = $vendor->company_name ?? $vendor->branch_name ?? ($vendor->name ?? 'COM');
 
+		// Take the first three characters (uppercase) and append the INV suffix.
 		return strtoupper(Str::of((string) $name)->substr(0, 3) . 'INV');
 	}
 

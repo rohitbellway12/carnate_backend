@@ -125,6 +125,21 @@
 </head>
 
 <body>
+  @php
+    $vendor = Auth::guard('sparepart')->user();
+
+    $logoImage = null;
+
+    if ($vendor && $vendor->profileImage && !empty($vendor->profileImage->file)) {
+
+        $logoPath = public_path($vendor->profileImage->file);
+
+        if (file_exists($logoPath)) {
+            $logoImage = 'data:image/png;base64,' .
+                base64_encode(file_get_contents($logoPath));
+        }
+    }
+@endphp
     <div class="container">
         <div class="inner-container header">
             <div class="text-center" style="margin-bottom: 10px; color:#663399;font-size:20px;">
@@ -135,14 +150,15 @@
                 <tbody>
                     <tr>
                         <td class="p-0 border-0">
-                            <!-- Logo section (Uncomment if needed) -->
-                            {{-- <img src="{{ file_exists(public_path($logo->Image->file)) ? 'data:image/png;base64,' . base64_encode(file_get_contents(public_path($logo->Image->file))) : 'path/to/default/image.png' }}" alt="Logo" class="logo"> --}}
+                       @if($logoImage)
+                        <img src="{{ $logoImage }}" alt="Logo" style="max-width:150px;">
+                          @endif
                         </td>
                         <td class="p-0 border-0">
                             <div class="info-box">
                                 <h4 class="text-end m-0" style="color:black; font-size:16px;">
                                     @if ($order->payment_status == 1)
-                                        <b>Invoice Number:-</b> {{ $order->invoice_number ?? $order->id }}
+                                        <b>Invoice Number:-</b> {{ $order->spare_invoice_number ?? $order->invoice_number ?? $order->id }}
                                     @else
                                         <b>Order Number:-</b> {{ $order->id }}
                                     @endif

@@ -144,15 +144,41 @@ if (!function_exists('sparepartOrderReference')) {
 			return '#' . $order->id;
 		}
 
-		if (!empty($order->invoice_number)) {
+		// If an invoice number already exists **and** it is not a CARNATE invoice,
+		// return it directly. CARNATE numbers belong to workshop orders and should
+		// not be shown for spare‑part reports.
+		// Prefer the dedicated spare‑part invoice column if it exists.
+		if (!empty($order->spare_invoice_number)) {
+			return (string) $order->spare_invoice_number;
+		}
+		// Fallback to generic invoice_number (but ignore CARNATE workshop numbers).
+		if (!empty($order->invoice_number) && !str_starts_with($order->invoice_number, 'CARNATE')) {
 			return (string) $order->invoice_number;
 		}
 
-		// Dynamically preview the vendor-specific invoice number
-		// (same logic as getSparePartOrderInvoice in JobCardController)
+		// If the order is paid but does not yet have a stored invoice number,
+		// generate **and persist** one now. This prevents the number from
+		// changing on every view (which happened when we only previewed).
+		if ($order->payment_status == 1 && empty($order->invoice_number) && $vendor) {
+			try {
+				$companyCode   = \App\Services\SharedSerialService::resolveCompanyCode($vendor);
+				$seriesCode    = \App\Services\SharedSerialService::resolveSeriesCode();
+				$serialService = new \App\Services\SharedSerialService();
+				$newInvoice    = $serialService->claimNext($vendor->id, $companyCode, $seriesCode);
+				// Persist so future calls return the same value.
+				$order->invoice_number = $newInvoice;
+				$order->save();
+				return $newInvoice;
+			} catch (\Throwable $e) {
+				// fall through to next strategy if something goes wrong
+			}
+		}
+
+		// Fallback: dynamically preview (non‑persisted) – used only for unpaid
+		// orders or when vendor info is missing.
 		if ($vendor) {
 			try {
-				$companyCode   = strtoupper(substr($vendor->name ?? $vendor->company_name ?? 'VEN', 0, 3) . 'INV');
+				$companyCode   = \App\Services\SharedSerialService::resolveCompanyCode($vendor);
 				$seriesCode    = \App\Services\SharedSerialService::resolveSeriesCode();
 				$serialService = new \App\Services\SharedSerialService();
 				return $serialService->previewNext($vendor->id, $companyCode, $seriesCode);

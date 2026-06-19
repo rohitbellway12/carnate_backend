@@ -47,6 +47,8 @@ class DeleteAllOrders extends Command
             // serial / counter tables used for invoice numbers
             'tbl_invoices',
             'serial_counters',
+            // Reset the shared serial counter that drives AMAINV / CARNATE numbers
+            'shared_serial_counters',
         ];
 
         try {

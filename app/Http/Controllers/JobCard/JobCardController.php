@@ -857,11 +857,11 @@ class JobCardController extends Controller
             $vendor = $order->orderItem->first()->SpareParts?->vendor;
         }
 
-        // Generate invoice number only if PAID and not already set as CARNATE prefix
-        if ($order && (!$order->invoice_number || str_contains($order->invoice_number, 'INV')) && $order->payment_status == 1) {
+      
+        if ($order && empty($order->invoice_number) && $order->payment_status == 1) {
             $companyCode = 'CARNATE';
 
-            // Financial Year Logic
+            // Financial Year Logic (same as before)
             $currentMonth = date('m');
             $currentYear = date('Y');
             if ($currentMonth >= 4) {
@@ -874,8 +874,13 @@ class JobCardController extends Controller
             $financialYear = $fyStart . $fyEnd;
 
             $serialService = new \App\Services\SharedSerialService();
-            $order->invoice_number = $serialService->claimNext(1, $companyCode, $financialYear);
-            $order->save();
+           
+            $newInvoice = $serialService->claimNext($order->id, $companyCode, $financialYear);
+           
+            if (!\App\Models\Order::where('invoice_number', $newInvoice)->exists()) {
+                $order->invoice_number = $newInvoice;
+                $order->save();
+            }
         }
 
         $admin = Admin::select('id', 'name', 'email', 'lastname', 'mobile_no', 'gst_number', 'address')->find(1);
@@ -915,35 +920,22 @@ class JobCardController extends Controller
             'workShopVendor'
         ])->find($orderId);
 
-        // Dynamically generate or fetch the spare part vendor specific invoice number for the PDF view,
-        // so we do not mutate or overwrite the workshop's CARNATE invoice number in the database.
-        $sparePartInvoiceNumber = null;
+        
         $vendor = $sparePart;
         if ($order && $vendor && $order->payment_status == 1) {
-            $companyCode = strtoupper(substr($vendor->name, 0, 3) . 'INV');
-
-            // Financial Year Logic
-            $currentMonth = date('m');
-            $currentYear = date('Y');
-            if ($currentMonth >= 4) {
-                $fyStart = substr($currentYear, -2);
-                $fyEnd = substr($currentYear + 1, -2);
-            } else {
-                $fyStart = substr($currentYear - 1, -2);
-                $fyEnd = substr($currentYear, -2);
-            }
-            $financialYear = $fyStart . $fyEnd;
-
+            $companyCode = \App\Services\SharedSerialService::resolveCompanyCode($vendor);
+            $seriesCode  = \App\Services\SharedSerialService::resolveSeriesCode();
             $serialService = new \App\Services\SharedSerialService();
-            if ($order->invoice_number && str_starts_with($order->invoice_number, $companyCode)) {
-                $sparePartInvoiceNumber = $order->invoice_number;
-            } else {
-                $sparePartInvoiceNumber = $serialService->previewNext($vendor->id, $companyCode, $financialYear);
-            }
-        }
 
-        if ($sparePartInvoiceNumber) {
-            $order->invoice_number = $sparePartInvoiceNumber;
+            if (!empty($order->spare_invoice_number)) {
+                // Re‑use already generated spare‑part invoice.
+                $sparePartInvoiceNumber = $order->spare_invoice_number;
+            } else {
+                // Generate a new invoice number and persist it in the dedicated column.
+                $sparePartInvoiceNumber = $serialService->claimNext($vendor->id, $companyCode, $seriesCode);
+                $order->spare_invoice_number = $sparePartInvoiceNumber;
+                $order->save();
+            }
         }
 
         $title = 'View Invoice';
