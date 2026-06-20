@@ -60,7 +60,7 @@ class WithdrawController extends Component
 
         $withdraws = Withdraw::where('user_id', $this->user_id)
             ->orderBy('created_at', 'desc')
-            ->paginate(5, ['*'], 'withdrawsPage');
+            ->paginate(10, ['*'], 'withdrawsPage');
 
         return view('livewire.sparepart.withdraw', [
             'walletHistories' => $wallets,

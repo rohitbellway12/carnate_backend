@@ -9,10 +9,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Layout;
+use Livewire\WithFileUploads;
 
 class ProfileController extends Component
 {
     use WithPagination;
+    use WithFileUploads;
 
     protected $paginationTheme = 'bootstrap';
 
@@ -22,6 +24,7 @@ class ProfileController extends Component
     public $countries = [];  
     public $states = [];  
     public $cities = [];
+    public $image, $imageName, $signImage, $signImageName;
     protected $listeners = ['delete'];
 
     protected $rules = [
@@ -36,6 +39,8 @@ class ProfileController extends Component
         'city_id' => 'required',
         'address' => 'required|string',
         'gst_number' => 'nullable|string',
+        'image' => 'nullable',
+        'signImage' => 'nullable',
     ];
 
     public function mount()
@@ -65,6 +70,8 @@ class ProfileController extends Component
         $this->cityData($vendor->state_id);  
         $this->countries = Country::all();
 
+        $this->image = UploadImage::find($vendor->logo);
+        $this->signImage = UploadImage::find($vendor->signature);
     }
 
     public function render()
@@ -103,14 +110,41 @@ class ProfileController extends Component
             'address' => $this->address,
             'pincode' => $this->pincode,
             'gst_number' => $this->gst_number,
-            
+            'logo' => $this->image?->id ?? 0,
+            'signature' => $this->signImage?->id ?? 0,
         ]);
 
         $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Profile updated successfully!']);
         // $this->resetForm();
         // $this->showModal = false;
-        // return redirect()->route('admin.profile');
+        return redirect()->route('admin.profile');
 
+    }
+
+    public function updatedImage()
+    {
+        if (!empty($this->image)) {
+            $this->imageName = $this->image->store("uploads", "public_root");
+            $uploadid = UploadImage::create([
+                "file" => $this->imageName,
+            ]);
+            $this->image = $uploadid;
+        }
+
+        $this->dispatch('swal:toast', ['type' => 'success', 'title' => 'Image uploaded',]);
+    }
+
+    public function updatedSignImage()
+    {
+        if (!empty($this->signImage)) {
+            $this->signImageName = $this->signImage->store("uploads", "public_root");
+            $uploadid = UploadImage::create([
+                "file" => $this->signImageName,
+            ]);
+            $this->signImage = $uploadid;
+        }
+
+        $this->dispatch('swal:toast', ['type' => 'success', 'title' => 'Image uploaded',]);
     }
 
     public function stateData($countryId)

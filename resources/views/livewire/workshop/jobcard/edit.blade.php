@@ -2468,27 +2468,18 @@
                                                     <div class="mb-3">
                                                         <label for="advance" class="form-label">Advance</label>
                                                         <input type="text" id="advance"
-                                                            wire:model.live="advance" placeholder="Advance"
+                                                            wire:model="advance" placeholder="Advance"
                                                             class="form-control rounded bg-secondary text-white"
                                                             readonly min="0" step="1">
                                                     </div>
                                                 </div>
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
-                                                        <label for="final_paid" class="form-label">Pay</label>
-                                                        @php
-                                                            $balance = max(
-                                                                0,
-                                                                (float) ($hidden_balance_amount ?? 0) -
-                                                                    (float) ($final_discount ?? 0),
-                                                            );
-                                                        @endphp
-                                                        <input type="number" id="final_paid"
-                                                            wire:model.live="final_paid" @disabled($jobcardData->status == 3 || !$user->hasPermissionTo('Jobcard-edit'))
-                                                            placeholder="Pay" class="form-control rounded"
-                                                            min="0" step="1"
-                                                            max="{{ $balance }}"
-                                                            oninput="if (parseFloat(this.value) > parseFloat({{ $balance }})) this.value = {{ $balance }};">
+                                                        <label for="final_paid" class="form-label">Total Paid</label>
+                                                        <input type="text" id="final_paid"
+                                                            wire:model="final_paid"
+                                                            placeholder="Total Paid" class="form-control bg-secondary text-white rounded"
+                                                            readonly>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-4">
@@ -2533,12 +2524,10 @@
                                                 </div>
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
-                                                        <label for="advance" class="form-label">Advance</label>
-                                                        <input @disabled(!$user->hasPermissionTo('Jobcard-edit')) type="number"
-                                                            id="advance" wire:model.live="advance"
-                                                            step="1" max="{{ (float) $final_amount }}"
-                                                            placeholder="Advance" class="form-control rounded"
-                                                            oninput="if (parseFloat(this.value) > parseFloat({{ $final_amount }})) this.value = {{ $final_amount }};">
+                                                        <label for="advance" class="form-label">Advance Paid</label>
+                                                        <input type="text" id="advance" wire:model="advance"
+                                                            placeholder="Advance Paid" class="form-control bg-secondary text-white rounded"
+                                                            readonly>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-4">
@@ -2546,7 +2535,7 @@
                                                         <label for="pending-amount" class="form-label">Pending
                                                             Amount</label>
                                                         <input type="text" id="pending-amount"
-                                                            wire:model="balance_amount" wire:model="balance_amount"
+                                                            wire:model="balance_amount"
                                                             value="0"
                                                             class="form-control bg-secondary text-white rounded"
                                                             readonly>
@@ -2554,49 +2543,99 @@
                                                 </div>
                                             </div>
                                         @endif
-                                        <div class="row mt-2">
-                                            <div class="col-md-4">
-                                                <div class="mb-3">
-                                                    <label for="payment-type" class="form-label">Payment
-                                                        Type</label>
-                                                    <select
-                                                        class="form-select @error('payment_type') is-invalid @enderror"
-                                                        wire:change="paymentType($event.target.value)"
-                                                        wire:model="payment_type">
-                                                        <option value="">Select Payment</option>
-                                                        <option value="cheque">Cheque</option>
-                                                        <option value="cash">Cash</option>
-                                                        <option value="upi">UPI</option>
-                                                        <option value="card">Card</option>
-                                                        <option value="wallet">Wallet</option>
-                                                        <option value="net_banking">Net Banking</option>
-                                                    </select>
-                                                    @error('payment_type')
-                                                        <span class="text-danger error">{{ $message }}</span>
-                                                    @enderror
-                                                </div>
-                                            </div>
 
-                                            @if ($payment_type !== 'cash' && !empty($payment_type))
-                                                <div class="col-md-6">
-                                                    <div class="mb-3">
-                                                        <label for="transaction_number" class="form-label">
-                                                            {{ $payment_type === 'cheque' ? 'Cheque Number' : 'Transaction Number' }}<sup
-                                                                class="text-danger">*</sup>
-                                                        </label>
-                                                        <input type="text" id="transaction_number"
-                                                            wire:model="transaction_number"
-                                                            placeholder="{{ $payment_type === 'cheque' ? 'Cheque Number' : 'Transaction Number' }}"
-                                                            class="form-control @error('transaction_number') is-invalid @enderror">
-                                                        @error('transaction_number')
-                                                            <span class="text-danger error">{{ $message }}</span>
-                                                        @enderror
+                                        <!-- Payment History Ledger -->
+                                        <div class="mt-4 pt-3 border-top">
+                                            <h6 class="mb-3 text-primary font-weight-bold" style="font-size: 1rem; border-bottom: 2px solid #007bff; display: inline-block; padding-bottom: 3px;">Payment History Ledger</h6>
+                                            @if(!empty($payments_list))
+                                                <div class="table-responsive mb-3">
+                                                    <table class="table table-sm table-striped table-hover align-middle">
+                                                        <thead class="bg-light">
+                                                            <tr>
+                                                                <th>Date</th>
+                                                                <th>Amount</th>
+                                                                <th>Payment Method</th>
+                                                                <th>Transaction Number</th>
+                                                                @if($jobcardData->status != 3)
+                                                                    <th class="text-center">Action</th>
+                                                                @endif
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach($payments_list as $pay)
+                                                                <tr>
+                                                                    <td>{{ \Carbon\Carbon::parse($pay['created_at'])->format('d-M-Y H:i') }}</td>
+                                                                    <td class="font-weight-bold">₹{{ number_format($pay['amount'], 2) }}</td>
+                                                                    <td>
+                                                                        <span class="badge bg-info text-capitalize">{{ str_replace('_', ' ', $pay['payment_type']) }}</span>
+                                                                    </td>
+                                                                    <td>{{ $pay['transaction_number'] ?? 'N/A' }}</td>
+                                                                    @if($jobcardData->status != 3)
+                                                                        <td class="text-center">
+                                                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                                                wire:click="deletePayment({{ $pay['id'] }})"
+                                                                                wire:confirm="Are you sure you want to delete this payment?">
+                                                                                <i class="fa fa-trash"></i>
+                                                                            </button>
+                                                                        </td>
+                                                                    @endif
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            @else
+                                                <div class="alert alert-info py-2 text-center" style="font-size: 0.9rem;">
+                                                    No payments recorded yet.
+                                                </div>
+                                            @endif
+
+                                            <!-- Add New Payment Form (Only if Job Card is not closed) -->
+                                            @if($jobcardData->status != 3)
+                                                <div class="card bg-light border-0 shadow-sm p-3 mt-3">
+                                                    <div class="row g-3 align-items-end">
+                                                        <div class="col-md-3">
+                                                            <label class="form-label" style="font-size: 0.85rem; font-weight: 500;">Payment Amount <span class="text-danger">*</span></label>
+                                                            <input type="number" step="0.01" class="form-control @error('new_payment_amount') is-invalid @enderror" 
+                                                                wire:model="new_payment_amount" placeholder="e.g. 500">
+                                                            @error('new_payment_amount')
+                                                                <span class="invalid-feedback d-block">{{ $message }}</span>
+                                                            @enderror
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <label class="form-label" style="font-size: 0.85rem; font-weight: 500;">Payment Method <span class="text-danger">*</span></label>
+                                                            <select class="form-select @error('new_payment_type') is-invalid @enderror" wire:model="new_payment_type">
+                                                                <option value="">Select Method</option>
+                                                                <option value="cash">Cash</option>
+                                                                <option value="upi">UPI</option>
+                                                                <option value="card">Card</option>
+                                                                <option value="cheque">Cheque</option>
+                                                                <option value="wallet">Wallet</option>
+                                                                <option value="net_banking">Net Banking</option>
+                                                            </select>
+                                                            @error('new_payment_type')
+                                                                <span class="invalid-feedback d-block">{{ $message }}</span>
+                                                            @enderror
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <label class="form-label" style="font-size: 0.85rem; font-weight: 500;">
+                                                                {{ $new_payment_type === 'cheque' ? 'Cheque Number' : 'Transaction ID' }}
+                                                            </label>
+                                                            <input type="text" class="form-control @error('new_payment_transaction_number') is-invalid @enderror" 
+                                                                wire:model="new_payment_transaction_number" placeholder="Ref/Chq No.">
+                                                            @error('new_payment_transaction_number')
+                                                                <span class="invalid-feedback d-block">{{ $message }}</span>
+                                                            @enderror
+                                                        </div>
+                                                        <div class="col-md-3 text-end text-md-start">
+                                                            <button type="button" class="btn btn-success w-100" wire:click="addPayment">
+                                                                <i class="fa fa-plus-circle me-1"></i> Add Payment
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             @endif
                                         </div>
-
-
                                     </div>
                                 </div>
                             </div>

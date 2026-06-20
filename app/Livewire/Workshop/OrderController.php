@@ -517,6 +517,25 @@ public function createOrder($order_id, $total_amount)
                         'sound'    => 'received.mp3',
                     ]);
                 }
+                // ------------------------------------------------------------
+                // Notify admins that the workshop has received the item
+                // ------------------------------------------------------------
+                try {
+                    $adminIds = \App\Models\Admin::where('role_type', 21)->pluck('id');
+                    $workshopUser = Auth::guard('workshop')->user();
+                    $workshopName = $workshopUser->name ?? $workshopUser->company_name ?? 'Workshop';
+                    foreach ($adminIds as $adminId) {
+                        Notification::create([
+                            'user_id'  => $adminId,
+                            'order_id' => $order_item->order_id,
+                            'title'    => "📦 Item Received – {$workshopName}",
+                            'message'  => "Workshop '{$workshopName}' has confirmed receipt of an item for Order #{$order_item->order_id}.",
+                            'sound'    => 'received.mp3',
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('[ADMIN RECEIVED NOTIF] '.$e->getMessage().' at '.$e->getFile().':'.$e->getLine());
+                }
             }
         } catch (\Exception $e) {
             \Log::error('[RECEIVED] Exception: '.$e->getMessage().' at '.$e->getFile().':'.$e->getLine());

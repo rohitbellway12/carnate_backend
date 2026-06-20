@@ -229,6 +229,26 @@ class PaidOrderController extends Component
             }
         }
 
+            // ------------------------------------------------------------
+            // Notify admins that the workshop has marked the item as delivered
+            // ------------------------------------------------------------
+            try {
+                $adminIds = \App\Models\Admin::where('role_type', 21)->pluck('id');
+                $workshopUser = Auth::guard('workshop')->user();
+                $workshopName = $workshopUser->name ?? $workshopUser->company_name ?? 'Workshop';
+                foreach ($adminIds as $adminId) {
+                    Notification::create([
+                        'user_id'  => $adminId,
+                        'order_id' => $order_item->order_id,
+                        'title'    => "📦 Item Delivered – {$workshopName}",
+                        'message'  => "Workshop '{$workshopName}' has marked item delivery for Order #{$order_item->order_id}.",
+                        'sound'    => 'handover.mp3',
+                    ]);
+                }
+            } catch (\Exception $e) {
+                \Log::error('[ADMIN HANDOVER NOTIF] '.$e->getMessage().' at '.$e->getFile().':'.$e->getLine());
+            }
+
         $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Hand over Successfully!']);
     }
 

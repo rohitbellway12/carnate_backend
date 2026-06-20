@@ -160,6 +160,24 @@ class PurchaseCartController extends Component
         } catch (\Exception $e) {
             \Log::error('[RECEIVED] Exception: '.$e->getMessage().' at '.$e->getFile().':'.$e->getLine());
         }
+            // Notify admins that workshop has received the item
+            try {
+                $adminIds = \App\Models\Admin::where('role_type', 21)->pluck('id');
+                // Notify admins with a descriptive title that includes the workshop name
+                $workshopUser = Auth::guard('workshop')->user();
+                $workshopName = $workshopUser->name ?? $workshopUser->company_name ?? 'Workshop';
+                foreach ($adminIds as $adminId) {
+                    Notification::create([
+                        'user_id'  => $adminId,
+                        'order_id' => $order_item->order_id,
+                        'title'    => "📦 Item Received – {$workshopName}",
+                        'message'  => "Workshop '{$workshopName}' has confirmed receipt of an item for Order #{$order_item->order_id}.",
+                        'sound'    => 'received.mp3',
+                    ]);
+                }
+            } catch (\Exception $e) {
+                \Log::error('[ADMIN RECEIVED NOTIF] Exception: '.$e->getMessage().' at '.$e->getFile().':'.$e->getLine());
+            }
         
         $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Received Successfully!']);
         return redirect()->route('workshop.orders');
@@ -338,6 +356,18 @@ class PurchaseCartController extends Component
                 'sound'   => 'payment.mp3',
             ]);
         }
+            // Notify admins about the payment receipt as well
+            $adminIds = \App\Models\Admin::where('role_type', 21)->pluck('id');
+            // Notify admins with a clear title indicating the workshop and order
+            foreach ($adminIds as $adminId) {
+                Notification::create([
+                    'user_id' => $adminId,
+                    'order_id' => $finalOrderId,
+                    'title'   => "💰 Payment Received – {$workshopName}",
+                    'message' => "Workshop '{$workshopName}' has completed payment for Order #{$finalOrderId}.",
+                    'sound'   => 'payment.mp3',
+                ]);
+            }
 
 
         $this->dispatch('swal:toast', [
@@ -481,13 +511,40 @@ class PurchaseCartController extends Component
             }
 
             $order->save();
-        }
+            }
 
-        if ($status == 1) {
-            $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Order Item Accepted!']);
-        } else {
-            $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Order Item Declined!']);
-        }
+            // ------------------------------------------------------------
+            // 5️⃣  Notify admins about the vendor's action (accept/decline)
+            // ------------------------------------------------------------
+            try {
+                $adminIds = \App\Models\Admin::where('role_type', 21)->pluck('id');
+                $workshopUser = Auth::guard('workshop')->user();
+                $workshopName = $workshopUser->name ?? $workshopUser->company_name ?? 'Workshop';
+                $vendor = \App\Models\SparePartVendor::find($order_item->user_id);
+                $vendorName = $vendor->name ?? 'Spare‑part Vendor';
+                $partName = $order_item->SpareParts->name ?? 'Item';
+                $action = $status == 1 ? 'accepted' : 'declined';
+                $title = $status == 1 ? '✅ Order Item Accepted' : '❌ Order Item Declined';
+                $message = "Spare‑part vendor {$vendorName} has {$action} the order item '{$partName}' for Order #{$order_item->order_id} placed by workshop {$workshopName}.";
+
+                foreach ($adminIds as $adminId) {
+                    Notification::create([
+                        'user_id' => $adminId,
+                        'order_id' => $order_item->order_id,
+                        'title' => $title,
+                        'message' => $message,
+                        'sound' => 'order_update.mp3',
+                    ]);
+                }
+            } catch (\Exception $e) {
+                \Log::error('[ADMIN ORDER ITEM NOTIF] '.$e->getMessage().' at '.$e->getFile().':'.$e->getLine());
+            }
+
+            if ($status == 1) {
+                $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Order Item Accepted!']);
+            } else {
+                $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Order Item Declined!']);
+            }
     }
 
     public function orderConfirmed()
@@ -497,6 +554,7 @@ class PurchaseCartController extends Component
 
         $orderItems = \App\Models\OrderItem::where('order_id', $order->id)->get();
         $vendorIds = $orderItems->pluck('user_id')->unique(); // user_id refers to spare‑part vendor
+        // Notify each spare‑part vendor about the new order
         foreach ($vendorIds as $vendorId) {
             \App\Models\Notification::create([
                 'user_id' => $vendorId,
@@ -505,6 +563,54 @@ class PurchaseCartController extends Component
                 'message' => "Workshop has placed a new order (Order #{$order->id}). Please review the order items and accept or decline them.",
                 'sound'   => 'order.mp3',
             ]);
+        }
+
+        // ------------------------------------------------------------
+        // 7️⃣  Notify the workshop itself that the order has been placed
+        // ------------------------------------------------------------
+        try {
+            $workshopUser = Auth::guard('workshop')->user();
+            $workshopName = $workshopUser->name ?? $workshopUser->company_name ?? 'Workshop';
+            Notification::create([
+                'user_id' => $workshopUser->id,
+                'order_id' => $order->id,
+                'title'   => "🛒 Order Placed – {$workshopName}",
+                'message' => "Your order (Order #{$order->id}) has been successfully placed and sent to the relevant spare‑part vendors.",
+                'sound'   => 'order.mp3',
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('[WORKSHOP ORDER NOTIF] '.$e->getMessage().' at '.$e->getFile().':'.$e->getLine());
+        }
+
+        // ------------------------------------------------------------
+        // 6️⃣  Also notify admins about the same order placement
+        // ------------------------------------------------------------
+        // ------------------------------------------------------------
+        // 6️⃣  Also notify admins about the same order placement
+        // ------------------------------------------------------------
+        // Provide a clear title that shows which workshop placed the order
+        // and which spare‑part vendor is the recipient.
+        try {
+            $adminIds = \App\Models\Admin::where('role_type', 21)->pluck('id');
+            $workshopUser = Auth::guard('workshop')->user();
+            $workshopName = $workshopUser->name ?? $workshopUser->company_name ?? 'Workshop';
+            foreach ($vendorIds as $vendorId) {
+                $vendor = \App\Models\SparePartVendor::find($vendorId);
+                $vendorName = $vendor->name ?? 'Spare‑part Vendor';
+                $title = "🛒 New Order from {$workshopName} to {$vendorName}";
+                $message = "Workshop '{$workshopName}' has placed a new order (Order #{$order->id}) for vendor '{$vendorName}'.";
+                foreach ($adminIds as $adminId) {
+                    \App\Models\Notification::create([
+                        'user_id' => $adminId,
+                        'order_id' => $order->id,
+                        'title'   => $title,
+                        'message' => $message,
+                        'sound'   => 'order.mp3',
+                    ]);
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::error('[ADMIN ORDER NOTIF] '.$e->getMessage().' at '.$e->getFile().':'.$e->getLine());
         }
 
         $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Order confirmed successfully!']);

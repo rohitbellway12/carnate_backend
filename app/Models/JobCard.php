@@ -12,33 +12,33 @@ class JobCard extends Model
 
     protected $dates = ['deleted_at'];
 
-        protected $fillable = [
-            'jobcard_number',
-            'shared_serial',
-            'customer_id',
-            'vehicle_id',
-            'amount',
-            'discount',
-            'final_amount',
-            'advance',
-            'balance_amount',
-            'final_discount',
-            'final_paid',
-            'km_runing',
-            'fual_level',
-            'supervisor_id',
-            'delivery_date',
-            'delivery_time',
-            'payment_type',
-            'transaction_number',
-            'status',
-            'step',
-            'sms_alert',
-            'user_id',
-            'notes',
-            'soft_delete',
-            'deleted_at',
-        ];
+    protected $fillable = [
+        'jobcard_number',
+        'shared_serial',
+        'customer_id',
+        'vehicle_id',
+        'amount',
+        'discount',
+        'final_amount',
+        'advance',
+        'balance_amount',
+        'final_discount',
+        'final_paid',
+        'km_runing',
+        'fual_level',
+        'supervisor_id',
+        'delivery_date',
+        'delivery_time',
+        'payment_type',
+        'transaction_number',
+        'status',
+        'step',
+        'sms_alert',
+        'user_id',
+        'notes',
+        'soft_delete',
+        'deleted_at',
+    ];
     public function jobCardSpareParts()
     {
         return $this->hasMany(JobCardSparePart::class, 'jobcard_id');
@@ -72,5 +72,10 @@ class JobCard extends Model
     public function workshop()
     {
         return $this->belongsTo(WorkShopVendor::class, 'user_id');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(JobCardPayment::class, 'job_card_id');
     }
 }

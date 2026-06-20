@@ -148,6 +148,46 @@
                                 <span class="text-danger error">{{ $message }}</span>
                             @enderror
                         </div>
+
+                        <!-- Company Logo Image -->
+                        <div class="col-md-12 mt-3">
+                            <div class="row align-items-center">
+                                <div class="col-10">
+                                    <div class="form-group">
+                                        <label class="form-label">Company Logo Image</label>
+                                        <input type="file" class="form-control" wire:model="image" />
+                                    </div>
+                                </div>
+                                <div class="col-2 text-center">
+                                    @if ($image)
+                                        <img class="img-fluid rounded border shadow-sm" style="max-height: 80px;" src="{{ method_exists($image, 'temporaryUrl') ? $image->temporaryUrl() : asset($image->file) }}">
+                                    @endif
+                                </div>
+                                @error('image')
+                                    <span class="text-danger error small d-block mt-1">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <!-- Company Sign Image -->
+                        <div class="col-md-12 mt-3">
+                            <div class="row align-items-center">
+                                <div class="col-10">
+                                    <div class="form-group">
+                                        <label class="form-label">Company Sign Image</label>
+                                        <input type="file" class="form-control" wire:model="signImage" />
+                                    </div>
+                                </div>
+                                <div class="col-2 text-center">
+                                    @if ($signImage)
+                                        <img class="img-fluid rounded border shadow-sm" style="max-height: 80px;" src="{{ method_exists($signImage, 'temporaryUrl') ? $signImage->temporaryUrl() : asset($signImage->file) }}">
+                                    @endif
+                                </div>
+                                @error('signImage')
+                                    <span class="text-danger error small d-block mt-1">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">

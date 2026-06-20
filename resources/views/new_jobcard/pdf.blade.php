@@ -134,7 +134,6 @@
 
 <body>
    
-    {{-- manish --}}
     <div class="container">
         <div class="inner-container header">
             {{-- <div class="text-center" style="margin-bottom: 10px;">INVOICE</div> --}}

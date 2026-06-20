@@ -4,7 +4,7 @@ namespace App\Livewire\Workshop;
 
 use App\Mail\EstimateMail;
 use App\Mail\InvoiceMail;
-use App\Models\{City, WorkShopVendor, Country, State, Branch, Category, Customer, JobCard, JobCardImage, Modification, UploadImage, User, Vehicle, Order, SparePart, OrderItem, Payment, SparePartVehicleModification, Staff, Unit, VehicleModel};
+use App\Models\{City, WorkShopVendor, Country, State, Branch, Category, Customer, JobCard, JobCardImage, Modification, UploadImage, User, Vehicle, Order, SparePart, OrderItem, Payment, SparePartVehicleModification, Staff, Unit, VehicleModel, JobCardPayment};
 use App\Models\Fueltype;
 use App\Models\JobCardExtraCharge;
 use App\Models\JobCardsDentMark;
@@ -41,6 +41,11 @@ class JobCardEditController extends Component
     public $isEdit = false, $showModal = false;
     public $name, $lastname, $email, $password, $mobile_no, $branch_name, $landline_no, $country_id, $state_id, $city_id, $address, $gender, $birth_date, $display_name, $branches;
     public $staffId, $workshopId, $jobId, $jobcardData, $vehicles, $km_reading, $fual_level, $imagePath, $dentImageId, $mechanic, $sparePartLabel, $isAddvehicle, $unit_price, $sms_alert, $pdftype, $viewtype, $items_purchase, $showstock, $isOpen, $vehicle_brand_id_data, $vehicle_type_id_data, $vehicle_type_id, $vehicledatacollection, $extra_charges, $spare_parts_data, $search_customer_voice, $search_accessory, $search_work_notes, $item, $search_vehicle, $selectedVehicleName, $payment_type, $transaction_number, $gst_no;
+    
+    public $new_payment_amount;
+    public $new_payment_type;
+    public $new_payment_transaction_number;
+    public $payments_list = [];
 
     public $customerVoiceCount = "0";
     public $mechanic_id = "0";
@@ -199,13 +204,18 @@ class JobCardEditController extends Component
 
         // dd($jobcardData->toArray());
         $this->jobcardData = $jobcardData;
+        $this->payments_list = $this->jobcardData->payments()->orderBy('created_at', 'asc')->get()->toArray();
+        $this->final_paid = collect($this->payments_list)->sum('amount');
+        if (in_array($jobcardData->status, [0, 1, 4])) {
+            $this->advance = $this->final_paid;
+        } else {
+            $this->advance = $jobcardData->advance;
+        }
         $this->final_amount = $jobcardData->final_amount;
         $this->totalAmount = $jobcardData->amount;
-        $this->advance = $jobcardData->advance;
-        $this->balance_amount = $jobcardData->balance_amount;
-        $this->hidden_balance_amount = $jobcardData->balance_amount;
+        $this->balance_amount = $this->final_amount - $this->final_paid;
+        $this->hidden_balance_amount = $this->balance_amount;
         $this->final_discount = $jobcardData->final_discount;
-        $this->final_paid = $jobcardData->final_paid;
         $this->supervisor = $jobcardData->supervisor_id;
         $this->payment_type = $jobcardData->payment_type;
         $this->transaction_number = $jobcardData->transaction_number;
@@ -396,6 +406,93 @@ class JobCardEditController extends Component
         $this->supervisors = WorkShopVendor::where('parent_id', $this->workshopId)->get();
         // dd($this->supervisors);
         $this->mechanic = WorkShopVendor::where('user_type', 32)->where('parent_id', $this->workshopId)->get();
+    }
+
+    public function addPayment()
+    {
+        $this->validate([
+            'new_payment_amount' => 'required|numeric|min:0.01',
+            'new_payment_type' => 'required|string',
+            'new_payment_transaction_number' => 'nullable|string',
+        ], [
+            'new_payment_amount.required' => 'Payment amount is required.',
+            'new_payment_amount.numeric' => 'Payment amount must be a number.',
+            'new_payment_amount.min' => 'Payment amount must be greater than zero.',
+            'new_payment_type.required' => 'Payment method is required.',
+        ]);
+
+        JobCardPayment::create([
+            'job_card_id' => $this->jobId,
+            'amount' => $this->new_payment_amount,
+            'payment_type' => $this->new_payment_type,
+            'transaction_number' => $this->new_payment_transaction_number,
+        ]);
+
+        $this->payments_list = $this->jobcardData->payments()->orderBy('created_at', 'asc')->get()->toArray();
+        $this->final_paid = collect($this->payments_list)->sum('amount');
+        if (in_array($this->jobcardData->status, [0, 1, 4])) {
+            $this->advance = $this->final_paid;
+        }
+
+        $this->balance_amount = max(0, $this->final_amount - $this->final_paid - (float)($this->final_discount ?? 0));
+        $this->hidden_balance_amount = $this->balance_amount;
+
+        $jobcard = JobCard::find($this->jobId);
+        if ($jobcard) {
+            $jobcard->final_paid = $this->final_paid;
+            $jobcard->advance = $this->advance;
+            $jobcard->balance_amount = $this->balance_amount;
+            $jobcard->payment_type = $this->new_payment_type;
+            $jobcard->transaction_number = $this->new_payment_transaction_number;
+            $jobcard->save();
+        }
+
+        $this->new_payment_amount = null;
+        $this->new_payment_type = null;
+        $this->new_payment_transaction_number = null;
+
+        $this->dispatch('swal:toast', [
+            'type' => 'success',
+            'message' => 'Payment added successfully!',
+        ]);
+    }
+
+    public function deletePayment($id)
+    {
+        $payment = JobCardPayment::where('job_card_id', $this->jobId)->find($id);
+        if ($payment) {
+            $payment->delete();
+        }
+
+        $this->payments_list = $this->jobcardData->payments()->orderBy('created_at', 'asc')->get()->toArray();
+        $this->final_paid = collect($this->payments_list)->sum('amount');
+        if (in_array($this->jobcardData->status, [0, 1, 4])) {
+            $this->advance = $this->final_paid;
+        }
+
+        $this->balance_amount = max(0, $this->final_amount - $this->final_paid - (float)($this->final_discount ?? 0));
+        $this->hidden_balance_amount = $this->balance_amount;
+
+        $jobcard = JobCard::find($this->jobId);
+        if ($jobcard) {
+            $jobcard->final_paid = $this->final_paid;
+            $jobcard->advance = $this->advance;
+            $jobcard->balance_amount = $this->balance_amount;
+            if (!empty($this->payments_list)) {
+                $lastPayment = end($this->payments_list);
+                $jobcard->payment_type = $lastPayment['payment_type'];
+                $jobcard->transaction_number = $lastPayment['transaction_number'];
+            } else {
+                $jobcard->payment_type = null;
+                $jobcard->transaction_number = null;
+            }
+            $jobcard->save();
+        }
+
+        $this->dispatch('swal:toast', [
+            'type' => 'success',
+            'message' => 'Payment deleted successfully!',
+        ]);
     }
 
 
@@ -837,15 +934,15 @@ class JobCardEditController extends Component
                 ->pluck('user_id')
                 ->unique()
                 ->filter();
-           foreach ($vendorIds as $vendorId) {
-    \App\Models\Notification::create([
-        'user_id'  => $vendorId,
-        'order_id' => $order->id,
-        'title'    => '🛒 New Order Received',
-        'message'  => "A new order (Order #{$order->id}) is awaiting your review. Please accept or decline the assigned items.",
-        'sound'    => 'order.mp3',
-    ]);
-}
+            foreach ($vendorIds as $vendorId) {
+                \App\Models\Notification::create([
+                    'user_id' => $vendorId,
+                    'order_id' => $order->id,
+                    'title' => '🛒 New Order Received',
+                    'message' => "A new order (Order #{$order->id}) is awaiting your review. Please accept or decline the assigned items.",
+                    'sound' => 'order.mp3',
+                ]);
+            }
         }
 
         $this->storePurchase();
@@ -937,15 +1034,15 @@ class JobCardEditController extends Component
                 ->pluck('user_id')
                 ->unique()
                 ->filter();
-           foreach ($vendorIds as $vendorId) {
-    \App\Models\Notification::create([
-        'user_id'  => $vendorId,
-        'order_id' => $order->id,
-        'title'    => '🛒 New Order Received',
-        'message'  => "A new order (Order #{$order->id}) is awaiting your review. Please accept or decline the assigned items.",
-        'sound'    => 'order.mp3',
-    ]);
-}
+            foreach ($vendorIds as $vendorId) {
+                \App\Models\Notification::create([
+                    'user_id' => $vendorId,
+                    'order_id' => $order->id,
+                    'title' => '🛒 New Order Received',
+                    'message' => "A new order (Order #{$order->id}) is awaiting your review. Please accept or decline the assigned items.",
+                    'sound' => 'order.mp3',
+                ]);
+            }
         }
 
 
@@ -1417,14 +1514,13 @@ class JobCardEditController extends Component
         // Keep totalAmount aligned with the visible category totals (final amounts)
         $this->totalAmount = $this->final_amount;
         $final = max(0, $this->final_amount);
-        $advance = max(0, (float) ($this->advance ?? 0));
+        $this->final_paid = collect($this->payments_list)->sum('amount');
+        if (in_array($this->jobcardData->status ?? 0, [0, 1, 4])) {
+            $this->advance = $this->final_paid;
+        }
 
-        $this->hidden_balance_amount = max(0, $final - $advance);
-        $this->balance_amount = max(0, $final - $advance);
-
-        $this->final_paid = 0;
-        $this->final_discount = 0;
-
+        $this->balance_amount = max(0, $final - $this->final_paid - (float)($this->final_discount ?? 0));
+        $this->hidden_balance_amount = $this->balance_amount;
     }
 
 
@@ -1436,22 +1532,13 @@ class JobCardEditController extends Component
 
     public function updatedFinalDiscount($value)
     {
-        // dd($this->final_amount);
-        $hidden_balance_amount = max(0, (float) ($this->hidden_balance_amount ?? 0));
-        $value = max(0, (float) ($value ?? 0));
-
-        $this->balance_amount = max(0, $hidden_balance_amount - $value);
-        $this->final_paid = 0;
+        $this->final_discount = max(0, (float) ($value ?? 0));
+        $this->calculateTotals();
     }
 
     public function updatedFinalPaid($value)
     {
-        $hidden_balance_amount = max(0, (float) ($this->hidden_balance_amount ?? 0));
-        $value = max(0, (float) ($value ?? 0));
-        $discount = max(0, (float) ($this->final_discount ?? 0));
-
-        $this->balance_amount = max(0, $hidden_balance_amount - $discount - $value);
-
+        $this->calculateTotals();
     }
 
 
@@ -3000,6 +3087,24 @@ class JobCardEditController extends Component
 
     public function updateJobCard($status, $step = "0")
     {
+        $jobcard = JobCard::find($this->jobId);
+
+        // Synchronize with payments ledger
+        $this->final_paid = collect($this->payments_list)->sum('amount');
+        if (in_array($jobcard->status, [0, 1, 4])) {
+            $this->advance = $this->final_paid;
+        }
+        $this->balance_amount = max(0, $this->final_amount - $this->final_paid - (float)($this->final_discount ?? 0));
+        $this->hidden_balance_amount = $this->balance_amount;
+
+        if (!empty($this->payments_list)) {
+            $lastPayment = end($this->payments_list);
+            $this->payment_type = $lastPayment['payment_type'];
+            $this->transaction_number = $lastPayment['transaction_number'];
+        } else {
+            $this->payment_type = null;
+            $this->transaction_number = null;
+        }
 
         if ($this->balance_amount < 0) {
             $this->dispatch('swal:toast', [
@@ -3008,19 +3113,6 @@ class JobCardEditController extends Component
             ]);
             return;
         }
-        if ($this->advance > 0 && empty($this->payment_type)) {
-            $this->dispatch('swal:toast', [
-                'type' => 'error',
-                'message' => 'Please select payment type and proceed.',
-            ]);
-            $this->addError('payment_type', 'This field is required.');
-            return;
-        } else if ($this->advance > 0 && !empty($this->payment_type) && $this->payment_type != 'cash' && empty($this->transaction_number)) {
-            $this->addError('transaction_number', 'This field is required.');
-            return;
-        }
-
-        $jobcard = JobCard::find($this->jobId);
 
         $jobstatus = $jobcard->status;
         //dd($jobstatus);
@@ -3038,8 +3130,6 @@ class JobCardEditController extends Component
             // dd($jobstatus);
             $valArr = [
                 'final_discount' => 'required|numeric|min:0',
-                'final_paid' => 'required|numeric|min:0',
-                'advance' => 'required|numeric|max:' . $this->final_amount,
                 'balance_amount' => $status == 3 ? 'required|in:0|numeric' : 'required|numeric',
             ];
 
@@ -3047,11 +3137,8 @@ class JobCardEditController extends Component
                 $valArr,
                 [
                     'final_discount.required' => "Discount Field is required.",
-                    'final_paid.required' => "Pay Field is required.",
                     'final_discount.numeric' => "Discount Field should be a valid number.",
-                    'final_paid.numeric' => "Pay Field should be a valid number.",
                     'final_discount.min' => "Discount Field should be a valid number.",
-                    'final_paid.min' => "Pay Field should be a valid number.",
                     'balance_amount.in' => 'The Pending amount must be zero.',
                     'balance_amount.required' => 'The Pending amount is required.',
                     'balance_amount.numeric' => 'The Pending amount must be a number.',
@@ -3877,14 +3964,14 @@ class JobCardEditController extends Component
                 ->unique()
                 ->filter();
             foreach ($vendorIds as $vendorId) {
-    \App\Models\Notification::create([
-        'user_id'  => $vendorId,
-        'order_id' => $order->id,
-        'title'    => '🛒 New Order Received',
-        'message'  => "A new order (Order #{$order->id}) is awaiting your review. Please accept or decline the assigned items.",
-        'sound'    => 'order.mp3',
-    ]);
-}
+                \App\Models\Notification::create([
+                    'user_id' => $vendorId,
+                    'order_id' => $order->id,
+                    'title' => '🛒 New Order Received',
+                    'message' => "A new order (Order #{$order->id}) is awaiting your review. Please accept or decline the assigned items.",
+                    'sound' => 'order.mp3',
+                ]);
+            }
         }
     }
 }

@@ -25,88 +25,154 @@
             @endif--}}
         </div>
     </div>
-        <div class="card mt-4">
-        <div class="card-body">
-            <div class="row">
-            <div class="col-3">
-                <input type="text" class="form-control" placeholder="Search " wire:model.live="searchfilter" fdprocessedid="blgf5">
-            </div>
-            <div class="col-9 text-right">
-                <button type="button" class="mr-2 btn btn-info text-white rounded-0  float-end" wire:click="resetFilter" fdprocessedid="orntg">Clear</button>
-             </div>
-            </div>
-            
-        </div>
-    </div> 
     <div class="card mt-4">
-        @if (!empty($withdraws) && $withdraws->count())
-        <div class="card-body ">
-            <div class="table-responsive">
-                <table class="table table--bordered data-table">
-                    <thead>
-                        <tr>
-                            <th>S.No.</th>
-                            <th>User</th>
-                            <th>Amount</th> 
-                            <th>Transaction ID / UTR</th>
-                            <th>Status</th> 
-                            @if (@$admin->hasPermissionTo('withdraw-edit') || @$admin->hasPermissionTo('withdraw-delete')) 
-                            <th>Actions</th>
-                            @endif
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($withdraws as $index => $withdraw)
-                        <tr>
-                            <td>{{ $withdraws->total() - ($withdraws->firstItem() + $index) + 1 }}</td>
-                            <td>{{ @$withdraw->SparePartVendor->name .' '.  @$withdraw->SparePartVendor->lastname  }}</td> 
-                            <td> {{ $withdraw->amount }} </td>
-                            <td> {{ $withdraw->transaction_id ?? '-' }} </td>
-                            <td>
-                                @switch($withdraw->status)
-                                    @case(0)
-                                        <span class="badge bg-danger">Processing</span>
-                                    @break
- 
-                                    @case(1)
-                                        <span class="badge bg-success">Complete</span>
-                                    @break
- 
-                                    @case(2)
-                                    <span class="badge bg-danger">Declined</span>
-                                @break
-                                @endswitch
-                            </td>
-                            @if (@$admin->hasPermissionTo('withdraw-edit') || @$admin->hasPermissionTo('withdraw-delete')) 
-                            <td>
- 
-                             @if($withdraw->status == 0)
-                             @if (@$admin->hasPermissionTo('withdraw-edit')) 
-                             <a wire:click="confirmApprove({{ $withdraw->id }},{{ $withdraw->amount}},{{ $withdraw->user_id}})" class="btn btn-sm p-0">  <span class="btn btn-sm btn-success">Approve</span>  <span class="small"></span></a>
-                             @endif
-                             @if (@$admin->hasPermissionTo('withdraw-delete')) 
-                             <a wire:click="edit({{ $withdraw->id }},2,{{ $withdraw->amount}},{{ $withdraw->user_id}})" class="btn btn-sm p-0">  <span class="btn btn-sm btn-danger">Decline</span>  <span class="small"></span></a>
-                             @endif
-                             @else
-                                <p>-</p>
-                             @endif
-                                
-                            </td>
-                            @endif
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-                <div class="pagination-wrapper">
-                    {{ $withdraws->links() }}
+        <div class="card-body">
+            <div class="row align-items-center g-2">
+                <div class="col-md-3">
+                    <input type="text" class="form-control" placeholder="Search " wire:model.live="searchfilter">
+                </div>
+                <div class="col-md-6">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="withdraw-requests-tab" data-bs-toggle="tab" data-bs-target="#withdrawRequests" type="button" role="tab">
+                                Withdraw Requests
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="vendor-wise-tab" data-bs-toggle="tab" data-bs-target="#vendorWiseSummary" type="button" role="tab">
+                                Vendor Wise Summary
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-3 text-end">
+                    <button type="button" class="btn btn-info text-white rounded-0" wire:click="resetFilter">Clear</button>
                 </div>
             </div>
         </div>
-        @else
-        <div class="my-2">
-            <div class="alert alert-info">No withdraw found!</div>
+    </div>
+
+    <div class="tab-content mt-4">
+        <div class="tab-pane fade show active" id="withdrawRequests" role="tabpanel">
+            <div class="card">
+                @if (!empty($withdraws) && $withdraws->count())
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table--bordered data-table">
+                            <thead>
+                                <tr>
+                                    <th>S.No.</th>
+                                    <th>User</th>
+                                    <th>Wallet Amount</th>
+                                    <th>Amount</th>
+                                    <th>Transaction ID / UTR</th>
+                                    <th>Status</th>
+                                    @if (@$admin->hasPermissionTo('withdraw-edit') || @$admin->hasPermissionTo('withdraw-delete'))
+                                    <th>Actions</th>
+                                    @endif
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($withdraws as $index => $withdraw)
+                                <tr>
+                                    <td>{{ $withdraws->total() - ($withdraws->firstItem() + $index) + 1 }}</td>
+                                    <td>{{ @$withdraw->SparePartVendor->name .' '.  @$withdraw->SparePartVendor->lastname  }}</td>
+                                    <td>₹{{ number_format(@$withdraw->SparePartVendor->wallet ?? 0, 2) }}</td>
+                                    <td>₹{{ number_format($withdraw->amount, 2) }}</td>
+                                    <td>{{ $withdraw->transaction_id ?? '-' }}</td>
+                                    <td>
+                                        @switch($withdraw->status)
+                                            @case(0)
+                                                <span class="badge bg-danger">Processing</span>
+                                            @break
+
+                                            @case(1)
+                                                <span class="badge bg-success">Complete</span>
+                                            @break
+
+                                            @case(2)
+                                                <span class="badge bg-danger">Declined</span>
+                                            @break
+                                        @endswitch
+                                    </td>
+                                    @if (@$admin->hasPermissionTo('withdraw-edit') || @$admin->hasPermissionTo('withdraw-delete'))
+                                    <td>
+                                        @if($withdraw->status == 0)
+                                            @if (@$admin->hasPermissionTo('withdraw-edit'))
+                                            <a wire:click="confirmApprove({{ $withdraw->id }},{{ $withdraw->amount}},{{ $withdraw->user_id}})" class="btn btn-sm p-0">
+                                                <span class="btn btn-sm btn-success">Approve</span>
+                                            </a>
+                                            @endif
+                                            @if (@$admin->hasPermissionTo('withdraw-delete'))
+                                            <a wire:click="edit({{ $withdraw->id }},2,{{ $withdraw->amount}},{{ $withdraw->user_id}})" class="btn btn-sm p-0">
+                                                <span class="btn btn-sm btn-danger">Decline</span>
+                                            </a>
+                                            @endif
+                                        @else
+                                            <p class="mb-0">-</p>
+                                        @endif
+                                    </td>
+                                    @endif
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                        <div class="pagination-wrapper">
+                            {{ $withdraws->links() }}
+                        </div>
+                    </div>
+                </div>
+                @else
+                <div class="my-2">
+                    <div class="alert alert-info">No withdraw found!</div>
+                </div>
+                @endif
+            </div>
         </div>
-        @endif
+
+        <div class="tab-pane fade" id="vendorWiseSummary" role="tabpanel">
+            <div class="card">
+                @if (!empty($groupedWithdraws) && $groupedWithdraws->count())
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table--bordered mb-0">
+                            <thead>
+                                <tr>
+                                    <th>S.No.</th>
+                                    <th>Vendor</th>
+                                    <th>Wallet Amount</th>
+                                    <th>Total Amount</th>
+                                    <th>Withdraw Amount</th>
+                                    <th>Balance Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php $summaryNo = 1; @endphp
+                                @forelse ($groupedWithdraws as $vendorWithdraw)
+                                    <tr>
+                                        <td>{{ $summaryNo++ }}</td>
+                                        <td>{{ $vendorWithdraw['vendor_name'] }}</td>
+                                        <td>₹{{ number_format($vendorWithdraw['wallet_amount'], 2) }}</td>
+                                        <td>₹{{ number_format($vendorWithdraw['total_amount'], 2) }}</td>
+                                        <td>₹{{ number_format($vendorWithdraw['withdraw_amount'], 2) }}</td>
+                                        <td>₹{{ number_format($vendorWithdraw['balance_amount'], 2) }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-3">No vendor withdraw data found.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                @else
+                <div class="my-2">
+                    <div class="alert alert-info">No vendor withdraw data found!</div>
+                </div>
+                @endif
+            </div>
+        </div>
     </div>
 
     <!-- Approve Withdraw Modal -->

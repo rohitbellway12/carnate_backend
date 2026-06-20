@@ -63,7 +63,7 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-lg-6">
+            <div class="col-lg-4">
                 <div class="card">
                     <div class="card-body">
                         <div class="wallet-card">
@@ -74,11 +74,11 @@
                                 <p class="m-0">last Transaction :
                                     {{ $wallet?->created_at->format('d.m.Y') ?? 'No data available' }}
                                 </p>
-                                <p clas="text-white m-0">
+                                <p class="text-white m-0">
                                     ₹{{ number_format($wallet?->amount ?? 0, 2) }}
                                 </p>
                                 @if (@$sparePart->hasPermissionTo('wallet-add'))
-                                    <button wire:click="rechargeWallet" class="recharge-button">
+                                    <button wire:click="rechargeWallet" class="recharge-button mt-3">
                                         <span>+</span> withdraw
                                     </button>
                                 @endif
@@ -87,113 +87,116 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-6">
+
+            <div class="col-lg-8">
                 <div class="card">
-                    <div class="card-header">
-                        <h5>Withdraw History</h5>
-                    </div>
                     <div class="card-body">
-                        @if (!empty($withdraws) && $withdraws->count())
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-hover table-sm">
-                                    <thead class="thead-light">
-                                        <tr>
-                                            <th>S.No.</th>
-                                            <th>Amount</th>
-                                            <th>Transaction ID / UTR</th>
-                                            <th>Status</th>
-                                            <th>Date Withdraw</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($withdraws as $index => $withdraw)
-                                            <tr>
-                                                <td>{{ $withdraws->total() - ($withdraws->firstItem() + $index) + 1 }}</td>
-                                                <td>{{ $withdraw->amount }}</td>
-                                                <td>{{ $withdraw->transaction_id ?? '-' }}</td>
-                                                <td>
-                                                    @switch($withdraw->status)
-                                                        @case(0)
-                                                            <span class="badge bg-danger">Processing</span>
-                                                        @break
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="withdraw-history-tab" data-bs-toggle="tab" data-bs-target="#withdrawHistory" type="button" role="tab">
+                                    Withdraw History
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="wallet-history-tab" data-bs-toggle="tab" data-bs-target="#walletHistory" type="button" role="tab">
+                                    Wallet History
+                                </button>
+                            </li>
+                        </ul>
 
-                                                        @case(1)
-                                                            <span class="badge bg-success">Complete</span>
-                                                        @break
+                        <div class="tab-content mt-3">
+                            <div class="tab-pane fade show active" id="withdrawHistory" role="tabpanel">
+                                @if (!empty($withdraws) && $withdraws->count())
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-hover table-sm mb-0">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th>S.No.</th>
+                                                    <th>Amount</th>
+                                                    <th>Transaction ID / UTR</th>
+                                                    <th>Status</th>
+                                                    <th>Date Withdraw</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($withdraws as $index => $withdraw)
+                                                    <tr>
+                                                        <td>{{ $withdraws->total() - ($withdraws->firstItem() + $index) + 1 }}</td>
+                                                        <td>₹{{ number_format($withdraw->amount, 2) }}</td>
+                                                        <td>{{ $withdraw->transaction_id ?? '-' }}</td>
+                                                        <td>
+                                                            @switch($withdraw->status)
+                                                                @case(0)
+                                                                    <span class="badge bg-danger">Processing</span>
+                                                                @break
 
-                                                        @case(2)
-                                                            <span class="badge bg-danger">Declined</span>
-                                                        @break
-                                                    @endswitch
-                                                </td>
-                                                <td>{{ \Carbon\Carbon::parse($withdraw->created_at)->format('d-m-Y h:i A') ?? '-' }}
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                                <!-- Withdraw Pagination -->
-                                <div class="pagination-wrapper">
-                                    {{ $withdraws->onEachSide(1)->withPath(route('sparepart.withdrawal'))->links('livewire.sparepart.custom-pagination') }}
-                                </div>
-                            </div>
-                        @else
-                            <div class="col-12 my-2">
-                                <div class="alert alert-info text-center">No withdraw history found!</div>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Wallet History</h5>
-                    </div>
-                    <div class="card-body">
-                        @if (!empty($walletHistories) && count($walletHistories) > 0)
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-hover table-sm">
-                                    <thead class="thead-light">
-                                        <tr>
-                                            <th>S.No.</th>
-                                            <th>Amount</th>
-                                            <th>Balance</th>
-                                            <th>Status</th>
-                                            <th>Created Date</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($walletHistories as $index => $walletHistory)
-                                            <tr>
-                                                <td>{{ $walletHistories->total() - ($walletHistories->firstItem() + $index) + 1 }}</td>
-                                                <td>{{ number_format($walletHistory->amount, 2) }}</td>
-                                                <td>{{ number_format($walletHistory->total, 2) }}</td>
-                                                <td>
-                                                    @switch($walletHistory->type)
-                                                        @case(0)
-                                                            <span class="badge bg-success">Credit</span>
-                                                        @break
+                                                                @case(1)
+                                                                    <span class="badge bg-success">Complete</span>
+                                                                @break
 
-                                                        @case(1)
-                                                            <span class="badge bg-danger">Debit</span>
-                                                        @break
-                                                    @endswitch
-                                                </td>
-                                                <td>{{ \Carbon\Carbon::parse($walletHistory->created_at)->format('d-m-Y h:i A') ?? '-' }}
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                                <!-- Wallet Pagination -->
-                                <div class="pagination-wrapper">
-                                    {{ $walletHistories->onEachSide(1)->withPath(route('sparepart.withdrawal'))->links('livewire.sparepart.custom-pagination') }}
-                                </div>
+                                                                @case(2)
+                                                                    <span class="badge bg-danger">Declined</span>
+                                                                @break
+                                                            @endswitch
+                                                        </td>
+                                                        <td>{{ \Carbon\Carbon::parse($withdraw->created_at)->format('d-m-Y h:i A') ?? '-' }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                        <div class="pagination-wrapper mt-3">
+                                            {{ $withdraws->onEachSide(1)->withPath(route('sparepart.withdrawal'))->links('livewire.sparepart.custom-pagination') }}
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="alert alert-info text-center mb-0">No withdraw history found!</div>
+                                @endif
                             </div>
-                        @else
-                            <div class="alert alert-info text-center">No wallet history found!</div>
-                        @endif
+
+                            <div class="tab-pane fade" id="walletHistory" role="tabpanel">
+                                @if (!empty($walletHistories) && count($walletHistories) > 0)
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-hover table-sm mb-0">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th>S.No.</th>
+                                                    <th>Amount</th>
+                                                    <th>Balance</th>
+                                                    <th>Status</th>
+                                                    <th>Created Date</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($walletHistories as $index => $walletHistory)
+                                                    <tr>
+                                                        <td>{{ $walletHistories->total() - ($walletHistories->firstItem() + $index) + 1 }}</td>
+                                                        <td>₹{{ number_format($walletHistory->amount, 2) }}</td>
+                                                        <td>₹{{ number_format($walletHistory->total, 2) }}</td>
+                                                        <td>
+                                                            @switch($walletHistory->type)
+                                                                @case(0)
+                                                                    <span class="badge bg-success">Credit</span>
+                                                                @break
+
+                                                                @case(1)
+                                                                    <span class="badge bg-danger">Debit</span>
+                                                                @break
+                                                            @endswitch
+                                                        </td>
+                                                        <td>{{ \Carbon\Carbon::parse($walletHistory->created_at)->format('d-m-Y h:i A') ?? '-' }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                        <div class="pagination-wrapper mt-3">
+                                            {{ $walletHistories->onEachSide(1)->withPath(route('sparepart.withdrawal'))->links('livewire.sparepart.custom-pagination') }}
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="alert alert-info text-center mb-0">No wallet history found!</div>
+                                @endif
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -131,6 +131,29 @@ class OrderController extends Component
                     'message' => $message,
                     'sound'   => 'order_update.mp3',
                 ]);
+                // ------------------------------------------------------------
+                // Notify admins about the vendor's decision (accept/decline)
+                // ------------------------------------------------------------
+                try {
+                    $adminIds = \App\Models\Admin::where('role_type', 21)->pluck('id');
+                    $workshopUser = Auth::guard('workshop')->user();
+                    $workshopName = $workshopUser->name ?? $workshopUser->company_name ?? 'Workshop';
+                    $vendorName = $this->currentUser->name ?? $this->currentUser->company_name ?? 'Spare‑part Vendor';
+                    $action = $status == 1 ? 'accepted' : 'declined';
+                    $adminTitle = $status == 1 ? '✅ Vendor Accepted Item' : '❌ Vendor Declined Item';
+                    $adminMessage = "Spare‑part vendor {$vendorName} has {$action} the order item '{$partName}' for Order #{$order_item->order_id} placed by workshop {$workshopName}.";
+                    foreach ($adminIds as $adminId) {
+                        Notification::create([
+                            'user_id' => $adminId,
+                            'order_id' => $order_item->order_id,
+                            'title'   => $adminTitle,
+                            'message' => $adminMessage,
+                            'sound'   => 'order_update.mp3',
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('[ADMIN VENDOR ACTION NOTIF] '.$e->getMessage().' at '.$e->getFile().':'.$e->getLine());
+                }
             }
         }
 
@@ -206,6 +229,26 @@ class OrderController extends Component
     'sound'    => 'handover.mp3',
 ]);
             }
+        }
+
+        // ------------------------------------------------------------
+        // Notify admins that the workshop has marked the item as delivered
+        // ------------------------------------------------------------
+        try {
+            $adminIds = \App\Models\Admin::where('role_type', 21)->pluck('id');
+            $workshopUser = Auth::guard('workshop')->user();
+            $workshopName = $workshopUser->name ?? $workshopUser->company_name ?? 'Workshop';
+            foreach ($adminIds as $adminId) {
+                Notification::create([
+                    'user_id'  => $adminId,
+                    'order_id' => $order_item->order_id,
+                    'title'    => "📦 Item Delivered – {$workshopName}",
+                    'message'  => "Workshop '{$workshopName}' has marked item delivery for Order #{$order_item->order_id}.",
+                    'sound'    => 'handover.mp3',
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::error('[ADMIN HANDOVER NOTIF] '.$e->getMessage().' at '.$e->getFile().':'.$e->getLine());
         }
 
         $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Hand over Successfully!']);

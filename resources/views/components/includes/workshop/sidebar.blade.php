@@ -268,6 +268,7 @@ $logo = App\Models\WorkShopVendor::where('id', Auth::guard('workshop')->user()->
                                         <div class="dropdown-content">
                                             <a href="{{ route('workshop.report.salary') }}" class="ms-3" style="background-color: unset;">Salary Report</a>
                                             <a href="{{ route('workshop.report.customers') }}" class="ms-3" style="background-color: unset;">Customers Report</a>
+                                            <a href="{{ route('workshop.report.customer-balance') }}" class="ms-3" style="background-color: unset;">Customer Balance Report</a>
                                             <a href="{{ route('workshop.report.jobcards') }}" class="ms-3" style="background-color: unset;">Job Cards Report</a>
                                             <a href="{{ route('workshop.report.staff') }}" class="ms-3" style="background-color: unset;">Staff Report</a>
                                             <a href="{{ route('workshop.report.expenses') }}" class="ms-3" style="background-color: unset;">Expenses Report</a>

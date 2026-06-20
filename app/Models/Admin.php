@@ -34,6 +34,8 @@ class Admin extends Authenticatable
             'role_type',
             'pincode',
             'gst_number',
+            'logo',
+            'signature',
         ];
     
         /**

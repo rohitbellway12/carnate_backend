@@ -56,12 +56,11 @@ class JobCardController extends Component
     {
         $user = WorkShopVendor::find($this->workshopId);
  
-   
-       if($this->mode == 6){
+        if($this->mode == 6){
         $items = JobCard::where('user_id', $user->is_user == 0 ? $this->workshopId : $user->parent_id)->orderBy('created_at', 'desc');
         }elseif($this->mode == 5){
             $items = JobCard::where('user_id', $user->is_user == 0 ? $this->workshopId : $user->parent_id)->where('soft_delete',1)->orderBy('created_at', 'desc'); 
-        }elseif($this->mode == 2){
+        }elseif($this->mode == 2 || $this->mode == 3){
             $items = JobCard::where('user_id', $user->is_user == 0 ? $this->workshopId : $user->parent_id)->where('status',$this->mode)->where('soft_delete',0)->orderBy('shared_serial', 'desc');
         }else{
             $items = JobCard::where('user_id', $user->is_user == 0 ? $this->workshopId : $user->parent_id)->where('status',$this->mode)->where('soft_delete',0)->orderBy('created_at', 'desc');

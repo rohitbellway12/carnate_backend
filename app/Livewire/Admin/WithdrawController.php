@@ -26,26 +26,51 @@ class WithdrawController extends Component
     }
     public function render()
     {
-        // Base query for withdraw records with vendor relationship
-        $withdraws = Withdraw::with(['SparePartVendor']);
+        $withdrawQuery = Withdraw::with(['SparePartVendor']);
 
-        // Apply search filter if provided
         if ($this->searchfilter) {
             $searchTerm = '%' . $this->searchfilter . '%';
-            $withdraws = $withdraws->whereHas('SparePartVendor', function ($query) use ($searchTerm) {
+            $withdrawQuery = $withdrawQuery->whereHas('SparePartVendor', function ($query) use ($searchTerm) {
                 $query->whereRaw("CONCAT(name, '', lastname) LIKE ?", [$searchTerm]);
             });
         }
 
-        // Pagination
-        $withdraws = $withdraws->orderBy('created_at', 'desc')->paginate(10);
+        $withdraws = (clone $withdrawQuery)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
-        // Calculate totals for display
-        $totalAmount = Withdraw::sum('amount');
-        $withdrawAmount = Withdraw::where('status', 1)->sum('amount'); // Completed withdrawals
-        $balanceAmount = $totalAmount - $withdrawAmount;
+        $withdrawItems = (clone $withdrawQuery)
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        return view('livewire.admin.withdraw', compact('withdraws', 'totalAmount', 'withdrawAmount', 'balanceAmount'));
+        $vendors = SparePartVendor::whereIn('id', $withdrawItems->pluck('user_id'))
+            ->get()
+            ->keyBy('id');
+
+        $groupedWithdraws = $withdrawItems
+            ->groupBy('user_id')
+            ->map(function ($items, $userId) use ($vendors) {
+                $vendor = $vendors->get($userId);
+                $vendorName = trim(($vendor->name ?? '') . ' ' . ($vendor->lastname ?? ''));
+
+                return [
+                    'user_id' => (int) $userId,
+                    'vendor_name' => $vendorName ?: ('Vendor #' . $userId),
+                    'wallet_amount' => (float) ($vendor->wallet ?? 0),
+                    'total_amount' => $items->sum('amount'),
+                    'withdraw_amount' => $items->where('status', 1)->sum('amount'),
+                    'balance_amount' => $items->where('status', '!=', 1)->sum('amount'),
+                    'withdraws' => $items->values(),
+                ];
+            })
+            ->sortByDesc('total_amount')
+            ->values();
+
+        $totalAmount = $groupedWithdraws->sum('total_amount');
+        $withdrawAmount = $groupedWithdraws->sum('withdraw_amount');
+        $balanceAmount = $groupedWithdraws->sum('balance_amount');
+
+        return view('livewire.admin.withdraw', compact('withdraws', 'groupedWithdraws', 'totalAmount', 'withdrawAmount', 'balanceAmount'));
     }
 
     public function confirmApprove($id, $amount, $user_id)

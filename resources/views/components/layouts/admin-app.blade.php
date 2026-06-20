@@ -291,11 +291,32 @@ function checkAdminNotifications() {
 
         // ================= POPUP MODAL =================
 
+        const unreadIds = unread.map(n => Number(n.id));
+        const maxUnreadId = unreadIds.length > 0
+            ? Math.max(...unreadIds)
+            : 0;
+
+        if (maxUnreadId > 0) {
+            const storedLastSeenId = Number(
+                localStorage.getItem('lastAdminNotifId') || 0
+            );
+
+            if (
+                !Number.isFinite(storedLastSeenId) ||
+                storedLastSeenId > maxUnreadId
+            ) {
+                localStorage.setItem(
+                    'lastAdminNotifId',
+                    String(maxUnreadId)
+                );
+            }
+        }
+
         const lastSeenId =
-            localStorage.getItem('lastAdminNotifId') || 0;
+            Number(localStorage.getItem('lastAdminNotifId') || 0);
 
         const newUnread = unread.filter(
-            n => Number(n.id) > Number(lastSeenId)
+            n => Number(n.id) > lastSeenId
         );
 
         if (newUnread.length > 0) {
@@ -304,7 +325,7 @@ function checkAdminNotifications() {
 
             localStorage.setItem(
                 'lastAdminNotifId',
-                Math.max(...unread.map(n => n.id))
+                String(maxUnreadId)
             );
         }
 
@@ -361,6 +382,7 @@ function showAdminNotificationModal(notification) {
         <div class="modal fade"
             id="adminNotificationModal"
             tabindex="-1"
+            aria-hidden="true"
             data-bs-backdrop="static">
 
             <div class="modal-dialog modal-dialog-centered">

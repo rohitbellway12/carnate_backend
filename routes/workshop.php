@@ -1,6 +1,6 @@
 <?php
 use App\Livewire\Workshop\{AddTocardController, ApiPartDetailsController, AppointmentController, AuthController, CustomerController, ResetPasswordController, EmployeeController, ExpensesController, StaffController,JobCardController,
-    JobCardAddController,JobCardEditController, PlanController,Select2Search,ManageRoles,ManagePermissions, PurchaseCartController,OrderController, PaidOrderController, VehicleSearchController,CounterSaleAddController,CounterSaleController,CounterSaleEditController,LabourChargeController, SalaryReportController, CustomersReportController, JobCardsReportController, StaffReportController, ExpensesReportController, InventoryReportController, NotificationController, ExpenseCategoryController, ExpenseSupplierController};
+    JobCardAddController,JobCardEditController, PlanController,Select2Search,ManageRoles,ManagePermissions, PurchaseCartController,OrderController, PaidOrderController, VehicleSearchController,CounterSaleAddController,CounterSaleController,CounterSaleEditController,LabourChargeController, SalaryReportController, CustomersReportController, JobCardsReportController, StaffReportController, ExpensesReportController, InventoryReportController, CustomerBalanceReportController, NotificationController, ExpenseCategoryController, ExpenseSupplierController};
 use App\Livewire\Workshop\Distributor\{AddDistributorController, DistributorController};
 use App\Livewire\Workshop\Auth\Login;
 use App\Livewire\Workshop\Dashboard;
@@ -48,6 +48,7 @@ Route::prefix('workshop')->name('workshop.')->group(function () {
         // Reports
         Route::get('report/salary', SalaryReportController::class)->name('report.salary');
         Route::get('report/customers', CustomersReportController::class)->name('report.customers');
+        Route::get('report/customer-balance', CustomerBalanceReportController::class)->name('report.customer-balance');
         Route::get('report/jobcards', JobCardsReportController::class)->name('report.jobcards');
         Route::get('report/staff', StaffReportController::class)->name('report.staff');
         Route::get('report/expenses', ExpensesReportController::class)->name('report.expenses');
