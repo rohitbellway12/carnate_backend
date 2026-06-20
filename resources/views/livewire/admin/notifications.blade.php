@@ -41,7 +41,7 @@
                                                 <i class="bx bx-time-five me-1"></i>{{ $notification->created_at->diffForHumans() }}
                                             </span>
                                             @if($notification->order_id)
-                                                <a href="{{ route('workshop.orders') }}" class="btn btn-link btn-sm p-0 text-primary fw-bold text-decoration-none small">
+                                                <a href="{{ route('admin.order-list') }}" class="btn btn-link btn-sm p-0 text-primary fw-bold text-decoration-none small">
                                                     <i class="bx bx-show me-1"></i>View Order
                                                 </a>
                                             @endif
