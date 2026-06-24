@@ -165,7 +165,7 @@ class PurchaseCartController extends Component
                 $adminIds = \App\Models\Admin::where('role_type', 21)->pluck('id');
                 // Notify admins with a descriptive title that includes the workshop name
                 $workshopUser = Auth::guard('workshop')->user();
-                $workshopName = $workshopUser->name ?? $workshopUser->company_name ?? 'Workshop';
+                $workshopName = $workshopUser->company_name ?? $workshopUser->name ?? 'Workshop';
                 foreach ($adminIds as $adminId) {
                     Notification::create([
                         'user_id'  => $adminId,
@@ -344,8 +344,8 @@ class PurchaseCartController extends Component
                 ->filter();
         }
 
-        $workshopName = Auth::guard('workshop')->user()->name
-            ?? Auth::guard('workshop')->user()->company_name
+        $workshopName = Auth::guard('workshop')->user()->company_name
+            ?? Auth::guard('workshop')->user()->name
             ?? 'Workshop';
 
         $finalOrderId = $order ? $order->id : $dbOrderId;
@@ -522,9 +522,9 @@ class PurchaseCartController extends Component
             try {
                 $adminIds = \App\Models\Admin::where('role_type', 21)->pluck('id');
                 $workshopUser = Auth::guard('workshop')->user();
-                $workshopName = $workshopUser->name ?? $workshopUser->company_name ?? 'Workshop';
+                $workshopName = $workshopUser->company_name ?? $workshopUser->name ?? 'Workshop';
                 $vendor = \App\Models\SparePartVendor::find($order_item->user_id);
-                $vendorName = $vendor->name ?? 'Spare‑part Vendor';
+                $vendorName = $vendor->company_name ?? $vendor->name ?? 'Spare‑part Vendor';
                 $partName = $order_item->SpareParts->name ?? 'Item';
                 $action = $status == 1 ? 'accepted' : 'declined';
                 $title = $status == 1 ? '✅ Order Item Accepted' : '❌ Order Item Declined';
@@ -573,7 +573,7 @@ class PurchaseCartController extends Component
         // ------------------------------------------------------------
         try {
             $workshopUser = Auth::guard('workshop')->user();
-            $workshopName = $workshopUser->name ?? $workshopUser->company_name ?? 'Workshop';
+            $workshopName = $workshopUser->company_name ?? $workshopUser->name ?? 'Workshop';
             Notification::create([
                 'user_id' => $workshopUser->id,
                 'order_id' => $order->id,
@@ -596,10 +596,10 @@ class PurchaseCartController extends Component
         try {
             $adminIds = \App\Models\Admin::where('role_type', 21)->pluck('id');
             $workshopUser = Auth::guard('workshop')->user();
-            $workshopName = $workshopUser->name ?? $workshopUser->company_name ?? 'Workshop';
+            $workshopName = $workshopUser->company_name ?? $workshopUser->name ?? 'Workshop';
             foreach ($vendorIds as $vendorId) {
                 $vendor = \App\Models\SparePartVendor::find($vendorId);
-                $vendorName = $vendor->name ?? 'Spare‑part Vendor';
+                $vendorName = $vendor->company_name ?? $vendor->name ?? 'Spare‑part Vendor';
                 $title = "🛒 New Order from {$workshopName} to {$vendorName}";
                 $message = "Workshop '{$workshopName}' has placed a new order (Order #{$order->id}) for vendor '{$vendorName}'.";
                 foreach ($adminIds as $adminId) {

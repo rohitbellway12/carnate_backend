@@ -112,7 +112,7 @@ class WithdrawController extends Component
         $sparePart->wallet = $amount;
         $sparePart->save();
        
-        $vendorName = $sparePart->name ?? 'Spare-Part Vendor';
+        $vendorName = $sparePart->company_name ?? $sparePart->name ?? 'Spare-Part Vendor';
 
         $adminIds = Admin::where('role_type' , 21)->pluck('id');
 

@@ -111,7 +111,7 @@ class OrderController extends Component
             $workshopId = $order_item->order->workShopVendor?->id ?? null;
             if ($workshopId) {
                 $partName = $order_item->SpareParts->name ?? 'Spare part';
-                $vendorName = $this->currentUser->name ?? $this->currentUser->company_name ?? 'Spare part vendor';
+                $vendorName = $this->currentUser->company_name ?? $this->currentUser->name ?? 'Spare part vendor';
                 
                if ($status == 1) {
     $title = '✅ Order Accepted';
@@ -137,8 +137,8 @@ class OrderController extends Component
                 try {
                     $adminIds = \App\Models\Admin::where('role_type', 21)->pluck('id');
                     $workshopUser = Auth::guard('workshop')->user();
-                    $workshopName = $workshopUser->name ?? $workshopUser->company_name ?? 'Workshop';
-                    $vendorName = $this->currentUser->name ?? $this->currentUser->company_name ?? 'Spare‑part Vendor';
+                    $workshopName = $workshopUser->company_name ?? $workshopUser->name ?? 'Workshop';
+                    $vendorName = $this->currentUser->company_name ?? $this->currentUser->name ?? 'Spare‑part Vendor';
                     $action = $status == 1 ? 'accepted' : 'declined';
                     $adminTitle = $status == 1 ? '✅ Vendor Accepted Item' : '❌ Vendor Declined Item';
                     $adminMessage = "Spare‑part vendor {$vendorName} has {$action} the order item '{$partName}' for Order #{$order_item->order_id} placed by workshop {$workshopName}.";
@@ -237,7 +237,7 @@ class OrderController extends Component
         try {
             $adminIds = \App\Models\Admin::where('role_type', 21)->pluck('id');
             $workshopUser = Auth::guard('workshop')->user();
-            $workshopName = $workshopUser->name ?? $workshopUser->company_name ?? 'Workshop';
+            $workshopName = $workshopUser->company_name ?? $workshopUser->name ?? 'Workshop';
             foreach ($adminIds as $adminId) {
                 Notification::create([
                     'user_id'  => $adminId,

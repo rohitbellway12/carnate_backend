@@ -524,7 +524,7 @@ public function createOrder($order_id, $total_amount)
                 try {
                     $adminIds = \App\Models\Admin::where('role_type', 21)->pluck('id');
                     $workshopUser = Auth::guard('workshop')->user();
-                    $workshopName = $workshopUser->name ?? $workshopUser->company_name ?? 'Workshop';
+                    $workshopName = $workshopUser->company_name ?? $workshopUser->name ?? 'Workshop';
                     foreach ($adminIds as $adminId) {
                         Notification::create([
                             'user_id'  => $adminId,
