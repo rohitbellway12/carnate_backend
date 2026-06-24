@@ -67,6 +67,7 @@ class OrdersReportController extends Component
                 $s = trim($this->search);
                 $q->where(function ($sub) use ($s) {
                     $sub->where('id', 'LIKE', "%$s%")
+                        ->orWhere('invoice_number', 'LIKE', "%$s%")
                         ->orWhereHas('workShopVendor', function ($wQ) use ($s) {
                             $wQ->where('company_name', 'LIKE', "%$s%")
                                ->orWhereRaw("CONCAT(name,' ',lastname) LIKE ?", ["%$s%"]);
@@ -107,7 +108,7 @@ class OrdersReportController extends Component
             // Add UTF-8 BOM for Excel compatibility
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
             
-            fputcsv($file, ['#', 'Order No.', 'Items', 'Workshop', 'Order Date', 'Amount (₹)', 'Qty / Item', 'Payment Status', 'Order Status']);
+            fputcsv($file, ['#', 'Invoice Number', 'Items', 'Workshop', 'Order Date', 'Amount (₹)', 'Qty / Item', 'Payment Status', 'Order Status']);
 
             foreach ($orders as $index => $o) {
                 $orderItemsString = implode(', ', $o->orderItem->pluck('SpareParts.name')->filter()->toArray());
@@ -128,7 +129,7 @@ class OrdersReportController extends Component
 
                 fputcsv($file, [
                     $index + 1,
-                    '#' . $o->id,
+                    getWorkshopInvoiceNumber($o),
                     $orderItemsString ?: 'N/A',
                     $o->workShopVendor->company_name ?? ($o->workShopVendor ? $o->workShopVendor->name.' '.$o->workShopVendor->lastname : 'N/A'),
                     $o->order_date ? \Carbon\Carbon::parse($o->order_date)->format('d M Y, h:i A') : 'N/A',

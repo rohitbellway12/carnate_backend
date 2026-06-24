@@ -297,27 +297,26 @@ class JobCardEditController extends Component
 
 // dd($this->vehicles);
         //$labels = SparePartLabel::with('productStocks')->get();
-        $labels = ProductStock::where('user_id', Auth::guard('workshop')->user()->id)->get();
-
-       //dd($labels);
+        $labels = ProductStock::with('label')->where('user_id', Auth::guard('workshop')->user()->id)->get();
 
         $mergedData = [];
 
         foreach ($labels as $label) {
-            if ($label->category_id == 1) {
+            $catType = $label->label ? $label->label->spare_part_type : $label->category_id;
+            if ($catType == 1) {
                 $spare_part_type = 'Accessory';
-            } elseif ($label->category_id == 2) {
+            } elseif ($catType == 2) {
                 $spare_part_type = 'Parts';
-            } elseif ($label->category_id == 3) {
+            } elseif ($catType == 3) {
                 $spare_part_type = 'Tools';
-            } elseif ($label->category_id == 4) {
+            } elseif ($catType == 4) {
                 $spare_part_type = 'Lubricants';
             }
 
-            $mergedData[$label->category_id][] = [
+            $mergedData[$catType][] = [
                 'label_id' => $label->label_id,
                 'label_name' => @$label->label->title,
-                'cat_type' => $label->category_id,
+                'cat_type' => $catType,
                 'product_stock_id' => @$label->id,
                 'stock' => @$label->stock,
                 'price' => @$label->price,
@@ -325,7 +324,6 @@ class JobCardEditController extends Component
                 'GST_percentage' => @$label->tax_percentage,
                 'purchese_price' => @$label->buy_price,
             ];
-           // dd(@$label->purchase_price);
         }
 
         $this->accessory = $mergedData[1] ?? [];
@@ -774,9 +772,10 @@ $api_secret = config('services.razorpay.secret');
 
 
 
+        // Create payment with a temp order_id; will update after order is created
         $payment = Payment::create([
             'payment_id' => $paymentResponse['razorpay_payment_id'],
-            'order_id' => $paymentResponse['razorpay_order_id'],
+            'order_id' => 0, // will update after order is saved
             'status' => 'success',
             'amount' => $paymentResponse['amount'],
             'user_id' => Auth::guard('workshop')->user()->id,
@@ -793,8 +792,12 @@ $api_secret = config('services.razorpay.secret');
         $order->total_quantity = array_sum(array_column($this->rows, 'quantity_purchase'));
         $order->total_item = count($this->rows);
         $order->workshop_id = Auth::guard('workshop')->user()->id;
-        $order->payment_id = 1;
+        $order->payment_id = $payment->id;
         $order->save();
+
+        // Now update payment.order_id with the actual DB order ID
+        $payment->order_id = $order->id;
+        $payment->save();
 
         // echo "<pre>";print_r($this->rows);die;
         foreach ($this->rows as $row) {
@@ -1047,7 +1050,9 @@ $api_secret = config('services.razorpay.secret');
             'final_amount' => $productStock->price * 1,
         ];
 
-        switch ($categoryType) {
+        $catType = $sparePartLabel->spare_part_type;
+
+        switch ($catType) {
             case 2:
                 $this->spareParts[] = $data;
                 break;
@@ -1063,14 +1068,14 @@ $api_secret = config('services.razorpay.secret');
 
         $dataList = [
             'label_id' => $productStock->label_id,
-            'label_name' => @$productStock->label->title,
-            'cat_type' => $productStock->category_id,
+            'label_name' => @$productStock->label->title ?? $sparePartLabel->title,
+            'cat_type' => $catType,
             'product_stock_id' => @$productStock->id,
             'stock' => @$productStock->stock,
             'price' => @$productStock->price,
         ];
 
-        switch ($productStock->category_id) {
+        switch ($catType) {
             case 1:
                 $this->accessory[] = $dataList;
                 break;

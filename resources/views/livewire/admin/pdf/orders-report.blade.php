@@ -126,7 +126,7 @@
         <thead>
             <tr>
                 <th style="width: 5%;">#</th>
-                <th style="width: 10%;">Order No</th>
+                <th style="width: 15%;">Invoice Number</th>
                 <th style="width: 25%;">Workshop Vendor</th>
                 <th style="width: 15%;">Order Date</th>
                 <th style="width: 10%; text-align: center;">Qty / Item</th>
@@ -139,7 +139,7 @@
             @forelse($orders as $index => $o)
                 <tr>
                     <td>{{ $index + 1 }}</td>
-                    <td><strong>#{{ $o->id }}</strong></td>
+                    <td><strong>{{ getWorkshopInvoiceNumber($o) }}</strong></td>
                     <td>{{ $o->workShopVendor->company_name ?? ($o->workShopVendor ? $o->workShopVendor->name.' '.$o->workShopVendor->lastname : 'N/A') }}</td>
                     <td>{{ $o->order_date ? \Carbon\Carbon::parse($o->order_date)->format('d M Y, h:i A') : 'N/A' }}</td>
                     <td class="text-center">{{ $o->total_quantity }} ({{ $o->total_item }})</td>

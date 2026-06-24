@@ -34,6 +34,93 @@ if (Auth::guard('sparepart')->check()) {
                                     </a>
                                 </li>
                             @endif
+                              @if (@$sparePart->hasPermissionTo('countersale-show'))
+                                <li>
+                                    <a href="{{ route('sparepart.countersale') }}">
+                                        <div class="parent-icon"><i class="fas fa-cubes fs-5"></i>
+                                        </div>
+                                        <div class="menu-title">Counter Sale</div>
+                                    </a>
+                                </li>
+                            @endif
+
+ @if (@$sparePart->hasPermissionTo('accessory-show'))
+                                <li>
+                                    <a href="{{ route('sparepart.accessory') }}">
+                                        <div class="parent-icon"><i class="fa-solid fa-toolbox fs-5"></i>
+                                        </div>
+                                        <div class="menu-title">Accessory</div>
+                                    </a>
+                                </li>
+                            @endif
+                            @if (@$sparePart->hasPermissionTo('part-show'))
+                                <li>
+                                    <a href="{{ route('sparepart.parts') }}">
+                                        <div class="parent-icon"><i class="fa-solid fa-cogs fs-5"></i>
+                                        </div>
+                                        <div class="menu-title">Parts</div>
+                                    </a>
+                                </li>
+                            @endif
+                             @if (@$sparePart->hasPermissionTo('lubricant-show'))
+                                <li>
+                                    <a href="{{ route('sparepart.lubricants') }}">
+                                        <div class="parent-icon"><i class="fa-solid fa-oil-can fs-5"></i>
+                                        </div>
+                                        <div class="menu-title">Lubricants</div>
+                                    </a>
+                                </li>
+                            @endif
+                            @if (@$sparePart->hasPermissionTo('tools-show'))
+                                <li>
+                                    <a href="{{ route('sparepart.tools') }}">
+                                        <div class="parent-icon"><i class="fa-solid fa-wrench fs-5"></i>
+                                        </div>
+                                        <div class="menu-title">Tools</div>
+                                    </a>
+                                </li>
+                            @endif
+                           
+                             @if (@$sparePart->hasPermissionTo('order-show'))
+                                <li class="">
+                                    <div class="dropdown w-100">
+                                        <a href="#">
+                                            <div class="parent-icon"><i class="fas fa-shopping-cart fs-5"></i>
+                                            </div>
+                                            <div class="menu-title w-100">Order</div><span
+                                                class="fa fa-chevron-right dropdown-right-icon icon"> </span>
+                                        </a>
+                                        <div class="dropdown-content">
+
+                                            <a href="{{ route('sparepart.order') }}"
+                                                style="background-color: unset;">Order</a>
+                                            <a href="{{ route('sparepart.paid-order') }}"
+                                                style="background-color: unset;">Paid Order</a>
+
+                                        </div>
+                                    </div>
+                                </li>
+                            @endif
+                              <li>
+                                <div class="dropdown w-100">
+                                    <a href="#">
+                                        <div class="parent-icon"><i class="fas fa-boxes fs-5"></i>
+                                        </div>
+                                        <div class="menu-title w-100">Inventory</div><span
+                                            class="fa fa-chevron-right dropdown-right-icon icon"> </span>
+                                    </a>
+                                    <div class="dropdown-content">
+
+                                        <a href="{{ route('sparepart.suppliers') }}"
+                                            style="background-color: unset;">Suppliers</a>
+                                        <a href="{{ route('sparepart.purchaseorder') }}"
+                                            style="background-color: unset;">Purchase Order</a>
+                                        <a href="{{ route('sparepart.stock.list') }}" style="background-color: unset;">
+                                            Stock List </a>
+                                    </div>
+                                </div>
+                            </li>
+
                             @if (@$sparePart->hasPermissionTo('expenses-show'))
                                 <li>
                                     <div class="dropdown w-100">
@@ -54,15 +141,55 @@ if (Auth::guard('sparepart')->check()) {
                                     </div>
                                 </li>
                             @endif
-                            @if (@$sparePart->hasPermissionTo('countersale-show'))
+                           @if (!$sparePart || !$sparePart->roles->count() || @$sparePart->hasPermissionTo('report-show'))
                                 <li>
-                                    <a href="{{ route('sparepart.countersale') }}">
-                                        <div class="parent-icon"><i class="fas fa-cubes fs-5"></i>
+                                    <div class="dropdown w-100">
+                                        <a href="#">
+                                            <div class="parent-icon"><i class="fas fa-chart-line fs-5"></i>
+                                            </div>
+                                            <div class="menu-title w-100">Reports</div><span
+                                                class="fa fa-chevron-right dropdown-right-icon icon"> </span>
+                                        </a>
+                                        <div class="dropdown-content">
+                                            <a href="{{ route('sparepart.report.orders') }}"
+                                                style="background-color: unset;">Orders Report</a>
+                                            <a href="{{ route('sparepart.report.countersale') }}"
+                                                style="background-color: unset;">Counter Sales Report</a>
+                                            <a href="{{ route('sparepart.report.payments') }}"
+                                                style="background-color: unset;">Payments Report</a>
+                                            <a href="{{ route('sparepart.report.stock') }}"
+                                                style="background-color: unset;">Stock Report</a>
+                                            <a href="{{ route('sparepart.report.commission') }}"
+                                                style="background-color: unset;">Commission Report</a>
+                                            <a href="{{ route('sparepart.report.salary') }}"
+                                                style="background-color: unset;">Salary Report</a>
+                                            <a href="{{ route('sparepart.report.expenses') }}"
+                                                style="background-color: unset;">Expenses Report</a>
                                         </div>
-                                        <div class="menu-title">Counter Sale</div>
+                                    </div>
+                                </li>
+                            @endif
+                             @if (@$sparePart->hasPermissionTo('wallet-show'))
+                                <li>
+                                    <a href="{{ route('sparepart.withdrawal') }}">
+                                        <div class="parent-icon"><i class="fas fa-wallet fs-5"></i>
+                                        </div>
+                                        <div class="menu-title">Wallet</div>
                                     </a>
                                 </li>
                             @endif
+
+                            
+                            @if (@$sparePart->hasPermissionTo('category-show'))
+                                <li>
+                                    <a href="{{ route('sparepart.category') }}">
+                                        <div class="parent-icon"><i class="fas fa-tags fs-5"></i>
+                                        </div>
+                                        <div class="menu-title">Category</div>
+                                    </a>
+                                </li>
+                            @endif
+
                            
                             <li class="d-none">
                                 <div class="dropdown w-100">
@@ -92,62 +219,9 @@ if (Auth::guard('sparepart')->check()) {
                                     </div>
                                 </div>
                             </li>
-                            @if (@$sparePart->hasPermissionTo('accessory-show'))
-                                <li>
-                                    <a href="{{ route('sparepart.accessory') }}">
-                                        <div class="parent-icon"><i class="fa-solid fa-toolbox fs-5"></i>
-                                        </div>
-                                        <div class="menu-title">Accessory</div>
-                                    </a>
-                                </li>
-                            @endif
-                            @if (@$sparePart->hasPermissionTo('part-show'))
-                                <li>
-                                    <a href="{{ route('sparepart.parts') }}">
-                                        <div class="parent-icon"><i class="fa-solid fa-cogs fs-5"></i>
-                                        </div>
-                                        <div class="menu-title">Parts</div>
-                                    </a>
-                                </li>
-                            @endif
-                            @if (@$sparePart->hasPermissionTo('tools-show'))
-                                <li>
-                                    <a href="{{ route('sparepart.tools') }}">
-                                        <div class="parent-icon"><i class="fa-solid fa-wrench fs-5"></i>
-                                        </div>
-                                        <div class="menu-title">Tools</div>
-                                    </a>
-                                </li>
-                            @endif
-                            @if (@$sparePart->hasPermissionTo('lubricant-show'))
-                                <li>
-                                    <a href="{{ route('sparepart.lubricants') }}">
-                                        <div class="parent-icon"><i class="fa-solid fa-oil-can fs-5"></i>
-                                        </div>
-                                        <div class="menu-title">Lubricants</div>
-                                    </a>
-                                </li>
-                            @endif
+                           
 
-                            <li>
-                                <div class="dropdown w-100">
-                                    <a href="#">
-                                        <div class="parent-icon"><i class="fas fa-boxes fs-5"></i>
-                                        </div>
-                                        <div class="menu-title w-100">Inventory</div><span
-                                            class="fa fa-chevron-right dropdown-right-icon icon"> </span>
-                                    </a>
-                                    <div class="dropdown-content">
-
-                                        <a href="{{ route('sparepart.suppliers') }}"
-                                            style="background-color: unset;">Suppliers</a>
-                                        <a href="{{ route('sparepart.purchaseorder') }}"
-                                            style="background-color: unset;">Purchase Order</a>
-                                        <a href="{{ route('sparepart.stock.list') }}" style="background-color: unset;">
-                                            Stock List </a>
-                                    </div>
-                                </div>
-                            </li>
+                          
                            
                             @if (@$sparePart->hasPermissionTo('unit-show'))
                                 <li>
@@ -159,25 +233,7 @@ if (Auth::guard('sparepart')->check()) {
                                 </li>
                             @endif
 
-                            @if (@$sparePart->hasPermissionTo('category-show'))
-                                <li>
-                                    <a href="{{ route('sparepart.category') }}">
-                                        <div class="parent-icon"><i class="fas fa-tags fs-5"></i>
-                                        </div>
-                                        <div class="menu-title">Category</div>
-                                    </a>
-                                </li>
-                            @endif
-
-                            @if (@$sparePart->hasPermissionTo('wallet-show'))
-                                <li>
-                                    <a href="{{ route('sparepart.withdrawal') }}">
-                                        <div class="parent-icon"><i class="fas fa-wallet fs-5"></i>
-                                        </div>
-                                        <div class="menu-title">Wallet</div>
-                                    </a>
-                                </li>
-                            @endif
+                           
                             @if (@$sparePart->hasPermissionTo('staff-show'))
                                 <li>
                                     <a href="{{ route('sparepart.sparepartstaff') }}">
@@ -196,54 +252,8 @@ if (Auth::guard('sparepart')->check()) {
                                     </a>
                                 </li>
                             @endif
-                            @if (@$sparePart->hasPermissionTo('order-show'))
-                                <li class="">
-                                    <div class="dropdown w-100">
-                                        <a href="#">
-                                            <div class="parent-icon"><i class="fas fa-shopping-cart fs-5"></i>
-                                            </div>
-                                            <div class="menu-title w-100">Order</div><span
-                                                class="fa fa-chevron-right dropdown-right-icon icon"> </span>
-                                        </a>
-                                        <div class="dropdown-content">
-
-                                            <a href="{{ route('sparepart.order') }}"
-                                                style="background-color: unset;">Order</a>
-                                            <a href="{{ route('sparepart.paid-order') }}"
-                                                style="background-color: unset;">Paid Order</a>
-
-                                        </div>
-                                    </div>
-                                </li>
-                            @endif
-                            @if (!$sparePart || !$sparePart->roles->count() || @$sparePart->hasPermissionTo('report-show'))
-                                <li>
-                                    <div class="dropdown w-100">
-                                        <a href="#">
-                                            <div class="parent-icon"><i class="fas fa-chart-line fs-5"></i>
-                                            </div>
-                                            <div class="menu-title w-100">Reports</div><span
-                                                class="fa fa-chevron-right dropdown-right-icon icon"> </span>
-                                        </a>
-                                        <div class="dropdown-content">
-                                            <a href="{{ route('sparepart.report.orders') }}"
-                                                style="background-color: unset;">Orders Report</a>
-                                            <a href="{{ route('sparepart.report.countersale') }}"
-                                                style="background-color: unset;">Counter Sales Report</a>
-                                            <a href="{{ route('sparepart.report.payments') }}"
-                                                style="background-color: unset;">Payments Report</a>
-                                            <a href="{{ route('sparepart.report.stock') }}"
-                                                style="background-color: unset;">Stock Report</a>
-                                            <a href="{{ route('sparepart.report.commission') }}"
-                                                style="background-color: unset;">Commission Report</a>
-                                            <a href="{{ route('sparepart.report.salary') }}"
-                                                style="background-color: unset;">Salary Report</a>
-                                            <a href="{{ route('sparepart.report.expenses') }}"
-                                                style="background-color: unset;">Expenses Report</a>
-                                        </div>
-                                    </div>
-                                </li>
-                            @endif
+                           
+                           
                             <li>
                                 <a href="{{ route('sparepart.resetpassword') }}">
                                     <div class="parent-icon"><i class="bx bx-refresh"></i>

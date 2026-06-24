@@ -200,6 +200,166 @@ if (!function_exists('sparepartOrderReference')) {
 	}
 }
 
+if (!function_exists('getWorkshopInvoiceNumber')) {
+	/**
+	 * Resolve the workshop invoice number for an order.
+	 *
+	 * Invoice numbers are only generated after payment (payment_status == 1).
+	 *
+	 * Priority:
+	 *  1. order->invoice_number if already set (e.g. CARNATE/2627/0001)
+	 *  2. Dynamically claim and persist if the order is paid.
+	 */
+	function getWorkshopInvoiceNumber($order): string
+	{
+		if (!$order) {
+			return 'N/A';
+		}
+
+		if (!empty($order->invoice_number)) {
+			return (string) $order->invoice_number;
+		}
+
+		// Invoice number is only generated AFTER payment
+		if ((int) $order->payment_status === 1) {
+			try {
+				$companyCode = 'CARNATE';
+
+				$date = $order->created_at ? strtotime($order->created_at) : time();
+				$currentMonth = date('m', $date);
+				$currentYear = date('Y', $date);
+				if ($currentMonth >= 4) {
+					$fyStart = substr($currentYear, -2);
+					$fyEnd = substr($currentYear + 1, -2);
+				} else {
+					$fyStart = substr($currentYear - 1, -2);
+					$fyEnd = substr($currentYear, -2);
+				}
+				$financialYear = $fyStart . $fyEnd;
+
+				$serialService = new \App\Services\SharedSerialService();
+
+				$newInvoice = \DB::transaction(function() use ($order, $companyCode, $financialYear, $serialService) {
+					$freshOrder = \App\Models\Order::lockForUpdate()->find($order->id);
+					if ($freshOrder && !empty($freshOrder->invoice_number)) {
+						return $freshOrder->invoice_number;
+					}
+
+					$newInvoice = $serialService->claimNext($order->id, $companyCode, $financialYear);
+					if ($freshOrder && !\App\Models\Order::where('invoice_number', $newInvoice)->exists()) {
+						$freshOrder->invoice_number = $newInvoice;
+						$freshOrder->save();
+						$order->invoice_number = $newInvoice; // sync in-memory
+					}
+					return $newInvoice;
+				});
+
+				return $newInvoice;
+			} catch (\Throwable $e) {
+				// fall through
+			}
+		}
+
+		return 'N/A';
+	}
+}
+
+if (!function_exists('getPaymentInvoiceNumbers')) {
+	/**
+	 * Retrieve invoice numbers for a given payment.
+	 * Can resolve single DB order ID, comma-separated DB order IDs,
+	 * or fallback legacy Razorpay Order ID matching.
+	 */
+	function getPaymentInvoiceNumbers($payment): string
+	{
+		if (!$payment) {
+			return 'N/A';
+		}
+
+		// Case 1: order_id is a single integer
+		if (is_numeric($payment->order_id)) {
+			$order = \App\Models\Order::find($payment->order_id);
+			if ($order) {
+				return getWorkshopInvoiceNumber($order);
+			}
+		}
+
+		// Case 2: order_id is a comma-separated list of integers
+		if (str_contains($payment->order_id, ',')) {
+			$ids = array_filter(explode(',', $payment->order_id), 'is_numeric');
+			if (!empty($ids)) {
+				$orders = \App\Models\Order::whereIn('id', $ids)->get();
+				$invoices = [];
+				foreach ($orders as $order) {
+					$invoices[] = getWorkshopInvoiceNumber($order);
+				}
+				$invoices = array_filter($invoices, fn($val) => $val !== 'N/A');
+				if (!empty($invoices)) {
+					return implode(', ', $invoices);
+				}
+			}
+		}
+
+		// Case 3: Fallback match for legacy records where order_id stores Razorpay Order ID.
+		// We can look up the orders that have orders.payment_id = $payment->id.
+		$orders = \App\Models\Order::where('payment_id', $payment->id)->get();
+		if ($orders->isNotEmpty()) {
+			$invoices = [];
+			foreach ($orders as $order) {
+				$invoices[] = getWorkshopInvoiceNumber($order);
+			}
+			$invoices = array_filter($invoices, fn($val) => $val !== 'N/A');
+			if (!empty($invoices)) {
+				return implode(', ', $invoices);
+			}
+		}
+
+		// Case 4: Legacy fallback using workshop_id, amount, and timestamp proximity (within 1 hour)
+		if ($payment->user_id && $payment->amount) {
+			$paymentTime = strtotime($payment->created_at);
+			$startTime = date('Y-m-d H:i:s', $paymentTime - 3600);
+			$endTime = date('Y-m-d H:i:s', $paymentTime + 3600);
+
+			$orders = \App\Models\Order::where('workshop_id', $payment->user_id)
+				->where('payment_status', 1)
+				->whereBetween('created_at', [$startTime, $endTime])
+				->get();
+
+			// Filter orders where the amount is close to the payment amount
+			$matchingOrders = $orders->filter(function ($order) use ($payment) {
+				return abs((float)$order->total_amount - (float)$payment->amount) < 1.0;
+			});
+
+			if ($matchingOrders->isNotEmpty()) {
+				$invoices = [];
+				foreach ($matchingOrders as $order) {
+					// Update order's payment_id and payment's order_id to repair DB relationship!
+					try {
+						if ($order->payment_id == 1 || empty($order->payment_id)) {
+							$order->payment_id = $payment->id;
+							$order->save();
+						}
+					} catch (\Throwable $e) {}
+
+					$invoices[] = getWorkshopInvoiceNumber($order);
+				}
+				$invoices = array_filter($invoices, fn($val) => $val !== 'N/A');
+				if (!empty($invoices)) {
+					// Also repair payment->order_id if possible
+					try {
+						$payment->order_id = implode(',', $matchingOrders->pluck('id')->toArray());
+						$payment->save();
+					} catch (\Throwable $e) {}
+
+					return implode(', ', $invoices);
+				}
+			}
+		}
+
+		return 'N/A';
+	}
+}
+
 if (!function_exists('getCommission')) {
 	function getCommission($category, $amount = 0)
 	{

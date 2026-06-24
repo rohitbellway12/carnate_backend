@@ -79,18 +79,22 @@ $api_secret = config('services.razorpay.secret');
     public function handlePayment($paymentResponse)
     {
 
+        $dbOrderId = $paymentResponse['order_id'] ?? null;
+
         $payment = Payment::create([
             'payment_id' => $paymentResponse['razorpay_payment_id'],
-            'order_id' => $paymentResponse['razorpay_order_id'],
+            'order_id' => $dbOrderId,
             'status' => 'success',
             'amount' => $paymentResponse['amount'],
             'user_id' => Auth::guard('workshop')->user()->id,
         ]);
 
-        $order = Order::find($paymentResponse['order_id']);
-        $order->payment_status = 1;
-        $order->save();
-
+        $order = Order::find($dbOrderId);
+        if ($order) {
+            $order->payment_status = 1;
+            $order->payment_id = $payment->id;
+            $order->save();
+        }
 
         $this->dispatch('swal:toast', [
             'type' => 'success',

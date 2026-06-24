@@ -75,7 +75,7 @@ class PlanController extends Component
     
         $payment = Payment::create([
             'payment_id' => $paymentResponse['razorpay_payment_id'],
-            'order_id' => $paymentResponse['razorpay_order_id'],
+            'order_id' => 0, // Plan payments don't have a DB order record
             'status' => 'success',
             'amount' => $paymentResponse['amount'],
             'user_id' => Auth::guard('workshop')->user()->id,

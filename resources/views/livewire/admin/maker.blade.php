@@ -90,41 +90,6 @@
         </div>
     </div>
 
-    {{-- <div class="card">
-        <div class="card-body d-flex justify-content-between align-items-center">
-            <div class="row">
-                <div class="col">
-                    <input type="text" class="form-control" placeholder="Search " wire:model.live="search">
-                </div>
-
-                <div class="col">
-                    <div class="form-group">
-                        <select id="f_maker_type_id" class="form-select select2" wire:model.live="maker_type_id"  data-property="maker_type_id">
-                            <option value="">Select Maker Type</option>
-                            @foreach ($makertypes as $makertype)
-                            <option value="{{$makertype->id}}"> {{ $makertype->title }} </option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-
-                <div class="col">
-                    <div class="form-group">
-                        <select class="form-select" wire:model.live="status_filter">
-                            <option value="">Select Status</option>
-                            <option value="1">Active</option>
-                            <option value="0">Inactive</option>
-                        </select>
-                    </div>
-                </div>
-                 <div class="col-xl-3  col-sm-12 ">
-                    <button type="button" class="mr-2 btn btn-info text-white rounded-0  float-end" wire:click="resetFilter">Clear</button>
-                </div>
-
-            </div>
-        </div>
-    </div> --}}
-
     <div class="card mt-4">
         <div class="card-body">
             <div class="row">

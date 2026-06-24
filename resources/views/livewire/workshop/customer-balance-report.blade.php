@@ -211,6 +211,7 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th class="py-2.5">Job Card No.</th>
+                                        <th class="py-2.5">Invoice Number</th>
                                         <th class="py-2.5">Vehicle</th>
                                         <th class="py-2.5">Created Date</th>
                                         <th class="py-2.5 text-end">Bill Amount</th>
@@ -225,6 +226,11 @@
                                             <td class="fw-semibold text-primary">
                                                 <a href="{{ route('workshop.jobcardedit', $jc->id) }}" class="text-decoration-none">
                                                     {{ $jc->jobcard_number }}
+                                                </a>
+                                            </td>
+                                            <td class="fw-semibold text-primary">
+                                                <a href="{{ route('workshop.jobcardedit', $jc->id) }}" class="text-decoration-none">
+                                                    {{ $jc->shared_serial }}
                                                 </a>
                                             </td>
                                             <td>

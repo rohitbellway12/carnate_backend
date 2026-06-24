@@ -239,21 +239,27 @@ $api_secret = config('services.razorpay.secret');
     public function handlePayment($paymentResponse)
     { 
 
+        // Store database order IDs (comma-separated) instead of Razorpay order ID
+        $dbOrderIds = $paymentResponse['order_id'] ?? null;
+
         $payment = Payment::create([
             'payment_id' => $paymentResponse['razorpay_payment_id'],
-            'order_id' => $paymentResponse['razorpay_order_id'],
+            'order_id' => $dbOrderIds,
             'status' => 'success',
             'amount' => $paymentResponse['amount'],
             'user_id' => Auth::guard('workshop')->user()->id,
         ]);
- 
-        // echo "<pre>";print_r($paymentResponse['order_id']);die;
 
-        foreach(explode(',',$paymentResponse['order_id']) as $orderID){
-            $order =  Order::find($orderID);
-            $order->payment_status = 1;
-            $order->is_cart = 1;
-            $order->save();
+        foreach(explode(',', $dbOrderIds ?? '') as $orderID){
+            $orderID = trim($orderID);
+            if (!$orderID) continue;
+            $order = Order::find($orderID);
+            if ($order) {
+                $order->payment_status = 1;
+                $order->is_cart = 1;
+                $order->payment_id = $payment->id;
+                $order->save();
+            }
         }
   
 

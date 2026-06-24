@@ -19,12 +19,29 @@ class PaymentController extends Component
 
     public function render()
     {
-        $payments = Payment::with('user')
+        $payments = Payment::with(['user', 'order'])
             ->orderBy('created_at', 'desc')
             ->when(filled($this->searchfilter), function ($query) {
                 $query->where(function ($q) {
                     $q->whereHas('user', function ($q) {
                         $q->where('name', 'like', '%' . $this->searchfilter . '%');
+                    })
+                    ->orWhereHas('order', function ($q) {
+                        $q->where('invoice_number', 'like', '%' . $this->searchfilter . '%');
+                    })
+                    ->orWhereIn('id', function($subQuery) {
+                        $subQuery->select('payment_id')
+                            ->from('orders')
+                            ->where('invoice_number', 'like', '%' . $this->searchfilter . '%');
+                    })
+                    ->orWhere(function($orQ) {
+                        $matchingOrderIds = \App\Models\Order::where('invoice_number', 'like', '%' . $this->searchfilter . '%')
+                            ->pluck('id')
+                            ->toArray();
+                        foreach ($matchingOrderIds as $orderId) {
+                            $orQ->orWhereRaw("FIND_IN_SET(?, order_id)", [$orderId])
+                                ->orWhere('order_id', '=', (string)$orderId);
+                        }
                     })
                     ->orWhere('payment_id', 'like', '%' . $this->searchfilter . '%')
                     ->orWhere('order_id', 'like', '%' . $this->searchfilter . '%')

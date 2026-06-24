@@ -878,9 +878,10 @@ class JobCardEditController extends Component
     #[On('storePayment')]
     public function handlePayment($paymentResponse)
     {
+        // Create payment with temp order_id=0; update after order is saved
         $payment = Payment::create([
             'payment_id' => $paymentResponse['razorpay_payment_id'],
-            'order_id' => $paymentResponse['razorpay_order_id'],
+            'order_id' => 0, // will update after order is saved
             'status' => 'success',
             'amount' => $paymentResponse['amount'],
             'user_id' => Auth::guard('workshop')->user()->id,
@@ -897,10 +898,14 @@ class JobCardEditController extends Component
         $order->total_quantity = array_sum(array_column($this->rows, 'quantity_purchase'));
         $order->total_item = count($this->rows);
         $order->workshop_id = Auth::guard('workshop')->user()->id;
-        $order->payment_id = 1;
+        $order->payment_id = $payment->id;
         $order->jobcard_id = $this->jobId;
         $order->is_confim = $this->shouldPublishJobCardOrders() ? 1 : 0;
         $order->save();
+
+        // Update payment.order_id with the actual DB order ID
+        $payment->order_id = $order->id;
+        $payment->save();
 
         // echo "<pre>";print_r($this->rows);die;
         foreach ($this->rows as $row) {
@@ -1187,7 +1192,9 @@ class JobCardEditController extends Component
             'final_amount' => $productStock->price * 1,
         ];
 
-        switch ($categoryType) {
+        $catType = $sparePartLabel->spare_part_type;
+
+        switch ($catType) {
             case 2:
                 $this->spareParts[] = $data;
                 break;
@@ -1203,14 +1210,14 @@ class JobCardEditController extends Component
 
         $dataList = [
             'label_id' => $productStock->label_id,
-            'label_name' => @$productStock->label->title,
-            'cat_type' => $productStock->category_id,
+            'label_name' => @$productStock->label->title ?? $sparePartLabel->title,
+            'cat_type' => $catType,
             'product_stock_id' => @$productStock->id,
             'stock' => @$productStock->stock,
             'price' => @$productStock->price,
         ];
 
-        switch ($productStock->category_id) {
+        switch ($catType) {
             case 1:
                 $this->accessory[] = $dataList;
                 break;
@@ -3917,15 +3924,17 @@ class JobCardEditController extends Component
             'stocks.buy_price',
             'stocks.tax_type',
             'stocks.tax_percentage',
+            'spare_part_labels.spare_part_type',
             DB::raw('spare_part_labels.title as label_title')
         )->get();
 
         $mergedData = [];
         foreach ($labels as $label) {
-            $mergedData[$label->category_id][] = [
+            $catType = $label->spare_part_type ?? $label->category_id;
+            $mergedData[$catType][] = [
                 'label_id' => $label->label_id,
                 'label_name' => $label->label_title,
-                'cat_type' => $label->category_id,
+                'cat_type' => $catType,
                 'product_stock_id' => $label->id,
                 'stock' => $label->stock,
                 'price' => $label->price,

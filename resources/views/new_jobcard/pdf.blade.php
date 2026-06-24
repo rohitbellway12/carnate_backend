@@ -377,13 +377,43 @@
                                 <td colspan="4">
                                     {{ $jobCardSparePart->stock_label_name }}</td>
                                 @php
-                                    $__sp = \App\Models\SparePart::where(
-                                        'label_id',
-                                        $jobCardSparePart->stock_label_id,
-                                    )->first();
-                                    $__hsn = $__sp->hsn_code ?? '-';
-                                    $__partno = $__sp->part_number ?? '-';
+                                    $__workshopId = Auth::guard('workshop')->id() ?? ($newjobcard->user_id ?? null);
+                                    
+                                    $__sp = null;
+                                    if ($__workshopId) {
+                                        $__sp = \App\Models\SparePart::where('label_id', $jobCardSparePart->stock_label_id)
+                                            ->where('user_id', $__workshopId)
+                                            ->first();
+                                    }
+                                    if (!$__sp) {
+                                        $__sp = \App\Models\SparePart::where('label_id', $jobCardSparePart->stock_label_id)->first();
+                                    }
+
+                                    $__hsn = $__sp ? ($__sp->hsn_code ?? '-') : '-';
+                                    $__partno = $__sp ? ($__sp->part_number ?? '-') : '-';
                                     $__unitTitle = $__sp?->unit?->title ?? '-';
+
+                                    if (empty($__unitTitle) || $__unitTitle === '-') {
+                                        $__ps = null;
+                                        if ($__workshopId) {
+                                            $__ps = \App\Models\ProductStock::where('label_id', $jobCardSparePart->stock_label_id)
+                                                ->where('user_id', $__workshopId)
+                                                ->first();
+                                        }
+                                        if (!$__ps) {
+                                            $__ps = \App\Models\ProductStock::where('label_id', $jobCardSparePart->stock_label_id)->first();
+                                        }
+
+                                        if ($__ps) {
+                                            if ($__hsn === '-') {
+                                                $__hsn = $__ps->hsn_code ?? '-';
+                                            }
+                                            if ($__partno === '-') {
+                                                $__partno = $__ps->part_number ?? '-';
+                                            }
+                                            $__unitTitle = $__ps->unit?->title ?? '-';
+                                        }
+                                    }
                                 @endphp
                                 {{-- @if ($type == 0)
                                     <td class="text-center" style="width:50px !important;">{{ $__hsn }}</td>
@@ -535,7 +565,6 @@
                             <th class="text-center">#</th>
                             <th>Title</th>
                             <th class="text-center">Type</th>
-                            <th>Mechanic</th>
                             @if ($logo->is_gst == 1)
                                 <th class="text-center">GST Type</th>
                                 <th class="text-center">GST %</th>
@@ -556,12 +585,7 @@
                                             ? 'Outsource'
                                             : 'Inhouse') }}
                                 </td>
-                                <td>
-                                    @php
-                                        $mech = \App\Models\WorkShopVendor::find($extraCharge->mechanic_id);
-                                    @endphp
-                                    {{ $mech ? $mech->name . ' ' . $mech->lastname : '-' }}
-                                </td>
+                                <!-- Mechanic column removed as per requirement -->
                                 @if ($logo->is_gst == 1)
                                     <td class="text-center">{{ $extraCharge->gst_type ?? '-' }}</td>
                                     <td class="text-center">
@@ -577,7 +601,7 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td class="text-end" colspan="{{ $logo->is_gst == 1 ? 6 : 4 }}"><strong>Total Labour
+                                <td class="text-end" colspan="{{ $logo->is_gst == 1 ? 5 : 3 }}"><strong>Total Labour
                                     (Rs.)</strong></td>
                             <td class="text-end"><strong>{{ number_format($labourTotal, 2) }}</strong></td>
                         </tr>
@@ -646,8 +670,13 @@
                     foreach ($jobCardSpareParts as $part) {
                         $hsn = '-';
                         $__sp = \App\Models\SparePart::where('label_id', $part->stock_label_id)->first();
-                        if ($__sp && $__sp->hsn_code) {
+                        if ($__sp && $__sp->hsn_code && $__sp->hsn_code !== '-') {
                             $hsn = $__sp->hsn_code;
+                        } else {
+                            $__ps = \App\Models\ProductStock::where('label_id', $part->stock_label_id)->first();
+                            if ($__ps && $__ps->hsn_code && $__ps->hsn_code !== '-') {
+                                $hsn = $__ps->hsn_code;
+                            }
                         }
 
                         $rate = (float) ($part->tax_percentage ?? 0);

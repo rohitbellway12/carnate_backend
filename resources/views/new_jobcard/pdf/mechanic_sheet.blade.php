@@ -385,6 +385,7 @@
                               <tr>
                                   <td>{{ $loop->iteration }}</td>
                                   <td>{{ $jobCardSparePart->labels?->title ?? '-' }}</td>
+                                  {{--
                                   <td>{{ $jobCardSparePart->productStock?->hsn_code ?? '-' }}</td>
                                   <td>{{ $jobCardSparePart->quantity ?? '-' }}</td>
                                   <td>{{ $jobCardSparePart->price ?? '-' }}</td>
@@ -392,6 +393,7 @@
                                   <td>{{ $jobCardSparePart->productStock?->tax_percentage ?? '-' }}</td>
                                   <td>{{ $jobCardSparePart->discount ?? '-' }}</td>
                                   <td>{{ $jobCardSparePart->total_amount ?? '-' }}</td>
+                                  --}}
                                   <td></td>
                                   <td>{{ getUserFullName($jobCardSparePart->machanic_id) }}</td>
                                   <td></td>

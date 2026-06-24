@@ -302,18 +302,41 @@
                       </thead>
                       <tbody>
                           @foreach ($jobCardSpareParts->where('category', 1) as $jobCardSparePart)
+                              @php
+                                  $__sp = \App\Models\SparePart::where('label_id', $jobCardSparePart->stock_label_id)->first();
+                                  $__ps = \App\Models\ProductStock::where('label_id', $jobCardSparePart->stock_label_id)->first();
+                                  
+                                  $__hsn = $__sp ? ($__sp->hsn_code ?? '-') : '-';
+                                  $__partno = $__sp ? ($__sp->part_number ?? '-') : '-';
+                                  $__unitTitle = $__sp?->unit?->title ?? '-';
+                                  
+                                  if (empty($__unitTitle) || $__unitTitle === '-') {
+                                      if ($__ps) {
+                                          if ($__hsn === '-') {
+                                              $__hsn = $__ps->hsn_code ?? '-';
+                                          }
+                                          if ($__partno === '-') {
+                                              $__partno = $__ps->part_number ?? '-';
+                                          }
+                                          $__unitTitle = $__ps->unit?->title ?? '-';
+                                      }
+                                  }
+                                  
+                                  $__taxType = $jobCardSparePart->tax_type ?: ($__sp->tax_type ?? ($__ps->tax_type ?? 'exclude'));
+                                  $__taxPercentage = $jobCardSparePart->tax_percentage ?: ($__sp->tax_percentage ?? ($__ps->tax_percentage ?? '0'));
+                              @endphp
                               <tr>
                                   <td>{{ $loop->iteration }}</td>
                                   <td>{{ $jobCardSparePart->labels?->title ?? '-' }}</td>
-                                  <td>{{ $jobCardSparePart->productStock?->hsn_code ?? '-' }}</td>
-                                  <td>{{ $jobCardSparePart->productStock?->part_number ?? '-' }}</td>
+                                  <td>{{ $__hsn }}</td>
+                                  <td>{{ $__partno }}</td>
                                   <td>{{ $jobCardSparePart->quantity ?? 0 }}</td>
-                                <td>{{ $jobCardSparePart->productStock?->unit?->title ?? '-' }}</td>
+                                <td>{{ $__unitTitle }}</td>
 
                                   <td class="text-end">{{ number_format($jobCardSparePart->total_amount, 2) ?? 0 }}
                            @if($logo->is_gst)
-                                  <td>{{ ucfirst($jobCardSparePart->productStock?->tax_type) ?? '-' }}</td>
-                                  <td>{{ $jobCardSparePart->productStock?->tax_percentage ?? '-' }}</td>
+                                  <td>{{ ucfirst($__taxType) ?? '-' }}</td>
+                                  <td>{{ $__taxPercentage ?? '-' }}</td>
                                      @endif
                                   </td>
                                   <td>{{ $jobCardSparePart->discount ?? 0 }}</td>
@@ -347,39 +370,64 @@
                           </tr>
                       </thead>
                       <tbody>
-                          @foreach ($jobCardSpareParts->where('category', 2) as $jobCardSparePart)
+                            @foreach ($jobCardSpareParts->where('category', 2) as $jobCardSparePart)
+                              @php
+                                  $__sp = \App\Models\SparePart::where('label_id', $jobCardSparePart->stock_label_id)->first();
+                                  $__ps = \App\Models\ProductStock::where('label_id', $jobCardSparePart->stock_label_id)->first();
+                                  
+                                  $__hsn = $__sp ? ($__sp->hsn_code ?? '-') : '-';
+                                  $__partno = $__sp ? ($__sp->part_number ?? '-') : '-';
+                                  $__unitTitle = $__sp?->unit?->title ?? '-';
+                                  
+                                  if (empty($__unitTitle) || $__unitTitle === '-') {
+                                      if ($__ps) {
+                                          if ($__hsn === '-') {
+                                              $__hsn = $__ps->hsn_code ?? '-';
+                                          }
+                                          if ($__partno === '-') {
+                                              $__partno = $__ps->part_number ?? '-';
+                                          }
+                                          $__unitTitle = $__ps->unit?->title ?? '-';
+                                      }
+                                  }
+                                  
+                                  $__taxType = $jobCardSparePart->tax_type ?: ($__sp->tax_type ?? ($__ps->tax_type ?? 'exclude'));
+                                  $__taxPercentage = $jobCardSparePart->tax_percentage ?: ($__sp->tax_percentage ?? ($__ps->tax_percentage ?? '0'));
+
+                                  $spType = null;
+                                  if ($__sp && isset($__sp->sp_type)) {
+                                      $spType = $__sp->sp_type;
+                                  } elseif ($__ps && isset($__ps->sp_type)) {
+                                      $spType = $__ps->sp_type;
+                                  }
+
+                                  if ($spType !== null) {
+                                      if ((int)$spType === 0) {
+                                          $spTypeText = 'New';
+                                      } elseif ((int)$spType === 1) {
+                                          $spTypeText = 'Used';
+                                      } else {
+                                          $spTypeText = '-';
+                                      }
+                                  } else {
+                                      $spTypeText = '-';
+                                  }
+                              @endphp
                               <tr>
                                   <td>{{ $loop->iteration }}</td>
                                   <td>{{ $jobCardSparePart->labels?->title ?? '-' }}</td>
-                              @php
-    $productStock = $jobCardSparePart->productStock;
-
-    if ($productStock && isset($productStock->sp_type)) {
-        if ((int)$productStock->sp_type === 0) {
-            $spTypeText = 'New';
-        } elseif ((int)$productStock->sp_type === 1) {
-            $spTypeText = 'Used';
-        } else {
-            $spTypeText = '-';
-        }
-    } else {
-        $spTypeText = '-';
-    }
-@endphp
-
-<td>{{ $spTypeText }}</td>
-
-                                  <td>{{ $jobCardSparePart->productStock?->hsn_code ?? '-' }}</td>
+                                  <td>{{ $spTypeText }}</td>
+                                  <td>{{ $__hsn }}</td>
                                   <td>{{ $jobCardSparePart->quantity ?? 0 }}</td>
-                                   <td>{{ $jobCardSparePart->productStock?->unit?->title ?? '-' }}</td>
+                                   <td>{{ $__unitTitle }}</td>
                                   <td class="text-end">
     {{ number_format((float) $jobCardSparePart->price, 2) }}
 
 </td>
 
                                 @if($logo->is_gst)
-                        <td>{{ ucfirst($jobCardSparePart->productStock?->tax_type) ?? '-' }}</td>
-                        <td>{{ $jobCardSparePart->productStock?->tax_percentage ?? '-' }}</td>
+                        <td>{{ ucfirst($__taxType) ?? '-' }}</td>
+                        <td>{{ $__taxPercentage ?? '-' }}</td>
                         @endif
                           <td>
   <span style="font-family: DejaVu Sans;">
@@ -450,17 +498,40 @@
                       </thead>
                       <tbody>
                           @foreach ($jobCardSpareParts->where('category', 4) as $jobCardSparePart)
+                              @php
+                                  $__sp = \App\Models\SparePart::where('label_id', $jobCardSparePart->stock_label_id)->first();
+                                  $__ps = \App\Models\ProductStock::where('label_id', $jobCardSparePart->stock_label_id)->first();
+                                  
+                                  $__hsn = $__sp ? ($__sp->hsn_code ?? '-') : '-';
+                                  $__partno = $__sp ? ($__sp->part_number ?? '-') : '-';
+                                  $__unitTitle = $__sp?->unit?->title ?? '-';
+                                  
+                                  if (empty($__unitTitle) || $__unitTitle === '-') {
+                                      if ($__ps) {
+                                          if ($__hsn === '-') {
+                                              $__hsn = $__ps->hsn_code ?? '-';
+                                          }
+                                          if ($__partno === '-') {
+                                              $__partno = $__ps->part_number ?? '-';
+                                          }
+                                          $__unitTitle = $__ps->unit?->title ?? '-';
+                                      }
+                                  }
+                                  
+                                  $__taxType = $jobCardSparePart->tax_type ?: ($__sp->tax_type ?? ($__ps->tax_type ?? 'exclude'));
+                                  $__taxPercentage = $jobCardSparePart->tax_percentage ?: ($__sp->tax_percentage ?? ($__ps->tax_percentage ?? '0'));
+                              @endphp
                               <tr>
                                   <td>{{ $loop->iteration }}</td>
                                   <td>{{ $jobCardSparePart->labels?->title ?? '-' }}</td>
-                                  <td>{{ $jobCardSparePart->productStock?->hsn_code ?? '-' }}</td>
+                                  <td>{{ $__hsn }}</td>
                                   <td>{{ $jobCardSparePart->quantity ?? 0 }}</td>
-                                   <td>{{ $jobCardSparePart->productStock?->unit?->title ?? '-' }}</td>
+                                   <td>{{ $__unitTitle }}</td>
                                   <td class="text-end">{{ number_format($jobCardSparePart->total_amount, 2) ?? 0 }}
                                   </td>
                                   @if($logo->is_gst)
-                        <td>{{ ucfirst($jobCardSparePart->productStock?->tax_type) ?? '-' }}</td>
-                        <td>{{ $jobCardSparePart->productStock?->tax_percentage ?? '-' }}</td>
+                        <td>{{ ucfirst($__taxType) ?? '-' }}</td>
+                        <td>{{ $__taxPercentage ?? '-' }}</td>
                         @endif
                                   <td>{{ $jobCardSparePart->discount ?? 0 }}</td>
                                   <td class="text-end">{{ number_format($jobCardSparePart->final_amount, 2) ?? 0 }}

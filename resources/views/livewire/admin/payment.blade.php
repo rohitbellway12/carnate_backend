@@ -43,9 +43,9 @@
                     <thead>
                         <tr>
                             <th>S.No.</th>
-                            <th>Vendor Name</th>
+                            <th>company name</th>
                             <th>Payment Id</th>
-                            <th>Order Id</th>
+                            <th>Invoice Number</th>
                             <th>Status</th>
                             <th>Amount</th>
                             @if (@$admin->hasPermissionTo('payment-edit')||@$admin->hasPermissionTo('payment-delete')) 
@@ -55,11 +55,14 @@
                     </thead>
                     <tbody>
                         @foreach ($payments as $index => $payment)
+                        {{-- @php 
+                        dd($payment);
+                        @endphp --}}
                         <tr>
                             <td>{{ $payments->total() - ($payments->firstItem() + $index) + 1 }}</td>
-                            <td>{{ $payment->user ? $payment->user->name : 'N/A'}}</td>
+                            <td>{{ $payment->user ? $payment->user->company_name : 'N/A'}}</td>
                             <td>{{ $payment->payment_id }}</td>
-                            <td> {{ $payment->order_id }} </td>
+                            <td> {{ getPaymentInvoiceNumbers($payment) }} </td>
                             <td> {{ ucfirst($payment->status) }} </td>
                             <td> {{ $payment->amount }} </td>
                             @if (@$admin->hasPermissionTo('payment-edit')||@$admin->hasPermissionTo('payment-delete')) 

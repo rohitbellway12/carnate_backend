@@ -276,16 +276,18 @@ class PurchaseCartController extends Component
     public function handlePayment($paymentResponse)
     {
 
+        // Store database order IDs instead of Razorpay order ID
+        $dbOrderId = $paymentResponse['order_id'] ?? null;
+
         $payment = Payment::create([
             'payment_id' => $paymentResponse['razorpay_payment_id'],
-            'order_id' => $paymentResponse['razorpay_order_id'],
+            'order_id' => $dbOrderId,
             'status' => 'success',
             'amount' => $paymentResponse['amount'],
             'user_id' => Auth::guard('workshop')->user()->id,
         ]);
 
-        // Get DB order_id from paymentResponse (passed from JS)
-        $dbOrderId = $paymentResponse['order_id'] ?? null;
+        // $dbOrderId already set above (database integer order ID from JS)
 
         // Mark selected OrderItems as paid using $this->payabaleOrderId if available
         // Otherwise fall back to all unpaid items in the order
@@ -326,6 +328,7 @@ class PurchaseCartController extends Component
             }
 
             $order->is_cart = ($order->payment_status == 1) ? 1 : $order->is_cart;
+            $order->payment_id = $payment->id;
             $order->save();
         }
 

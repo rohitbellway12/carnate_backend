@@ -3,9 +3,13 @@
 namespace App\Livewire\Workshop;
 
 use App\Models\{City, Staff, Country, State, Branch, Customer, WorkShopVendor, Vehicle};
+use App\Models\Appointment;
+use App\Models\JobCard;
+use App\Models\Order;
+use Illuminate\Support\Facades\DB;
 use App\Services\RapidApiVehicleService;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+// use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Hash;
@@ -87,6 +91,63 @@ class CustomerController extends Component
 
 
         return view('livewire.workshop.customer', compact('customers'));
+    }
+
+    /**
+     * Delete a customer and all related data (appointments, job cards, orders, vehicles, etc.).
+     * This method is triggered via the Livewire listener `delete`.
+     */
+    /**
+     * Delete a customer and all related data.
+     *
+     * Livewire listeners invoke methods without automatically injecting parameters.
+     * The customer ID is stored in the component's `$customerId` property (set via
+     * `confirmDelete`). Therefore the method should not expect a parameter; otherwise
+     * the container attempts to resolve it and throws a BindingResolutionException.
+     */
+    public function delete()
+    {
+        $customer = Customer::find($this->customerId);
+        if (! $customer) {
+            $this->dispatch('swal:toast', [
+                'type' => 'error',
+                'message' => 'Customer not found.',
+            ]);
+            return;
+        }
+
+        DB::transaction(function () use ($customer) {
+            // Delete appointments linked to this customer
+            Appointment::where('customer_id', $customer->id)->delete();
+
+            // Delete each job card and its related records
+            foreach ($customer->jobCards as $jobCard) {
+                // Delete associated order (if any)
+                $jobCard->order?->delete();
+
+                // Delete related payments, extra charges, spare parts, etc.
+                $jobCard->payments()->delete();
+                $jobCard->labours()->delete();
+                $jobCard->jobCardSpareParts()->delete();
+
+                // Finally delete the job card itself
+                $jobCard->delete();
+            }
+
+            // Delete vehicles belonging to the customer
+            $customer->vehicles()->delete();
+
+            // Delete the customer record
+            $customer->delete();
+        });
+
+        $this->dispatch('swal:toast', [
+            'type' => 'success',
+            'message' => 'Customer and all related data have been deleted.',
+        ]);
+
+        // Refresh the list
+        $this->resetPage();
     }
 
 
@@ -807,11 +868,11 @@ public function update()
         ]);
     }
 
-    public function delete()
-    {
-        Customer::destroy($this->customerId);
-        $this->dispatch('swal:toast', ['message' => 'Customer deleted successfully!']);
-    }
+    // public function delete()
+    // {
+    //     Customer::destroy($this->customerId);
+    //     $this->dispatch('swal:toast', ['message' => 'Customer deleted successfully!']);
+    // }
 
   private function resetForm()
 {

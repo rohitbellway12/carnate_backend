@@ -145,7 +145,7 @@
                     <thead class="table-light">
                         <tr>
                             <th>#</th>
-                            <th>Order No.</th>
+                            <th>Invoice Number</th>
                             <th>Items</th>
                             <th>Workshop</th>
                             <th>Order Date</th>
@@ -160,7 +160,7 @@
                         @forelse($orders as $o)
                             <tr>
                                 <td>{{ $loop->iteration + ($orders->currentPage()-1)*$orders->perPage() }}</td>
-                                <td class="fw-bold">#{{ $o->id }}</td>
+                                <td class="fw-bold">{{ getWorkshopInvoiceNumber($o) }}</td>
                                 <td style="max-width:250px;">
                                     @php
                                         $orderItemsString = implode(', ', $o->orderItem->pluck('SpareParts.name')->filter()->toArray());
