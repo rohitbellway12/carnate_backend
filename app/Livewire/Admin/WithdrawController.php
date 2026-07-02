@@ -5,9 +5,9 @@ namespace App\Livewire\Admin;
 use App\Models\SparePartVendor;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\Payment;
 use App\Models\Withdraw;
 use App\Models\Notification;
+use App\Models\Wallet;
 use Illuminate\Support\Facades\Auth;
 
 class WithdrawController extends Component
@@ -20,6 +20,12 @@ class WithdrawController extends Component
     public $selectedWithdrawAmount;
     public $selectedWithdrawUserId;
     public $transaction_id;
+
+    public $showVendorDetailModal = false;
+    public $selectedVendorId;
+    public $selectedVendorData;
+    public $vendorWithdraws;
+    public $vendorWalletHistories;
 
     public function mount(){
         $this->adminId = Auth::guard('admin')->user()->id;
@@ -71,6 +77,32 @@ class WithdrawController extends Component
         $balanceAmount = $groupedWithdraws->sum('balance_amount');
 
         return view('livewire.admin.withdraw', compact('withdraws', 'groupedWithdraws', 'totalAmount', 'withdrawAmount', 'balanceAmount'));
+    }
+
+    public function viewVendorDetail($userId)
+    {
+        $vendor = SparePartVendor::where('id', $userId)->first();
+
+        if (!$vendor) {
+            $this->dispatch('swal:toast', [
+                'type' => 'error',
+                'message' => 'Vendor not found!',
+            ]);
+            return;
+        }
+
+        $this->selectedVendorId = $userId;
+        $this->selectedVendorData = $vendor;
+
+        $this->vendorWithdraws = Withdraw::where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $this->vendorWalletHistories = Wallet::where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $this->showVendorDetailModal = true;
     }
 
     public function confirmApprove($id, $amount, $user_id)

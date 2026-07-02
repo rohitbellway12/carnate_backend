@@ -142,7 +142,7 @@
                             <tr>
                                 <td>{{ $loop->iteration + ($payments->currentPage()-1)*$payments->perPage() }}</td>
                                 <td class="fw-semibold">{{ $p->payment_id }}</td>
-                                <td><span class="badge bg-secondary text-white">#{{ $p->order_id }}</span></td>
+                                <td>{{ getPaymentInvoiceNumbers($p) }}</td>
                                 <td class="fw-semibold">{{ $p->user ? $p->user->name.' '.$p->user->lastname : 'N/A' }} <br><small class="text-muted">{{ $p->user->company_name ?? '' }}</small></td>
                                 <td>{{ $p->created_at ? \Carbon\Carbon::parse($p->created_at)->format('d M Y, h:i A') : 'N/A' }}</td>
                                 <td class="text-end fw-bold">₹{{ number_format($p->amount, 2) }}</td>

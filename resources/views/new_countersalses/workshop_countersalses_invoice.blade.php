@@ -398,7 +398,7 @@
                 </tbody>
             </table>
 
-           @if (count($countersales->counterSalesSpareParts) > 0)
+        @if (count($countersales->counterSalesSpareParts) > 0)
     <div class="my-3"><strong>Parts Charges</strong></div>
 
     {{-- Parts table with proper structure --}}
@@ -549,13 +549,13 @@
                 </tr>
             </tfoot>
         @else
-            {{-- Without GST: 8 columns: #, Particulars, QTY, Unit, Unit Price, Discount, Amount --}}
+            {{-- Without GST: 7 columns: #, Particulars, QTY, Unit, Unit Price, Discount, Amount --}}
             <tr>
-                <td colspan="7" class="text-end" style="padding: 5px 8px; border: 1px solid black;"><strong>Sub Total</strong></td>
+                <td colspan="6" class="text-end" style="padding: 5px 8px; border: 1px solid black;"><strong>Sub Total</strong></td>
                 <td class="text-end" style="padding: 5px 8px; border: 1px solid black;"><strong>{{ number_format($totalTaxableAmount, 2) }}</strong></td>
             </tr>
             <tr>
-                <td colspan="7" class="text-end" style="padding: 5px 8px; border: 1px solid black;">ROUND OFF</td>
+                <td colspan="6" class="text-end" style="padding: 5px 8px; border: 1px solid black;">ROUND OFF</td>
                 <td class="text-end" style="padding: 5px 8px; border: 1px solid black;">
                     @if ($roundOffParts > 0)
                         {{ number_format($roundOffParts, 2) }}
@@ -568,7 +568,7 @@
             </tr>
             <tfoot>
                 <tr>
-                    <td colspan="5" class="text-end" style="padding: 5px 8px; border: 1px solid black;"><strong>Total</strong></td>
+                    <td colspan="4" class="text-end" style="padding: 5px 8px; border: 1px solid black;"><strong>Total</strong></td>
                     <td class="text-center" style="padding: 5px 8px; border: 1px solid black;"><strong>{{ number_format($totalQuantity) }} Qty</strong></td>
                     <td class="text-end" style="padding: 5px 8px; border: 1px solid black;"><strong>Total (Rs.)</strong></td>
                     <td class="text-end" style="padding: 5px 8px; border: 1px solid black;"><strong>{{ number_format($grossParts, 2) }}</strong></td>

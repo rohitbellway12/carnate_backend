@@ -58,15 +58,19 @@
             </div>
 
             <!-- Bell Modal for Order Notifications -->
-            <div class="modal fade" id="bellModal" tabindex="-1" aria-hidden="true" role="dialog" aria-labelledby="bellModalLabel" data-bs-backdrop="static" data-bs-keyboard="true">
+            <div class="modal fade" id="bellModal" tabindex="-1" aria-hidden="true" role="dialog"
+                aria-labelledby="bellModalLabel" data-bs-backdrop="static" data-bs-keyboard="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-body text-center py-4">
                             <audio id="bellSound" src="{{ asset('img/audio/traveloka.mp3') }}"></audio>
-                            <p>Your order, please check <span class="badge bg-info">{{ checkOrder(Auth::guard('sparepart')->user()->id) }}</span></p>
+                            <p>Your order, please check <span
+                                    class="badge bg-info">{{ checkOrder(Auth::guard('sparepart')->user()->id) }}</span>
+                            </p>
                             <i class="fa-solid fa-bell bell-icon ring" style="font-size: 35px; color: #ffcc00;"></i>
                             <div class="mt-3">
-                                <form method="POST" action="{{ route('sparepart.update-order-check') }}" onsubmit="closepopup()">
+                                <form method="POST" action="{{ route('sparepart.update-order-check') }}"
+                                    onsubmit="closepopup()">
                                     @csrf
                                     <button type="submit" class="btn btn-primary">OK</button>
                                 </form>
@@ -151,17 +155,17 @@
                 .then(data => {
                     // console.log('Notification fetch result:', data);
                     if (!data.status) return;
-                    
+
                     const notifications = Array.isArray(data.data) ? data.data : [];
-                    
+
                     // Update badge and dropdown list
                     const notifCountEl = document.getElementById('notif-count');
                     const notifListEl = document.getElementById('notification-list');
- 
+
                     if (notifCountEl && notifListEl) {
                         const unread = notifications.filter(n => !n.is_read);
                         notifCountEl.textContent = unread.length;
- 
+
                         notifListEl.innerHTML = '';
                         if (unread.length === 0) {
                             const li = document.createElement('li');
@@ -187,17 +191,17 @@
                             });
                         }
                     }
-                    
+
                     const unreadList = notifications.filter(n => n && n.is_read == 0);
-                    
+
                     if (unreadList.length > 0) {
                         const lastSeenId = Number(localStorage.getItem('lastSparepartNotifId') || 0);
                         const newUnread = unreadList.filter(n => Number(n.id) > lastSeenId);
                         const hasShownThisLoad = sessionStorage.getItem('sparepartNotificationModalShown') === '1';
                         const maxUnreadId = Math.max(...unreadList.map(n => Number(n.id)));
-                        const modalNotification = newUnread.length > 0
-                            ? newUnread[0]
-                            : (!hasShownThisLoad ? unreadList[0] : null);
+                        const modalNotification = newUnread.length > 0 ?
+                            newUnread[0] :
+                            (!hasShownThisLoad ? unreadList[0] : null);
 
                         if (modalNotification) {
                             showNotificationModal(modalNotification);
@@ -213,35 +217,35 @@
                     isFetching = false;
                 });
         }
- 
+
         function markHeaderNotifAsReadSp(id) {
             const url = `/sparepart/notifications/${id}/read`;
             fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                credentials: 'same-origin'
-            })
-            .then(async response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.status) {
-                    checkNewOrders();
-                    if (typeof Livewire !== 'undefined') {
-                        Livewire.dispatch('refreshNotifications');
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(async response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
                     }
-                }
-            })
-            .catch(err => {
-                console.error('Error marking notification as read:', err);
-            });
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status) {
+                        checkNewOrders();
+                        if (typeof Livewire !== 'undefined') {
+                            Livewire.dispatch('refreshNotifications');
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error('Error marking notification as read:', err);
+                });
         }
 
         function showNotificationModal(notification) {
@@ -250,7 +254,7 @@
             if (existingModal) {
                 existingModal.remove();
             }
-            
+
             const orderId = notification.order_id || null;
             const modalHtml = `
                 <div class="modal fade" id="orderNotificationModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
@@ -268,7 +272,7 @@
                     </div>
                 </div>
             `;
-            
+
             document.body.insertAdjacentHTML('beforeend', modalHtml);
             const modalEl = document.getElementById('orderNotificationModal');
             const modal = new bootstrap.Modal(modalEl);
@@ -284,7 +288,9 @@
 
                 const bell = document.getElementById('notificationDropdown');
                 if (bell) {
-                    bell.focus({ preventScroll: true });
+                    bell.focus({
+                        preventScroll: true
+                    });
                 }
             });
 
@@ -331,9 +337,9 @@
         function openBellModal() {
             let sound = document.getElementById("bellSound");
             let modalElement = document.getElementById("bellModal");
-            
+
             if (!modalElement) return;
-            
+
             let modal = new bootstrap.Modal(modalElement);
             modal.show();
 
@@ -368,7 +374,7 @@
 
         // Function to start bell modal interval
         function startBellModalInterval() {
-            @if(Auth::guard('sparepart')->check() && checkOrder(Auth::guard('sparepart')->user()->id) > 0)
+            @if (Auth::guard('sparepart')->check() && checkOrder(Auth::guard('sparepart')->user()->id) > 0)
                 if (!bellModalInterval) {
                     bellModalInterval = setInterval(() => {
                         openBellModal();
@@ -415,7 +421,14 @@
 
         // SweetAlert and Livewire event handlers
         document.addEventListener('swal:confirm', event => {
-            const { action, title, text, icon, showCancelButton, confirmButtonText } = event.detail[0];
+            const {
+                action,
+                title,
+                text,
+                icon,
+                showCancelButton,
+                confirmButtonText
+            } = event.detail[0];
 
             Swal.fire({
                 title: title,

@@ -132,7 +132,7 @@
                 <tr>
                     <td>{{ $index + 1 }}</td>
                     <td><strong>{{ $p->payment_id }}</strong></td>
-                    <td>#{{ $p->order_id }}</td>
+                    <td>{{ getPaymentInvoiceNumbers($p) }}</td>
                     <td>{{ $p->user ? $p->user->name.' '.$p->user->lastname : 'N/A' }}</td>
                     <td>{{ $p->created_at ? \Carbon\Carbon::parse($p->created_at)->format('d M Y, h:i A') : 'N/A' }}</td>
                     <td class="text-right fw-bold">{{ number_format((float)$p->amount, 2) }}</td>

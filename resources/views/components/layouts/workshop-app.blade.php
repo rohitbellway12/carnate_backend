@@ -158,59 +158,59 @@
                 // console.log('Already fetching notifications, skipping...');
                 return;
             }
-            
+
             isFetching = true;
-            
+
             const url = '/workshop/get-notifications';
             // console.log('Fetching notifications from:', url);
-            
+
             fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                credentials: 'same-origin'
-            })
-            .then(async response => {
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    // console.error('Expected JSON but got:', contentType);
-                    throw new Error('Server returned non-JSON response');
-                }
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                return response.json();
-            })
-            .then(data => {
-                // console.log('Notification fetch result:', data);
-                if (!data.status) return;
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(async response => {
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        // console.error('Expected JSON but got:', contentType);
+                        throw new Error('Server returned non-JSON response');
+                    }
 
-                const notifications = Array.isArray(data.data) ? data.data : [];
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
 
-                // Update badge and dropdown list
-                const notifCountEl = document.getElementById('notif-count');
-                const notifListEl = document.getElementById('notification-list');
+                    return response.json();
+                })
+                .then(data => {
+                    // console.log('Notification fetch result:', data);
+                    if (!data.status) return;
 
-                if (notifCountEl && notifListEl) {
-                    const unread = notifications.filter(n => !n.is_read);
-                    notifCountEl.textContent = unread.length;
+                    const notifications = Array.isArray(data.data) ? data.data : [];
 
-                    notifListEl.innerHTML = '';
-                    if (unread.length === 0) {
-                        const li = document.createElement('li');
-                        li.className = 'dropdown-item text-center text-muted small py-2';
-                        li.textContent = 'No new notifications';
-                        notifListEl.appendChild(li);
-                    } else {
-                        unread.slice(0, 10).forEach(n => {
+                    // Update badge and dropdown list
+                    const notifCountEl = document.getElementById('notif-count');
+                    const notifListEl = document.getElementById('notification-list');
+
+                    if (notifCountEl && notifListEl) {
+                        const unread = notifications.filter(n => !n.is_read);
+                        notifCountEl.textContent = unread.length;
+
+                        notifListEl.innerHTML = '';
+                        if (unread.length === 0) {
                             const li = document.createElement('li');
-                            li.className = 'dropdown-item border-bottom py-2';
-                            li.innerHTML = `
+                            li.className = 'dropdown-item text-center text-muted small py-2';
+                            li.textContent = 'No new notifications';
+                            notifListEl.appendChild(li);
+                        } else {
+                            unread.slice(0, 10).forEach(n => {
+                                const li = document.createElement('li');
+                                li.className = 'dropdown-item border-bottom py-2';
+                                li.innerHTML = `
                                 <div class="d-flex justify-content-between align-items-center gap-2">
                                     <div style="flex-grow: 1; min-width: 0;">
                                         <strong class="text-wrap d-block text-dark" style="font-size: 0.85rem;">${escapeHtml(n.title)}</strong>
@@ -221,65 +221,65 @@
                                     </button>
                                 </div>
                             `;
-                            notifListEl.appendChild(li);
-                        });
+                                notifListEl.appendChild(li);
+                            });
+                        }
                     }
-                }
 
-                const unreadList = notifications.filter(n => n && n.is_read == 0);
-                if (unreadList.length > 0) {
-                    const lastSeenId = Number(localStorage.getItem('lastWorkshopNotifId') || 0);
-                    const newUnread = unreadList.filter(n => Number(n.id) > lastSeenId);
-                    const hasShownThisLoad = sessionStorage.getItem('workshopNotificationModalShown') === '1';
-                    const maxUnreadId = Math.max(...unreadList.map(n => Number(n.id)));
-                    const modalNotification = newUnread.length > 0
-                        ? newUnread[0]
-                        : (!hasShownThisLoad ? unreadList[0] : null);
+                    const unreadList = notifications.filter(n => n && n.is_read == 0);
+                    if (unreadList.length > 0) {
+                        const lastSeenId = Number(localStorage.getItem('lastWorkshopNotifId') || 0);
+                        const newUnread = unreadList.filter(n => Number(n.id) > lastSeenId);
+                        const hasShownThisLoad = sessionStorage.getItem('workshopNotificationModalShown') === '1';
+                        const maxUnreadId = Math.max(...unreadList.map(n => Number(n.id)));
+                        const modalNotification = newUnread.length > 0 ?
+                            newUnread[0] :
+                            (!hasShownThisLoad ? unreadList[0] : null);
 
-                    if (modalNotification) {
-                        showNotificationModal(modalNotification);
-                        sessionStorage.setItem('workshopNotificationModalShown', '1');
-                        localStorage.setItem('lastWorkshopNotifId', String(maxUnreadId));
+                        if (modalNotification) {
+                            showNotificationModal(modalNotification);
+                            sessionStorage.setItem('workshopNotificationModalShown', '1');
+                            localStorage.setItem('lastWorkshopNotifId', String(maxUnreadId));
+                        }
                     }
-                }
-            })
-            .catch(err => {
-                // console.error('Notification check error:', err);
-                // console.error('Error message:', err.message);
-            })
-            .finally(() => {
-                isFetching = false;
-            });
+                })
+                .catch(err => {
+                    // console.error('Notification check error:', err);
+                    // console.error('Error message:', err.message);
+                })
+                .finally(() => {
+                    isFetching = false;
+                });
         }
 
         function markHeaderNotifAsRead(id) {
             const url = `/workshop/notifications/${id}/read`;
             fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                credentials: 'same-origin'
-            })
-            .then(async response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.status) {
-                    checkNewOrders();
-                    if (typeof Livewire !== 'undefined') {
-                        Livewire.dispatch('refreshNotifications');
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(async response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
                     }
-                }
-            })
-            .catch(err => {
-                console.error('Error marking notification as read:', err);
-            });
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status) {
+                        checkNewOrders();
+                        if (typeof Livewire !== 'undefined') {
+                            Livewire.dispatch('refreshNotifications');
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error('Error marking notification as read:', err);
+                });
         }
 
         function showNotificationModal(notification) {
@@ -287,7 +287,7 @@
             if (existingModal) {
                 existingModal.remove();
             }
-            
+
             const orderId = notification.order_id || null;
             const modalHtml = `
                 <div class="modal fade" id="orderNotificationModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
@@ -321,13 +321,15 @@
 
                 const bell = document.getElementById('notificationDropdown');
                 if (bell) {
-                    bell.focus({ preventScroll: true });
+                    bell.focus({
+                        preventScroll: true
+                    });
                 }
             });
 
             modal.show();
         }
-        
+
         function handleNotificationModalAction(orderId) {
             const modal = bootstrap.Modal.getInstance(document.getElementById('orderNotificationModal'));
             if (modal) modal.hide();
@@ -336,6 +338,7 @@
                 window.location.href = `/workshop/order-list`;
             }
         }
+
         function escapeHtml(text) {
             if (!text) return '';
             const div = document.createElement('div');
@@ -375,7 +378,7 @@
                     startNotificationInterval();
                 }
             }, 500);
-            
+
             setTimeout(() => {
                 clearInterval(checkInterval);
             }, 5000);

@@ -40,7 +40,7 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
-    
+
     @yield('style')
     <!-- Scripts -->
     @livewireStyles
@@ -183,82 +183,82 @@
         });
         // ==================== ADMIN NOTIFICATION HANDLING ====================
 
-let adminNotificationInterval = null;
-let adminIsFetching = false;
+        let adminNotificationInterval = null;
+        let adminIsFetching = false;
 
-function checkAdminNotifications() {
+        function checkAdminNotifications() {
 
-    if (adminIsFetching) {
-        return;
-    }
+            if (adminIsFetching) {
+                return;
+            }
 
-    const notifCountEl = document.getElementById('notif-count');
-    const notifListEl = document.getElementById('notification-list');
+            const notifCountEl = document.getElementById('notif-count');
+            const notifListEl = document.getElementById('notification-list');
 
-    if (!notifCountEl || !notifListEl) {
-        return;
-    }
+            if (!notifCountEl || !notifListEl) {
+                return;
+            }
 
-    adminIsFetching = true;
+            adminIsFetching = true;
 
-    fetch('/admin/get-notifications', {
-        method: 'GET',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        },
-        credentials: 'same-origin'
-    })
-    .then(response => {
+            fetch('/admin/get-notifications', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => {
 
-        if (!response.ok) {
-            throw new Error(`HTTP Error ${response.status}`);
-        }
+                    if (!response.ok) {
+                        throw new Error(`HTTP Error ${response.status}`);
+                    }
 
-        return response.json();
-    })
-    .then(data => {
+                    return response.json();
+                })
+                .then(data => {
 
-        if (!data.status) {
-            return;
-        }
+                    if (!data.status) {
+                        return;
+                    }
 
-        const notifications = Array.isArray(data.data)
-            ? data.data
-            : [];
+                    const notifications = Array.isArray(data.data) ?
+                        data.data :
+                        [];
 
-        const unread = notifications.filter(
-            n => Number(n.is_read) === 0
-        );
+                    const unread = notifications.filter(
+                        n => Number(n.is_read) === 0
+                    );
 
-        // Badge Count
-        notifCountEl.textContent = unread.length;
+                    // Badge Count
+                    notifCountEl.textContent = unread.length;
 
-        // Dropdown List
-        notifListEl.innerHTML = '';
+                    // Dropdown List
+                    notifListEl.innerHTML = '';
 
-        if (unread.length === 0) {
+                    if (unread.length === 0) {
 
-            const li = document.createElement('li');
+                        const li = document.createElement('li');
 
-            li.className =
-                'dropdown-item text-center text-muted small py-2';
+                        li.className =
+                            'dropdown-item text-center text-muted small py-2';
 
-            li.textContent = 'No new notifications';
+                        li.textContent = 'No new notifications';
 
-            notifListEl.appendChild(li);
+                        notifListEl.appendChild(li);
 
-        } else {
+                    } else {
 
-            unread.slice(0, 10).forEach(notification => {
+                        unread.slice(0, 10).forEach(notification => {
 
-                const li = document.createElement('li');
+                            const li = document.createElement('li');
 
-                li.className =
-                    'dropdown-item border-bottom py-2';
+                            li.className =
+                                'dropdown-item border-bottom py-2';
 
-                li.innerHTML = `
+                            li.innerHTML = `
                     <div class="d-flex justify-content-between align-items-center gap-2">
                         <div style="flex-grow:1;min-width:0;">
                             <strong class="text-wrap d-block text-dark"
@@ -284,101 +284,101 @@ function checkAdminNotifications() {
                     </div>
                 `;
 
-                notifListEl.appendChild(li);
+                            notifListEl.appendChild(li);
 
-            });
+                        });
+                    }
+
+                    // ================= POPUP MODAL =================
+
+                    const unreadIds = unread.map(n => Number(n.id));
+                    const maxUnreadId = unreadIds.length > 0 ?
+                        Math.max(...unreadIds) :
+                        0;
+
+                    if (maxUnreadId > 0) {
+                        const storedLastSeenId = Number(
+                            localStorage.getItem('lastAdminNotifId') || 0
+                        );
+
+                        if (
+                            !Number.isFinite(storedLastSeenId) ||
+                            storedLastSeenId > maxUnreadId
+                        ) {
+                            localStorage.setItem(
+                                'lastAdminNotifId',
+                                String(maxUnreadId)
+                            );
+                        }
+                    }
+
+                    const lastSeenId =
+                        Number(localStorage.getItem('lastAdminNotifId') || 0);
+
+                    const newUnread = unread.filter(
+                        n => Number(n.id) > lastSeenId
+                    );
+
+                    if (newUnread.length > 0) {
+
+                        showAdminNotificationModal(newUnread[0]);
+
+                        localStorage.setItem(
+                            'lastAdminNotifId',
+                            String(maxUnreadId)
+                        );
+                    }
+
+                })
+                .catch(() => {})
+                .finally(() => {
+                    adminIsFetching = false;
+                });
+        }
+
+        // ================= MARK AS READ =================
+
+        function markHeaderNotifAsReadSp(id) {
+
+            fetch(`/admin/notifications/${id}/read`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector(
+                            'meta[name="csrf-token"]'
+                        ).content
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+
+                    if (data.status) {
+
+                        checkAdminNotifications();
+
+                        if (typeof Livewire !== 'undefined') {
+                            Livewire.dispatch('refreshNotifications');
+                        }
+                    }
+
+                })
+                .catch(() => {});
         }
 
         // ================= POPUP MODAL =================
 
-        const unreadIds = unread.map(n => Number(n.id));
-        const maxUnreadId = unreadIds.length > 0
-            ? Math.max(...unreadIds)
-            : 0;
+        function showAdminNotificationModal(notification) {
 
-        if (maxUnreadId > 0) {
-            const storedLastSeenId = Number(
-                localStorage.getItem('lastAdminNotifId') || 0
-            );
+            const oldModal =
+                document.getElementById('adminNotificationModal');
 
-            if (
-                !Number.isFinite(storedLastSeenId) ||
-                storedLastSeenId > maxUnreadId
-            ) {
-                localStorage.setItem(
-                    'lastAdminNotifId',
-                    String(maxUnreadId)
-                );
+            if (oldModal) {
+                oldModal.remove();
             }
-        }
 
-        const lastSeenId =
-            Number(localStorage.getItem('lastAdminNotifId') || 0);
-
-        const newUnread = unread.filter(
-            n => Number(n.id) > lastSeenId
-        );
-
-        if (newUnread.length > 0) {
-
-            showAdminNotificationModal(newUnread[0]);
-
-            localStorage.setItem(
-                'lastAdminNotifId',
-                String(maxUnreadId)
-            );
-        }
-
-    })
-    .catch(() => {})
-    .finally(() => {
-        adminIsFetching = false;
-    });
-}
-
-// ================= MARK AS READ =================
-
-function markHeaderNotifAsReadSp(id) {
-
-    fetch(`/admin/notifications/${id}/read`, {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector(
-                'meta[name="csrf-token"]'
-            ).content
-        },
-        credentials: 'same-origin'
-    })
-    .then(response => response.json())
-    .then(data => {
-
-        if (data.status) {
-
-            checkAdminNotifications();
-
-            if (typeof Livewire !== 'undefined') {
-                Livewire.dispatch('refreshNotifications');
-            }
-        }
-
-    })
-    .catch(() => {});
-}
-
-// ================= POPUP MODAL =================
-
-function showAdminNotificationModal(notification) {
-
-    const oldModal =
-        document.getElementById('adminNotificationModal');
-
-    if (oldModal) {
-        oldModal.remove();
-    }
-
-    const modalHtml = `
+            const modalHtml = `
         <div class="modal fade"
             id="adminNotificationModal"
             tabindex="-1"
@@ -420,138 +420,140 @@ function showAdminNotificationModal(notification) {
         </div>
     `;
 
-    document.body.insertAdjacentHTML(
-        'beforeend',
-        modalHtml
-    );
+            document.body.insertAdjacentHTML(
+                'beforeend',
+                modalHtml
+            );
 
-    const modalEl = document.getElementById(
-        'adminNotificationModal'
-    );
-    const modal = new bootstrap.Modal(modalEl);
+            const modalEl = document.getElementById(
+                'adminNotificationModal'
+            );
+            const modal = new bootstrap.Modal(modalEl);
 
-    modalEl.addEventListener('hide.bs.modal', () => {
-        if (
-            document.activeElement &&
-            modalEl.contains(document.activeElement)
-        ) {
-            document.activeElement.blur();
+            modalEl.addEventListener('hide.bs.modal', () => {
+                if (
+                    document.activeElement &&
+                    modalEl.contains(document.activeElement)
+                ) {
+                    document.activeElement.blur();
+                }
+            });
+
+            modalEl.addEventListener('hidden.bs.modal', () => {
+                modalEl.remove();
+
+                const bell = document.getElementById(
+                    'adminNotificationDropdown'
+                );
+
+                if (bell) {
+                    bell.focus({
+                        preventScroll: true
+                    });
+                }
+            });
+
+            modal.show();
         }
-    });
 
-    modalEl.addEventListener('hidden.bs.modal', () => {
-        modalEl.remove();
+        // ================= INTERVAL =================
 
-        const bell = document.getElementById(
-            'adminNotificationDropdown'
+        function startAdminNotificationInterval() {
+
+            if (adminNotificationInterval) {
+                return;
+            }
+
+            adminNotificationInterval =
+                setInterval(
+                    checkAdminNotifications,
+                    15000
+                );
+        }
+
+        function stopAdminNotificationInterval() {
+
+            if (adminNotificationInterval) {
+
+                clearInterval(
+                    adminNotificationInterval
+                );
+
+                adminNotificationInterval = null;
+            }
+        }
+
+        // ================= INIT =================
+
+        function initAdminNotifications() {
+
+            const checkInterval = setInterval(() => {
+
+                if (
+                    document.getElementById('notif-count')
+                ) {
+
+                    clearInterval(checkInterval);
+
+                    checkAdminNotifications();
+
+                    startAdminNotificationInterval();
+                }
+
+            }, 500);
+
+            setTimeout(() => {
+                clearInterval(checkInterval);
+            }, 3000);
+        }
+
+        // ================= HELPER =================
+
+        function escapeHtml(text) {
+
+            if (!text) return '';
+
+            const div = document.createElement('div');
+
+            div.textContent = text;
+
+            return div.innerHTML;
+        }
+
+        // ================= LIVEWIRE =================
+
+        if (typeof Livewire !== 'undefined') {
+
+            document.addEventListener(
+                'livewire:navigating',
+                () => {
+                    stopAdminNotificationInterval();
+                }
+            );
+
+            document.addEventListener(
+                'livewire:navigated',
+                () => {
+                    initAdminNotifications();
+                }
+            );
+        }
+
+        // ================= PAGE LOAD =================
+
+        window.addEventListener(
+            'beforeunload',
+            function() {
+                stopAdminNotificationInterval();
+            }
         );
 
-        if (bell) {
-            bell.focus({ preventScroll: true });
-        }
-    });
-
-    modal.show();
-}
-
-// ================= INTERVAL =================
-
-function startAdminNotificationInterval() {
-
-    if (adminNotificationInterval) {
-        return;
-    }
-
-    adminNotificationInterval =
-        setInterval(
-            checkAdminNotifications,
-            15000
+        document.addEventListener(
+            'DOMContentLoaded',
+            function() {
+                initAdminNotifications();
+            }
         );
-}
-
-function stopAdminNotificationInterval() {
-
-    if (adminNotificationInterval) {
-
-        clearInterval(
-            adminNotificationInterval
-        );
-
-        adminNotificationInterval = null;
-    }
-}
-
-// ================= INIT =================
-
-function initAdminNotifications() {
-
-    const checkInterval = setInterval(() => {
-
-        if (
-            document.getElementById('notif-count')
-        ) {
-
-            clearInterval(checkInterval);
-
-            checkAdminNotifications();
-
-            startAdminNotificationInterval();
-        }
-
-    }, 500);
-
-    setTimeout(() => {
-        clearInterval(checkInterval);
-    }, 3000);
-}
-
-// ================= HELPER =================
-
-function escapeHtml(text) {
-
-    if (!text) return '';
-
-    const div = document.createElement('div');
-
-    div.textContent = text;
-
-    return div.innerHTML;
-}
-
-// ================= LIVEWIRE =================
-
-if (typeof Livewire !== 'undefined') {
-
-    document.addEventListener(
-        'livewire:navigating',
-        () => {
-            stopAdminNotificationInterval();
-        }
-    );
-
-    document.addEventListener(
-        'livewire:navigated',
-        () => {
-            initAdminNotifications();
-        }
-    );
-}
-
-// ================= PAGE LOAD =================
-
-window.addEventListener(
-    'beforeunload',
-    function () {
-        stopAdminNotificationInterval();
-    }
-);
-
-document.addEventListener(
-    'DOMContentLoaded',
-    function () {
-        initAdminNotifications();
-    }
-);
     </script>
 
     @include('components.includes.searchable-select-script')

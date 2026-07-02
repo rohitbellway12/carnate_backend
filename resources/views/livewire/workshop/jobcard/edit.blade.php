@@ -2544,6 +2544,7 @@
                                             </div>
                                         @endif
 
+                                        @if($jobcardData->status != 0)
                                         <!-- Payment History Ledger -->
                                         <div class="mt-4 pt-3 border-top">
                                             <h6 class="mb-3 text-primary font-weight-bold" style="font-size: 1rem; border-bottom: 2px solid #007bff; display: inline-block; padding-bottom: 3px;">Payment History Ledger</h6>
@@ -2636,6 +2637,8 @@
                                                 </div>
                                             @endif
                                         </div>
+@endif
+
                                     </div>
                                 </div>
                             </div>
@@ -2687,7 +2690,7 @@
                         $vehiclePlate .
                         "* and generated the invoice.\n\n";
                     $message .= "Please find the invoice attached for your reference.\n\n";
-                    $message .= "Regards,\nCarnet\n\n";
+                    // $message .= "Regards,\nCarnet\n\n";
                     $message .= "Click the link below to download your invoice:\n";
                     $invoiceDownloadLink = route('customer.estimate.download', [
                         base64_encode($jobcardData->id),
@@ -2702,7 +2705,7 @@
                         $vehiclePlate .
                         "*.\n\n";
                     $message .= "Please find the attached estimate for your request.\n\n";
-                    $message .= "Regards,\nCarnet\n\n";
+                    // $message .= "Regards,\nCarnet\n\n";
 
                     $url = route('estimate.accept', [
                         'status' => 1,
