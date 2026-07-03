@@ -3177,8 +3177,8 @@ class JobCardEditController extends Component
 
 
         $valArr = [
-            'totalAmount' => 'required|numeric|min:1',
-            'final_amount' => 'required|numeric|min:1',
+            'totalAmount' => 'nullable|numeric|min:0',
+            'final_amount' => 'nullable|numeric|min:0',
         ];
 
         // $customMessages = customErrorMsg();
