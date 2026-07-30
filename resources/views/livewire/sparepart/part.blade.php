@@ -335,11 +335,11 @@
                                             <div class="d-flex align-items-center gap-2 mt-1 flex-wrap">
                                                 @if($part->part_number)
                                                     <span class="badge" style="background:#eff6ff;color:#3b82f6;border:1px solid #bfdbfe;border-radius:6px;font-size:11px;">
-                                                        # {{ $part->part_number }}
+                                                         # {{ strtoupper($part->part_number) }}
                                                     </span>
                                                 @endif
                                                 @if($part->brand)
-                                                    <span class="text-muted small">{{ $part->brand }}</span>
+                                                    <span class="text-muted small">{{ strtoupper($part->brand) }}</span>
                                                 @endif
                                                 @if($part->sp_type == 0)
                                                     <span class="badge bg-success-subtle text-success" style="border-radius:6px;font-size:10px;">New</span>

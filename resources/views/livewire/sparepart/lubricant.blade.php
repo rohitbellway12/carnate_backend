@@ -31,8 +31,13 @@
 
                                     <div class="row">
                                         <div class="col-10 pe-0">
-                                            <input type="text" wire:model="name" class="form-control"
-                                                placeholder="Enter Name or use Part No. to fetch">
+                                            <select class="form-select" wire:model="name" id="name">
+                                                <option value="">Select a Name or Add New One</option>
+                                                @foreach ($sparePartLabels as $sparePartLabel)
+                                                    <option value="{{ $sparePartLabel->title }}">
+                                                        {{ $sparePartLabel->title }}</option>
+                                                @endforeach
+                                            </select>
                                         </div>
                                         <div class="col-2 p-0">
                                             <button type="button"

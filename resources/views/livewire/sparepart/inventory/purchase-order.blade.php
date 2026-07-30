@@ -61,7 +61,7 @@
             <span class="input-group-text bg-white border-end-0">
                 <i class="bx bx-search"></i>
             </span>
-            <input type="text" wire:model.live="search" class="form-control" placeholder="Search by Supplier or Bill No">
+            <input type="text" wire:model="search" class="form-control" placeholder="Search by Supplier or Bill No">
         </div>
     </div>
  
@@ -71,7 +71,7 @@
         <span class="input-group-text bg-white border-end-0">
             <i class="bx bx-calendar"></i>
         </span>
-        <input type="text" wire:model.live="date_range" id="dateRangePicker" class="form-control" placeholder="Select Date Range">
+        <input type="text" wire:model="date_range" id="dateRangePicker" class="form-control" placeholder="Select Date Range">
     </div>
 </div>
  

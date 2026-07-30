@@ -2429,7 +2429,7 @@
                                                             class="form-control bg-secondary text-white rounded"
                                                             readonly>
                                                         <input type="hidden" wire:model="total_amount"
-                                                            id="total-amount" value="0">
+                                                            id="total-amount-hidden" value="0">
                                                         @error('totalAmount')
                                                             <span class="text-danger error">{{ $message }}</span>
                                                         @enderror
@@ -2441,11 +2441,11 @@
                                                             class="form-label">Discount</label>
                                                         <input type="number" id="final_discount"
                                                             @disabled($jobcardData->status == 3 || !$user->hasPermissionTo('Jobcard-edit'))
-                                                            wire:model.live="final_discount" min="0"
-                                                            step="1" placeholder="Discount"
+                                                            wire:model.lazy="final_discount" min="0"
+                                                            step="0.01" placeholder="Discount"
                                                             class="form-control rounded"
                                                             max="{{ $hidden_balance_amount }}"
-                                                            oninput="if (parseFloat(this.value) > parseFloat({{ $hidden_balance_amount }})) this.value = {{ $hidden_balance_amount }};">
+                                                            oninput="var maxAmt = parseFloat('{{ $hidden_balance_amount }}'); if (!isNaN(maxAmt) && parseFloat(this.value) > maxAmt) this.value = maxAmt;">
                                                     </div>
                                                 </div>
 
@@ -2487,33 +2487,33 @@
                                                         <label for="pending-amount" class="form-label">Pending
                                                             Amount</label>
                                                         <input type="text" id="pending-amount"
-                                                            wire:model="balance_amount" value="0"
+                                                            wire:model="balance_amount"
                                                             placeholder="Pending Amount"
                                                             class="form-control bg-secondary text-white rounded"
                                                             readonly>
-                                                        <input type="hidden" id="pending-amount"
+                                                        <input type="hidden" id="hidden-balance-amount"
                                                             wire:model="hidden_balance_amount">
                                                     </div>
                                                 </div>
                                             </div>
                                         @else
                                             <div class="mb-3">
-                                                <label for="total-amount" class="form-label">Total Amount</label>
-                                                <input type="text" id="total-amount" wire:model="totalAmount"
+                                                <label for="total-amount-else" class="form-label">Total Amount</label>
+                                                <input type="text" id="total-amount-else" wire:model="totalAmount"
                                                     wire:model="totalAmount" placeholder="Total Amount"
                                                     class="form-control bg-secondary text-white rounded" readonly>
-                                                <input type="hidden" wire:model="total_amount" id="total-amount"
+                                                <input type="hidden" wire:model="total_amount" id="total-amount-hidden"
                                                     value="0">
                                                 @error('totalAmount')
                                                     <span class="text-danger error">{{ $message }}</span>
                                                 @enderror
                                             </div>
-                                            <div class="row">
-                                                <div class="col-md-4">
-                                                    <div class="mb-3">
-                                                        <label for="final-amount" class="form-label">Payable
-                                                            Amount</label>
-                                                        <input type="text" id="pending-amount"
+                                             <div class="row">
+                                                 <div class="col-md-4">
+                                                     <div class="mb-3">
+                                                         <label for="payable-amount" class="form-label">Payable
+                                                             Amount</label>
+                                                         <input type="text" id="payable-amount"
                                                             wire:model="final_amount"
                                                             class="form-control bg-secondary text-white rounded"
                                                             readonly>
@@ -2534,9 +2534,8 @@
                                                     <div class="mb-3">
                                                         <label for="pending-amount" class="form-label">Pending
                                                             Amount</label>
-                                                        <input type="text" id="pending-amount"
+                                                        <input type="text" id="pending-amount-else"
                                                             wire:model="balance_amount"
-                                                            value="0"
                                                             class="form-control bg-secondary text-white rounded"
                                                             readonly>
                                                     </div>

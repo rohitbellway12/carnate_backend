@@ -33,7 +33,7 @@
     <div class="card mt-4">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <input type="text" wire:model.live="search" class="form-control w-auto" style="min-width: 300px;" placeholder="Search by First Name or Mobile No.">
+                <input type="text" wire:model.live="search" class="form-control w-auto" style="min-width: 300px;" placeholder="Search by Company Name, Supplier Name or Mobile No.">
                 <button type="button" class="btn btn-info text-white rounded-0" wire:click="clearSearch">
                     Clear
                 </button>
@@ -65,8 +65,8 @@
                         <h5>Business Info</h5>
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label class="form-label">First Name <sup class="text-danger">*</sup></label>
-                                <input type="text" wire:model="business_first_name" class="form-control" placeholder="Enter First Name">
+                                <label class="form-label">Company Name <sup class="text-danger">*</sup></label>
+                                <input type="text" wire:model="business_first_name" class="form-control" placeholder="Enter Company Name">
                                 @error('business_first_name') <span class="text-danger error">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-md-4">
@@ -84,8 +84,8 @@
                         <h5>Owner Info</h5>
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label class="form-label">First Name <sup class="text-danger">*</sup></label>
-                                <input type="text" wire:model="owner_first_name" class="form-control" placeholder="Enter First Name">
+                                <label class="form-label">Supplier Name <sup class="text-danger">*</sup></label>
+                                <input type="text" wire:model="owner_first_name" class="form-control" placeholder="Enter Supplier Name">
                                 @error('owner_first_name') <span class="text-danger error">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-md-4">
@@ -127,7 +127,7 @@
             <thead class="table-light">
                 <tr>
                     <th>Sr No.</th>
-                    <th>First Name</th>
+                    <th>Company Name</th>
                     <th>Supplier Name</th>
                     <th>Contact No.</th>
                     <th>Email</th>

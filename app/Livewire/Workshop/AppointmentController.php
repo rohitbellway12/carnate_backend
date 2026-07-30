@@ -5,6 +5,8 @@ namespace App\Livewire\Workshop;
 use App\Models\Appointment;
 use App\Models\Customer;
 use App\Models\Vehicle;
+use App\Models\Notification;
+use App\Models\Admin;
 use App\Services\RapidApiVehicleService;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -588,7 +590,7 @@ class AppointmentController extends Component
         try {
             $this->validate();
 
-            Appointment::create([
+            $appointment = Appointment::create([
                 'workshop_id' => auth()->guard('workshop')->user()->id,
                 'customer_id' => $this->customer_id,
                 'customer_name' => $this->customer_name,
@@ -601,6 +603,25 @@ class AppointmentController extends Component
                 'status' => $this->status,
                 'notes' => $this->notes,
             ]);
+
+            Notification::create([
+                'user_id' => auth()->guard('workshop')->user()->id,
+                'order_id' => null,
+                'title' => '📅 New Appointment',
+                'message' => "New appointment #{$appointment->id} created for {$appointment->customer_name} on {$appointment->appointment_date} at {$appointment->appointment_time}.",
+                'sound' => 'appointment.mp3',
+            ]);
+
+            $adminIds = Admin::where('role_type', 21)->pluck('id');
+            foreach ($adminIds as $adminId) {
+                Notification::create([
+                    'user_id' => $adminId,
+                    'order_id' => null,
+                    'title' => '📅 New Appointment',
+                    'message' => "New appointment #{$appointment->id} created for customer {$appointment->customer_name} on {$appointment->appointment_date}.",
+                    'sound' => 'appointment.mp3',
+                ]);
+            }
 
             $this->dispatch('swal:toast', [
                 'type' => 'success',
@@ -657,6 +678,25 @@ class AppointmentController extends Component
                 'status' => $this->status,
                 'notes' => $this->notes,
             ]);
+
+            Notification::create([
+                'user_id' => auth()->guard('workshop')->user()->id,
+                'order_id' => null,
+                'title' => '✏️ Appointment Updated',
+                'message' => "Appointment #{$appointment->id} details have been updated for {$appointment->customer_name}.",
+                'sound' => 'appointment.mp3',
+            ]);
+
+            $adminIds = Admin::where('role_type', 21)->pluck('id');
+            foreach ($adminIds as $adminId) {
+                Notification::create([
+                    'user_id' => $adminId,
+                    'order_id' => null,
+                    'title' => '✏️ Appointment Updated',
+                    'message' => "Appointment #{$appointment->id} details have been updated for customer {$appointment->customer_name}.",
+                    'sound' => 'appointment.mp3',
+                ]);
+            }
 
             $this->dispatch('swal:toast', [
                 'type' => 'success',
@@ -724,6 +764,26 @@ class AppointmentController extends Component
             $appointment->status = $newStatus;
             $appointment->save();
             $this->status = $newStatus;
+
+            Notification::create([
+                'user_id' => auth()->guard('workshop')->user()->id,
+                'order_id' => null,
+                'title' => '🔄 Appointment Status Updated',
+                'message' => "Appointment #{$appointment->id} status changed to '{$newStatus}' for {$appointment->customer_name}.",
+                'sound' => 'appointment.mp3',
+            ]);
+
+            $adminIds = Admin::where('role_type', 21)->pluck('id');
+            foreach ($adminIds as $adminId) {
+                Notification::create([
+                    'user_id' => $adminId,
+                    'order_id' => null,
+                    'title' => '🔄 Appointment Status Updated',
+                    'message' => "Appointment #{$appointment->id} status changed to '{$newStatus}' for customer {$appointment->customer_name}.",
+                    'sound' => 'appointment.mp3',
+                ]);
+            }
+
             $this->dispatch('swal:toast', [
                 'type' => 'success',
                 'message' => 'Status updated successfully!',

@@ -10,11 +10,13 @@
         <div class="col-md-5">
             <div class="card h-100">
                 <div class="card-body">
-                    <div class="mb-3  d-flex align-items-center gap-2" style="position: relative;">
-                        <input type="text" class="form-control" placeholder="Search Supplier By Firm Name and Number" wire:model.live="supplierSearch" autocomplete="off">
-                        <button class="btn btn-primary btn-sm mt-2 float-end" type="button" wire:click="openSupplierModal">Add New</button>
+                    <div class="mb-3" style="position: relative;">
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="text" class="form-control" placeholder="Search Supplier By Firm Name and Number" wire:model="supplierSearch" wire:focus="focusSupplierSearch" autocomplete="off">
+                            <button class="btn btn-primary btn-sm" type="button" wire:click="openSupplierModal">Add New</button>
+                        </div>
                         @if(!empty($supplierResults))
-                            <ul class="list-group position-absolute w-100" style="z-index: 1000; top: 100%;">
+                            <ul class="list-group position-absolute w-100 mt-1" style="z-index: 1050; left: 0; top: 100%;">
                                 @foreach($supplierResults as $supplier)
                                     <li class="list-group-item list-group-item-action"
                                         wire:click="selectSupplier({{ $supplier['id'] }})"
@@ -132,25 +134,25 @@
             <h5>Stock Details</h5>
             <div class="mb-2 row align-items-end position-relative">
     <div class="col-md-6">
-        <div class="d-flex align-items-center gap-2" style="position: relative;">
-            <input type="text"
-                   class="form-control"
-                   placeholder="Search Part By Part Number"
-                   wire:model.live="part_search"
-                   autocomplete="off"
-                   wire:click.away="$set('partResults', [])">
-            @if(!empty($partResults))
-                <ul class="list-group position-absolute w-100" style="z-index: 1000; top: 100%;">
-                    @foreach($partResults as $part)
-                        <li class="list-group-item list-group-item-action"
-                            wire:click="selectPart({{ $part->id }})"
-                            style="cursor:pointer;">
-                            {{ $part->name }} ({{ $part->part_number }}) - ₹{{ $part->price }}
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-        </div>
+            <div class="d-flex align-items-center gap-2" style="position: relative;">
+                <input type="text"
+                       class="form-control"
+                       placeholder="Search Part By Part Number"
+                       wire:model="part_search"
+                       autocomplete="off"
+                       wire:click.away="$set('partResults', [])">
+                @if(!empty($partResults))
+                    <ul class="list-group position-absolute w-100 mt-1" style="z-index: 1050; left: 0; top: 100%;">
+                        @foreach($partResults as $part)
+                            <li class="list-group-item list-group-item-action"
+                                wire:click="selectPart({{ $part->id }})"
+                                style="cursor:pointer;">
+                                {{ $part->name }} ({{ $part->part_number }}) - ₹{{ $part->price }}
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
     </div>
     <div class="col-md-2">
         <button type="button" class="btn btn-success" wire:click="openPartModal">Add</button>
@@ -520,7 +522,7 @@
                         <!-- Part Number -->
                         <div class="col-md-6">
                             <label class="form-label">Part Number</label>
-                            <input type="text" wire:model.live.debounce.500ms="part_part_number" class="form-control" placeholder="Enter Part Number">
+                             <input type="text" wire:model="part_part_number" class="form-control" placeholder="Enter Part Number">
                             <div wire:loading wire:target="part_part_number">
                                 <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                 Fetching details...
@@ -670,7 +672,7 @@
                                 <div class="form-group">
                                      <input type="text"
                                        {{-- wire:model.debounce.300ms="brandFilter"--}}
-                                       wire:model.live="brandFilter"
+                                        wire:model="brandFilter"
                                         class="form-control mb-3"
                                         placeholder="Type brand name">
                                         

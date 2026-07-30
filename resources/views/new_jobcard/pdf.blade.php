@@ -137,7 +137,7 @@
     <div class="container">
         <div class="inner-container header">
             {{-- <div class="text-center" style="margin-bottom: 10px;">INVOICE</div> --}}
-            <div class="text-center" style="margin-bottom: 10px;">
+            <div class="text-center" style="margin-bottom: 10px; padding: 5px 0;">
                 @if ($pdfTitle == 'ESTIMATE')
                     <span style="color: #00695C; font-weight: bold; font-size: 24px;">ESTIMATION</span>
                 @elseif (isset($logo) && $logo->is_gst == 1)
@@ -353,7 +353,7 @@
                             {{-- <th class="text-center">Part Number</th> --}}
                             <th class="text-center">QTY</th>
                             <th class="text-center">unit</th>
-                            <th class="text-center">Unit Price (Rs.)</th>
+                            <th class="text-end">Unit Price (Rs.)</th>
                             {{-- <th class="text-center">Tax Type</th> --}}
                             @if ($logo->is_gst == 1)
                                 <th class="text-center">Tax (Rs.)</th>
@@ -423,7 +423,7 @@
                                     {{ $jobCardSparePart->quantity }}</td>
                                 <td class="text-center" style="width:60px !important;">{{ $__unitTitle }}</td>
 
-                                <td class="text-start" style="width:70px !important;">
+                                <td class="text-end" style="width:70px !important;">
                                     {{ number_format($jobCardSparePart->price, 2) }}
                                 </td>
                                 {{-- <td>{{ ucfirst($jobCardSparePart->productStock?->tax_type) ?? '-' }}</td> --}}

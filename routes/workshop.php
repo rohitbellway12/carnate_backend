@@ -72,6 +72,7 @@ Route::prefix('workshop')->name('workshop.')->group(function () {
 
         Route::get('notifications', NotificationController::class)->name('notifications');
         Route::get('get-notifications', [HomeController::class, 'getWorkshopNotifications'])->name('get-notifications');
+        Route::get('check-appointment-reminders', [HomeController::class, 'checkAppointmentReminders'])->name('check-appointment-reminders');
         Route::post('notifications/{id}/read', [HomeController::class, 'markNotificationAsRead'])->name('notifications.read');
 
     });

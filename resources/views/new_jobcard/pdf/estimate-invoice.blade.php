@@ -188,9 +188,9 @@
                       <td style="width: 50%; vertical-align: top; border: 1px solid;">
                           <table style="font-size: 12px;">
                               <tr>
-                                  <td colspan="2">
-                                      <h2>{{ $pdfTitle ?? 'Estimate' }}</h2>
-                                  </td>
+                                   <td colspan="2" style="text-align: center;">
+                                       <h2 style="text-align: center; margin: 0;">{{ $pdfTitle ?? 'Estimate' }}</h2>
+                                   </td>
                               </tr>
                               <tr>
                                   <td style="font-weight: bold;">Job-Card Number:</td>
@@ -290,14 +290,14 @@
                               <th>Part Number</th>
                               <th>Qt.</th>
                             <th>unit</th>
-                              <th>Rate</th>
-                              @if($logo->is_gst)
+                               <th>Rate</th>
+                               @if($logo->is_gst)
                         <th>Tax Type</th>
                         <th>Tax</th>
                         @endif
-                              <th>Disc.</th>
-                              <th>Amount</th>
-                              <th>Total Price</th>
+                              <th style="text-align: right;">Disc.</th>
+                              <th style="text-align: right;">Amount</th>
+                              <th style="text-align: right;">Total Price</th>
                           </tr>
                       </thead>
                       <tbody>
@@ -339,16 +339,16 @@
                                   <td>{{ $__taxPercentage ?? '-' }}</td>
                                      @endif
                                   </td>
-                                  <td>{{ $jobCardSparePart->discount ?? 0 }}</td>
-                                  <td class="text-end">{{ number_format($jobCardSparePart->final_amount, 2) ?? 0 }}
-                                  </td>
-                                  <td>{{ number_format($jobCardSparePart->total_amount, 2) ?? 0 }}</td>
-                              </tr>
-                          @endforeach
-                      </tbody>
-                  </table>
-              @endif
-              @if (count($jobCardSpareParts->where('category', 2)) > 0)
+                                   <td class="text-end">{{ $jobCardSparePart->discount ?? 0 }}</td>
+                                   <td class="text-end">{{ number_format($jobCardSparePart->final_amount, 2) ?? 0 }}
+                                   </td>
+                                   <td class="text-end">{{ number_format($jobCardSparePart->total_amount, 2) ?? 0 }}</td>
+                               </tr>
+                           @endforeach
+                       </tbody>
+                   </table>
+               @endif
+               @if (count($jobCardSpareParts->where('category', 2)) > 0)
                   <table class="table" style="margin-top: 10px; font-size: 12px;">
                       <thead>
                           <tr>
@@ -364,13 +364,13 @@
                         <th>Tax</th>
                         @endif
 
-                              <th>Disc.</th>
-                              <th>Amount</th>
-                              <th>Total Price</th>
-                          </tr>
-                      </thead>
-                      <tbody>
-                            @foreach ($jobCardSpareParts->where('category', 2) as $jobCardSparePart)
+                              <th style="text-align: right;">Disc.</th>
+                              <th style="text-align: right;">Amount</th>
+                              <th style="text-align: right;">Total Price</th>
+                           </tr>
+                       </thead>
+                       <tbody>
+                             @foreach ($jobCardSpareParts->where('category', 2) as $jobCardSparePart)
                               @php
                                   $__sp = \App\Models\SparePart::where('label_id', $jobCardSparePart->stock_label_id)->first();
                                   $__ps = \App\Models\ProductStock::where('label_id', $jobCardSparePart->stock_label_id)->first();
@@ -429,21 +429,21 @@
                         <td>{{ ucfirst($__taxType) ?? '-' }}</td>
                         <td>{{ $__taxPercentage ?? '-' }}</td>
                         @endif
-                          <td>
-  <span style="font-family: DejaVu Sans;">
-    {{ $jobCardSparePart->discount ?? 0 }}
-    @if($jobCardSparePart->discount_type === 'fixed')
-        ₹
-    @elseif($jobCardSparePart->discount_type === 'percent')
-        %
-    @endif
-</span>
+                           <td class="text-end">
+   <span style="font-family: DejaVu Sans;">
+     {{ $jobCardSparePart->discount ?? 0 }}
+     @if($jobCardSparePart->discount_type === 'fixed')
+         ₹
+     @elseif($jobCardSparePart->discount_type === 'percent')
+         %
+     @endif
+ </span>
 
-</td>
+ </td>
 
-                                  <td class="text-end">{{ number_format($jobCardSparePart->final_amount, 2) ?? 0 }}
-                                  </td>
-                                  <td>{{ number_format($jobCardSparePart->total_amount, 2) ?? 0 }}</td>
+                                   <td class="text-end">{{ number_format($jobCardSparePart->final_amount, 2) ?? 0 }}
+                                   </td>
+                                   <td class="text-end">{{ number_format($jobCardSparePart->total_amount, 2) ?? 0 }}</td>
                               </tr>
                           @endforeach
                       </tbody>
@@ -452,14 +452,14 @@
               @if (count($jobCardSpareParts->where('category', 3)) > 0)
                   <table class="table" style="margin-top: 10px; font-size: 12px;">
                       <thead>
-                          <tr>
-                              <th style="width: 25px;">#</th>
-                              <th style="width: 45%;">Tool Items</th>
-                              <th>Qt.</th>
-                              <th style="width: 100px;text-align:center;">Rate</th>
-                              <th>Disc.</th>
-                              <th style="width: 100px;text-align:center;">Amount</th>
-                          </tr>
+                           <tr>
+                               <th style="width: 25px;">#</th>
+                               <th style="width: 45%;">Tool Items</th>
+                               <th>Qt.</th>
+                               <th style="width: 100px; text-align: right;">Rate</th>
+                               <th style="text-align: right;">Disc.</th>
+                               <th style="width: 100px; text-align: right;">Amount</th>
+                           </tr>
                       </thead>
                       <tbody>
                           @foreach ($jobCardSpareParts->where('category', 3) as $jobCardSparePart)
@@ -467,11 +467,11 @@
                                   <td>{{ $loop->iteration }}</td>
                                   <td>{{ $jobCardSparePart->labels?->title ?? '-' }}</td>
                                   <td>{{ $jobCardSparePart->quantity ?? 0 }}</td>
-                                  <td class="text-end">{{ number_format($jobCardSparePart->total_amount, 2) ?? 0 }}
-                                  </td>
-                                  <td>{{ $jobCardSparePart->discount ?? 0 }}</td>
-                                  <td class="text-end">{{ number_format($jobCardSparePart->final_amount, 2) ?? 0 }}
-                                  </td>
+                                   <td class="text-end">{{ number_format($jobCardSparePart->total_amount, 2) ?? 0 }}
+                                   </td>
+                                   <td class="text-end">{{ $jobCardSparePart->discount ?? 0 }}</td>
+                                   <td class="text-end">{{ number_format($jobCardSparePart->final_amount, 2) ?? 0 }}
+                                   </td>
                               </tr>
                           @endforeach
                       </tbody>
@@ -491,13 +491,13 @@
                         <th>Tax Type</th>
                         <th>Tax</th>
                         @endif
-                              <th>Disc.</th>
-                              <th>Amount</th>
-                              <th>Total Price</th>
-                          </tr>
-                      </thead>
-                      <tbody>
-                          @foreach ($jobCardSpareParts->where('category', 4) as $jobCardSparePart)
+                              <th style="text-align: right;">Disc.</th>
+                              <th style="text-align: right;">Amount</th>
+                              <th style="text-align: right;">Total Price</th>
+                           </tr>
+                       </thead>
+                       <tbody>
+                           @foreach ($jobCardSpareParts->where('category', 4) as $jobCardSparePart)
                               @php
                                   $__sp = \App\Models\SparePart::where('label_id', $jobCardSparePart->stock_label_id)->first();
                                   $__ps = \App\Models\ProductStock::where('label_id', $jobCardSparePart->stock_label_id)->first();
@@ -533,17 +533,17 @@
                         <td>{{ ucfirst($__taxType) ?? '-' }}</td>
                         <td>{{ $__taxPercentage ?? '-' }}</td>
                         @endif
-                                  <td>{{ $jobCardSparePart->discount ?? 0 }}</td>
-                                  <td class="text-end">{{ number_format($jobCardSparePart->final_amount, 2) ?? 0 }}
-                                  </td>
-                                  <td>{{ number_format($jobCardSparePart->total_amount, 2) ?? 0 }}</td>
-                              </tr>
-                          @endforeach
-                      </tbody>
-                  </table>
-              @endif
-
-              @if (count($jobCardExtraCharges) > 0)
+                                   <td class="text-end">{{ $jobCardSparePart->discount ?? 0 }}</td>
+                                   <td class="text-end">{{ number_format($jobCardSparePart->final_amount, 2) ?? 0 }}
+                                   </td>
+                                   <td class="text-end">{{ number_format($jobCardSparePart->total_amount, 2) ?? 0 }}</td>
+                               </tr>
+                           @endforeach
+                       </tbody>
+                   </table>
+               @endif
+ 
+               @if (count($jobCardExtraCharges) > 0)
                   <table class="table" style="margin-top: 10px; font-size: 12px;">
                       <thead>
                           <tr>

@@ -213,9 +213,9 @@ class JobCardEditController extends Component
         }
         $this->final_amount = $jobcardData->final_amount;
         $this->totalAmount = $jobcardData->amount;
-        $this->balance_amount = $this->final_amount - $this->final_paid;
-        $this->hidden_balance_amount = $this->balance_amount;
         $this->final_discount = $jobcardData->final_discount;
+        $this->balance_amount = max(0, $this->final_amount - $this->final_paid - (float)($this->final_discount ?? 0));
+        $this->hidden_balance_amount = $this->balance_amount;
         $this->supervisor = $jobcardData->supervisor_id;
         $this->payment_type = $jobcardData->payment_type;
         $this->transaction_number = $jobcardData->transaction_number;
@@ -341,6 +341,7 @@ class JobCardEditController extends Component
         }
 
 
+        $this->calculateTotals();
 
         $this->vehicles = Vehicle::where('id', $jobcardData->vehicle_id)->get();
 
@@ -434,7 +435,7 @@ class JobCardEditController extends Component
             $this->advance = $this->final_paid;
         }
 
-        $this->balance_amount = max(0, $this->final_amount - $this->final_paid - (float)($this->final_discount ?? 0));
+        $this->balance_amount = max(0, $this->final_amount - $this->final_paid);
         $this->hidden_balance_amount = $this->balance_amount;
 
         $jobcard = JobCard::find($this->jobId);
@@ -470,7 +471,7 @@ class JobCardEditController extends Component
             $this->advance = $this->final_paid;
         }
 
-        $this->balance_amount = max(0, $this->final_amount - $this->final_paid - (float)($this->final_discount ?? 0));
+        $this->balance_amount = max(0, $this->final_amount - $this->final_paid);
         $this->hidden_balance_amount = $this->balance_amount;
 
         $jobcard = JobCard::find($this->jobId);
@@ -1499,34 +1500,34 @@ class JobCardEditController extends Component
         // Ensure purchase/tax meta is present on all item arrays (handles post-status changes)
         $this->hydrateLineItemMeta();
 
-        $this->totalAmount = 0;
-        $this->final_amount = 0;
+        $subtotal = 0;
 
         foreach ($this->spareParts as $part) {
-            $this->final_amount += (float) ($part['final_amount'] ?? 0);
+            $subtotal += (float) ($part['final_amount'] ?? 0);
         }
 
         foreach ($this->lubes as $lube) {
-            $this->final_amount += (float) ($lube['final_amount'] ?? 0);
+            $subtotal += (float) ($lube['final_amount'] ?? 0);
         }
 
         foreach ($this->accessoriess as $accessory) {
-            $this->final_amount += (float) ($accessory['final_amount'] ?? 0);
+            $subtotal += (float) ($accessory['final_amount'] ?? 0);
         }
 
         foreach ($this->extraCharges as $charge) {
-            $this->final_amount += (float) ($charge['final_amount'] ?? 0);
+            $subtotal += (float) ($charge['final_amount'] ?? 0);
         }
 
-        // Keep totalAmount aligned with the visible category totals (final amounts)
-        $this->totalAmount = $this->final_amount;
-        $final = max(0, $this->final_amount);
+        $this->totalAmount = round($subtotal, 2);
         $this->final_paid = collect($this->payments_list)->sum('amount');
         if (in_array($this->jobcardData->status ?? 0, [0, 1, 4])) {
             $this->advance = $this->final_paid;
         }
 
-        $this->balance_amount = max(0, $final - $this->final_paid - (float)($this->final_discount ?? 0));
+        $overallDiscount = (float)($this->final_discount ?? 0);
+        $this->final_amount = max(0, round($subtotal - $overallDiscount, 2));
+
+        $this->balance_amount = max(0, $this->final_amount - $this->final_paid);
         $this->hidden_balance_amount = $this->balance_amount;
     }
 
@@ -3101,7 +3102,7 @@ class JobCardEditController extends Component
         if (in_array($jobcard->status, [0, 1, 4])) {
             $this->advance = $this->final_paid;
         }
-        $this->balance_amount = max(0, $this->final_amount - $this->final_paid - (float)($this->final_discount ?? 0));
+        $this->balance_amount = max(0, $this->final_amount - $this->final_paid);
         $this->hidden_balance_amount = $this->balance_amount;
 
         if (!empty($this->payments_list)) {

@@ -655,19 +655,25 @@ class PurchaseOrder extends Component
         $this->calculateBillDetails();
     }
 
+    public function focusSupplierSearch()
+    {
+        $this->supplierResults = SparePartSupplier::orderBy('business_first_name')->limit(50)->get()->toArray();
+    }
+
     // Supplier Management
     public function updatedSupplierSearch($value)
     {
-        if (strlen($value) > 1) {
+        $value = trim($value);
+        if ($value !== '') {
             $this->supplierResults = SparePartSupplier::where('business_first_name', 'like', "%$value%")
                 ->orWhere('mobile_no', 'like', "%$value%")
-                ->limit(5)
+                ->orderBy('business_first_name')
+                ->limit(50)
                 ->get()
                 ->toArray();
         } else {
-            $this->supplierResults = [];
+            $this->supplierResults = SparePartSupplier::orderBy('business_first_name')->limit(50)->get()->toArray();
         }
-        // Clear details if search changes
         $this->supplier_name = '';
         $this->supplier_phone = '';
         $this->supplier_balance = '';

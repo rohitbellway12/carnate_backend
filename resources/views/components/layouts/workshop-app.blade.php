@@ -155,16 +155,16 @@
 
         function checkNewOrders() {
             if (isFetching) {
-                // console.log('Already fetching notifications, skipping...');
                 return;
             }
 
             isFetching = true;
 
-            const url = '/workshop/get-notifications';
-            // console.log('Fetching notifications from:', url);
+            const notifUrl = '/workshop/get-notifications';
+            const reminderUrl = '/workshop/check-appointment-reminders';
 
-            fetch(url, {
+            Promise.all([
+                fetch(notifUrl, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
@@ -172,84 +172,114 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     },
                     credentials: 'same-origin'
-                })
-                .then(async response => {
+                }).then(async response => {
                     const contentType = response.headers.get('content-type');
                     if (!contentType || !contentType.includes('application/json')) {
-                        // console.error('Expected JSON but got:', contentType);
                         throw new Error('Server returned non-JSON response');
                     }
-
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
-
                     return response.json();
+                }),
+                fetch(reminderUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    credentials: 'same-origin'
+                }).then(async response => {
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        throw new Error('Server returned non-JSON response');
+                    }
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                }).catch(err => {
+                    return { status: false, data: [] };
                 })
-                .then(data => {
-                    // console.log('Notification fetch result:', data);
-                    if (!data.status) return;
+            ]).then(([notifData, reminderData]) => {
+                if (!notifData.status) return;
 
-                    const notifications = Array.isArray(data.data) ? data.data : [];
+                const notifications = Array.isArray(notifData.data) ? notifData.data : [];
 
-                    // Update badge and dropdown list
-                    const notifCountEl = document.getElementById('notif-count');
-                    const notifListEl = document.getElementById('notification-list');
+                const notifCountEl = document.getElementById('notif-count');
+                const notifListEl = document.getElementById('notification-list');
 
-                    if (notifCountEl && notifListEl) {
-                        const unread = notifications.filter(n => !n.is_read);
-                        notifCountEl.textContent = unread.length;
+                if (notifCountEl && notifListEl) {
+                    const unread = notifications.filter(n => !n.is_read);
+                    notifCountEl.textContent = unread.length;
 
-                        notifListEl.innerHTML = '';
-                        if (unread.length === 0) {
+                    notifListEl.innerHTML = '';
+                    if (unread.length === 0) {
+                        const li = document.createElement('li');
+                        li.className = 'dropdown-item text-center text-muted small py-2';
+                        li.textContent = 'No new notifications';
+                        notifListEl.appendChild(li);
+                    } else {
+                        unread.slice(0, 10).forEach(n => {
                             const li = document.createElement('li');
-                            li.className = 'dropdown-item text-center text-muted small py-2';
-                            li.textContent = 'No new notifications';
-                            notifListEl.appendChild(li);
-                        } else {
-                            unread.slice(0, 10).forEach(n => {
-                                const li = document.createElement('li');
-                                li.className = 'dropdown-item border-bottom py-2';
-                                li.innerHTML = `
-                                <div class="d-flex justify-content-between align-items-center gap-2">
-                                    <div style="flex-grow: 1; min-width: 0;">
-                                        <strong class="text-wrap d-block text-dark" style="font-size: 0.85rem;">${escapeHtml(n.title)}</strong>
-                                        <small class="text-wrap text-secondary d-block" style="font-size: 0.75rem; line-height: 1.2;">${escapeHtml(n.message)}</small>
-                                    </div>
-                                    <button type="button" class="btn btn-sm btn-light border-0 p-1" onclick="event.stopPropagation(); markHeaderNotifAsRead(${n.id})" title="Mark as read" style="min-width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                        <i class="bx bx-check text-success fs-5"></i>
-                                    </button>
+                            li.className = 'dropdown-item border-bottom py-2';
+                            li.innerHTML = `
+                            <div class="d-flex justify-content-between align-items-center gap-2">
+                                <div style="flex-grow: 1; min-width: 0;">
+                                    <strong class="text-wrap d-block text-dark" style="font-size: 0.85rem;">${escapeHtml(n.title)}</strong>
+                                    <small class="text-wrap text-secondary d-block" style="font-size: 0.75rem; line-height: 1.2;">${escapeHtml(n.message)}</small>
                                 </div>
-                            `;
-                                notifListEl.appendChild(li);
-                            });
-                        }
+                                <button type="button" class="btn btn-sm btn-light border-0 p-1" onclick="event.stopPropagation(); markHeaderNotifAsRead(${n.id})" title="Mark as read" style="min-width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bx bx-check text-success fs-5"></i>
+                                </button>
+                            </div>
+                        `;
+                            notifListEl.appendChild(li);
+                        });
+                    }
+                }
+
+                const unreadList = notifications.filter(n => n && n.is_read == 0);
+                if (unreadList.length > 0) {
+                    const lastSeenId = Number(localStorage.getItem('lastWorkshopNotifId') || 0);
+                    const newUnread = unreadList.filter(n => Number(n.id) > lastSeenId);
+                    const hasShownThisLoad = sessionStorage.getItem('workshopNotificationModalShown') === '1';
+                    const maxUnreadId = Math.max(...unreadList.map(n => Number(n.id)));
+                    const modalNotification = newUnread.length > 0 ?
+                        newUnread[0] :
+                        (!hasShownThisLoad ? unreadList[0] : null);
+
+                    if (modalNotification) {
+                        showNotificationModal(modalNotification);
+                        sessionStorage.setItem('workshopNotificationModalShown', '1');
+                        localStorage.setItem('lastWorkshopNotifId', String(maxUnreadId));
+                    }
+                }
+
+                if (reminderData.status && reminderData.data && reminderData.data.length > 0) {
+                    const ids = reminderData.data.map(r => Number(r.id));
+                    const reminderMaxId = Math.max(...ids);
+                    const lastSeenId = Number(localStorage.getItem('lastWorkshopNotifId') || 0);
+                    if (reminderMaxId > lastSeenId) {
+                        localStorage.setItem('lastWorkshopNotifId', String(reminderMaxId));
                     }
 
-                    const unreadList = notifications.filter(n => n && n.is_read == 0);
-                    if (unreadList.length > 0) {
-                        const lastSeenId = Number(localStorage.getItem('lastWorkshopNotifId') || 0);
-                        const newUnread = unreadList.filter(n => Number(n.id) > lastSeenId);
-                        const hasShownThisLoad = sessionStorage.getItem('workshopNotificationModalShown') === '1';
-                        const maxUnreadId = Math.max(...unreadList.map(n => Number(n.id)));
-                        const modalNotification = newUnread.length > 0 ?
-                            newUnread[0] :
-                            (!hasShownThisLoad ? unreadList[0] : null);
-
-                        if (modalNotification) {
-                            showNotificationModal(modalNotification);
-                            sessionStorage.setItem('workshopNotificationModalShown', '1');
-                            localStorage.setItem('lastWorkshopNotifId', String(maxUnreadId));
-                        }
+                    const firstReminder = reminderData.data[0];
+                    const hasShownThisLoad = sessionStorage.getItem('workshopNotificationModalShown') === '1';
+                    if (!hasShownThisLoad && firstReminder) {
+                        showNotificationModal(firstReminder);
+                        sessionStorage.setItem('workshopNotificationModalShown', '1');
                     }
-                })
-                .catch(err => {
-                    // console.error('Notification check error:', err);
-                    // console.error('Error message:', err.message);
-                })
-                .finally(() => {
-                    isFetching = false;
-                });
+                }
+            })
+            .catch(err => {
+                // console.error('Notification check error:', err);
+                // console.error('Error message:', err.message);
+            })
+            .finally(() => {
+                isFetching = false;
+            });
         }
 
         function markHeaderNotifAsRead(id) {

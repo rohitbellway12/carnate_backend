@@ -37,7 +37,8 @@ class Supplier extends Component
         if (!empty($this->search)) {
             $query->where(function($q) {
                 $q->where('mobile_no', 'like', '%'.$this->search.'%')
-                  ->orWhere('business_first_name', 'like', '%'.$this->search.'%');
+                  ->orWhere('business_first_name', 'like', '%'.$this->search.'%')
+                  ->orWhere('owner_first_name', 'like', '%'.$this->search.'%');
             });
         }
         $suppliers = $query->paginate(10);

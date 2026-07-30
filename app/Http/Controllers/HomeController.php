@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 use App\Models\Notification;
 use App\Models\Admin;
-
+use App\Models\Appointment;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -179,6 +179,73 @@ public function markSparePartNotificationAsRead($id)
         ], 500);
     }
 }
+
+    public function checkAppointmentReminders()
+    {
+        try {
+            $user = auth()->guard('workshop')->user();
+            
+            if (!$user) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unauthenticated'
+                ], 401);
+            }
+
+            $now = now();
+            $today = $now->toDateString();
+            $startTime = $now->copy()->addMinutes(30)->format('H:i:s');
+            $endTime = $now->copy()->addMinutes(60)->format('H:i:s');
+
+            $appointments = Appointment::where('workshop_id', $user->id)
+                ->whereDate('appointment_date', $today)
+                ->whereBetween('appointment_time', [$startTime, $endTime])
+                ->whereIn('status', ['pending', 'confirmed', 'in_progress'])
+                ->get();
+
+            $reminders = [];
+            $adminIds = Admin::where('role_type', 21)->pluck('id');
+
+            foreach ($appointments as $appointment) {
+                $existingReminder = Notification::where('appointment_id', $appointment->id)
+                    ->where('title', 'Appointment Reminder')
+                    ->whereDate('created_at', $today)
+                    ->exists();
+
+                if (!$existingReminder) {
+                    $notification = Notification::create([
+                        'user_id' => $user->id,
+                        'appointment_id' => $appointment->id,
+                        'title' => 'Appointment Reminder',
+                        'message' => "Reminder: Appointment #{$appointment->id} with {$appointment->customer_name} is scheduled for today at {$appointment->appointment_time}.",
+                        'sound' => 'appointment.mp3',
+                    ]);
+                    $reminders[] = $notification;
+
+                    foreach ($adminIds as $adminId) {
+                        Notification::create([
+                            'user_id' => $adminId,
+                            'appointment_id' => $appointment->id,
+                            'title' => 'Appointment Reminder',
+                            'message' => "Workshop has an appointment #{$appointment->id} with customer {$appointment->customer_name} today at {$appointment->appointment_time}.",
+                            'sound' => 'appointment.mp3',
+                        ]);
+                    }
+                }
+            }
+
+            return response()->json([
+                'status' => true,
+                'data' => $reminders
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 
     public function markAdminNotificationAsRead($id)
     {
