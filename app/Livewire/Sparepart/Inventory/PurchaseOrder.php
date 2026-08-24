@@ -334,11 +334,16 @@ class PurchaseOrder extends Component
             // Try to get part/lubricant by id or part_number
             $part = null;
             if (!empty($item['id'])) {
-                $part = \App\Models\Part::find($item['id']) ?? \App\Models\Lubricant::find($item['id']);
+                $part = \App\Models\Part::find($item['id'])
+                    ?? \App\Models\Lubricant::find($item['id'])
+                    ?? \App\Models\Accessory::find($item['id'])
+                    ?? \App\Models\Tools::find($item['id']);
             }
             if (!$part && !empty($item['part_number'])) {
                 $part = \App\Models\Part::where('part_number', $item['part_number'])->first()
-                    ?? \App\Models\Lubricant::where('part_number', $item['part_number'])->first();
+                    ?? \App\Models\Lubricant::where('part_number', $item['part_number'])->first()
+                    ?? \App\Models\Accessory::where('part_number', $item['part_number'])->first()
+                    ?? \App\Models\Tools::where('part_number', $item['part_number'])->first();
             }
             \App\Models\PurchaseOrderItem::create([
                 'purchase_order_id' => $po->id,
@@ -490,11 +495,16 @@ class PurchaseOrder extends Component
             // Try to get part/lubricant by id or part_number
             $part = null;
             if (!empty($item['id'])) {
-                $part = \App\Models\Part::find($item['id']) ?? \App\Models\Lubricant::find($item['id']);
+                $part = \App\Models\Part::find($item['id'])
+                    ?? \App\Models\Lubricant::find($item['id'])
+                    ?? \App\Models\Accessory::find($item['id'])
+                    ?? \App\Models\Tools::find($item['id']);
             }
             if (!$part && !empty($item['part_number'])) {
                 $part = \App\Models\Part::where('part_number', $item['part_number'])->first()
-                    ?? \App\Models\Lubricant::where('part_number', $item['part_number'])->first();
+                    ?? \App\Models\Lubricant::where('part_number', $item['part_number'])->first()
+                    ?? \App\Models\Accessory::where('part_number', $item['part_number'])->first()
+                    ?? \App\Models\Tools::where('part_number', $item['part_number'])->first();
             }
             \App\Models\PurchaseOrderItem::create([
                 'purchase_order_id' => $po->id,
@@ -660,6 +670,15 @@ class PurchaseOrder extends Component
         $this->supplierResults = SparePartSupplier::orderBy('business_first_name')->limit(50)->get()->toArray();
     }
 
+    public function focusPartSearch()
+    {
+        $lubricants = \App\Models\Lubricant::withTrashed()->orderBy('name')->limit(10)->get();
+        $parts = \App\Models\Part::withTrashed()->orderBy('name')->limit(10)->get();
+        $accessories = \App\Models\Accessory::withTrashed()->orderBy('name')->limit(10)->get();
+        $tools = \App\Models\Tools::withTrashed()->orderBy('name')->limit(10)->get();
+        $this->partResults = $lubricants->merge($parts)->merge($accessories)->merge($tools)->take(20)->values();
+    }
+
     // Supplier Management
     public function updatedSupplierSearch($value)
     {
@@ -801,7 +820,23 @@ class PurchaseOrder extends Component
                 ->limit(5)
                 ->get();
 
-            $this->partResults = $lubricants->merge($parts)->take(5)->values();
+            $accessories = \App\Models\Accessory::withTrashed()
+                ->where(function ($query) use ($value) {
+                    $query->where('part_number', 'like', "%$value%");
+                    $query->orWhere('name', 'like', "%$value%");
+                })
+                ->limit(5)
+                ->get();
+
+            $tools = \App\Models\Tools::withTrashed()
+                ->where(function ($query) use ($value) {
+                    $query->where('part_number', 'like', "%$value%");
+                    $query->orWhere('name', 'like', "%$value%");
+                })
+                ->limit(5)
+                ->get();
+
+            $this->partResults = $lubricants->merge($parts)->merge($accessories)->merge($tools)->take(5)->values();
         } else {
             $this->partResults = [];
         }
@@ -817,7 +852,10 @@ class PurchaseOrder extends Component
         if (!$id)
             return;
 
-        $part = \App\Models\Part::withTrashed()->find($id) ?? \App\Models\Lubricant::withTrashed()->find($id);
+        $part = \App\Models\Part::withTrashed()->find($id)
+            ?? \App\Models\Lubricant::withTrashed()->find($id)
+            ?? \App\Models\Accessory::withTrashed()->find($id)
+            ?? \App\Models\Tools::withTrashed()->find($id);
         if (!$part)
             return;
 
@@ -831,7 +869,7 @@ class PurchaseOrder extends Component
 
         // Default values
         $qty = 1;
-        $unit_price = $part->price; // Use the same price field as shown in search
+        $unit_price = $part->purchase_price ?? $part->price ?? 0;
         $total = $qty * $unit_price;
 
         $item = [
@@ -1119,6 +1157,8 @@ class PurchaseOrder extends Component
             $model = \App\Models\Lubricant::class;
         } elseif ($this->part_type === 'accessory') {
             $model = \App\Models\Accessory::class;
+        } elseif ($this->part_type === 'tools') {
+            $model = \App\Models\Tools::class;
         }
 
         // Check if part/lubricant/accessory already exists by part_number
@@ -1138,6 +1178,8 @@ class PurchaseOrder extends Component
             $sparePartType = 1;
         } elseif ($this->part_type === 'lubricant') {
             $sparePartType = 4;
+        } elseif ($this->part_type === 'tools') {
+            $sparePartType = 3;
         }
 
         $sparePartLabel = SparePartLabel::firstOrCreate(
@@ -1250,8 +1292,8 @@ class PurchaseOrder extends Component
             'name' => $partObj->name,
             'part_number' => $partObj->part_number ?? '',
             'qty' => 1,
-            'unit_price' => $partObj->price ?? $partObj->purchase_price ?? 0,
-            'total' => $partObj->price ?? $partObj->purchase_price ?? 0,
+            'unit_price' => $partObj->purchase_price ?? $partObj->price ?? 0,
+            'total' => $partObj->purchase_price ?? $partObj->price ?? 0,
             'hsn_code' => $partObj->hsn_code ?? '',
             'gst_percent' => $partObj->tax_percentage ?? 0,
             'gst_type' => $partObj->tax_type ?? 'exclude',

@@ -307,7 +307,7 @@
                                     <th class="ps-4">#</th>
                                     <th>Image</th>
                                     <th>Part Details</th>
-                                    <th>Supplier</th>
+                                     <th>Company</th>
                                     <th>Pricing</th>
                                     <th>Stock</th>
                                     <th>HSN / Rack</th>
@@ -353,7 +353,7 @@
                                                 <span style="width:28px;height:28px;background:#f1f5f9;border-radius:8px;display:flex;align-items:center;justify-content:center;">
                                                     <i class='bx bx-user' style="font-size:.9rem;"></i>
                                                 </span>
-                                                {{ $part->supplier?->owner_first_name ?? '—' }}
+                                                 {{ $part->supplier?->business_first_name ?? '—' }}
                                             </span>
                                         </td>
                                         <td>
@@ -370,7 +370,7 @@
                                                 <div class="fw-bold" style="color:#3b82f6;">₹{{ number_format($offlinePrice, 2) }}
                                                     <span class="fw-normal text-muted" style="font-size:10px;">offline</span>
                                                 </div>
-                                                <div class="text-muted" style="font-size:11px;">Buy ₹{{ number_format($part->purchase_price, 2) }}</div>
+
                                             </div>
                                         </td>
                                         <td>
@@ -554,11 +554,11 @@
                                     @error('category') <span class="text-danger small">{{ $message }}</span> @enderror
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label">Supplier <sup class="text-danger">*</sup></label>
+                                    <label class="form-label">Company <sup class="text-danger">*</sup></label>
                                     <select class="form-select" wire:model="supplier_id" {{ $isView ? 'disabled' : '' }}>
-                                        <option value="">— Select Supplier —</option>
+                                        <option value="">— Select Company —</option>
                                         @foreach ($suppliers as $supplier)
-                                            <option value="{{ $supplier->id }}">{{ $supplier->owner_first_name }}</option>
+                                             <option value="{{ $supplier->id }}">{{ $supplier->business_first_name }}</option>
                                         @endforeach
                                     </select>
                                     @error('supplier_id') <span class="text-danger small">{{ $message }}</span> @enderror

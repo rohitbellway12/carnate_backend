@@ -161,7 +161,9 @@
                             <tr>
                                 <th>S.No.</th>
                                 <th>Title</th>
-                                <th>Price</th>
+                                <th>Labour Type</th>
+                                <th>Selling Price</th>
+                                <th>Outsource Price</th>
                                 <th>Tax</th>
                                 <th>Tax Type</th>
                                 <th>Total</th>
@@ -173,7 +175,9 @@
                                 <tr>
                                     <td>{{ $items->total() - ($items->firstItem() + $index) + 1 }}</td>
                                     <td>{{ $item->title }}</td>
-                                    <td> {{$item->price}} </td>
+                                    <td>{{ ucfirst($item->labour_type) }}</td>
+                                    <td>{{ $item->price }}</td>
+                                    <td>{{ $item->outsource_price ?? '-' }}</td>
                                     <td> {{ $item->gst }} </td>
                                     <td>{{ $item->gst_type  }}
                                     </td>
@@ -182,11 +186,11 @@
                                     <td>
 
                                         <a wire:click="edit({{ $item->id }})" class="btn btn-sm p-0"><i
-                                                class="bx bxs-edit"></i> <span class="small"></span></a>
+                                                 class="bx bxs-edit"></i> <span class="small"></span></a>
 
                                         <a wire:click="confirmDelete({{ $item->id }})"
-                                            class="btn btn-sm p-0"><i class="fadeIn animated bx bx-trash"></i> <span
-                                                class="small"></span></a>
+                                             class="btn btn-sm p-0"><i class="fadeIn animated bx bx-trash"></i> <span
+                                                 class="small"></span></a>
 
                                     </td>
                                 </tr>

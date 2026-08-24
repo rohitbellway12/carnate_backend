@@ -134,11 +134,12 @@
             <h5>Stock Details</h5>
             <div class="mb-2 row align-items-end position-relative">
     <div class="col-md-6">
-            <div class="d-flex align-items-center gap-2" style="position: relative;">
+            <div style="position: relative;">
                 <input type="text"
                        class="form-control"
                        placeholder="Search Part By Part Number"
                        wire:model="part_search"
+                       wire:focus="focusPartSearch"
                        autocomplete="off"
                        wire:click.away="$set('partResults', [])">
                 @if(!empty($partResults))

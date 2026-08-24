@@ -82,19 +82,32 @@
                                  @enderror
                              </div>
 
-                             <!-- Selling Price -->
-                             <div class="col-md-6">
-                                 <div class="form-group">
-                                     <label class="form-label">Selling Price<sup class="text-danger">*</sup></label>
-                                     <input type="number" wire:model.live="selling_amount" class="form-control"
-                                         placeholder="Enter Selling Price">
-                                 </div>
-                                 @error('selling_amount')
-                                     <span class="text-danger error">{{ $message }}</span>
-                                 @enderror
-                             </div>
+                              <!-- Selling Price -->
+                              <div class="col-md-6">
+                                  <div class="form-group">
+                                      <label class="form-label">Selling Price<sup class="text-danger">*</sup></label>
+                                      <input type="number" wire:model.live="selling_amount" class="form-control"
+                                          placeholder="Enter Selling Price">
+                                  </div>
+                                  @error('selling_amount')
+                                      <span class="text-danger error">{{ $message }}</span>
+                                  @enderror
+                              </div>
 
-                             <div class="col-md-6">
+                              <div class="col-md-6">
+                                  <div class="form-group">
+                                      <label class="form-label">Online Price (Auto)</label>
+                                      <input type="text" wire:model="online_price" class="form-control bg-light" readonly>
+                                  </div>
+                              </div>
+                              <div class="col-md-6">
+                                  <div class="form-group">
+                                      <label class="form-label">Offline Price (Auto)</label>
+                                      <input type="text" wire:model="offline_price" class="form-control bg-light" readonly>
+                                  </div>
+                              </div>
+
+                              <div class="col-md-6">
                                  <div class="form-group">
                                      <label class="form-label">Tax Type</label>
                                      <select id="tax_type" class="form-select" wire:model.live="tax_type">
@@ -147,32 +160,9 @@
                                          <span class="text-danger error">{{ $message }}</span>
                                      @enderror
                                  </div>
-                             </div>
+                              </div>
 
-                             <div class="col-md-6">
-                                 <div class="form-group">
-                                     <label class="form-label">You Will Receive (after {{ $commission }}%
-                                         deduction)</label>
-                                     <input type="text" wire:model="reflectedPrice" class="form-control bg-light"
-                                         readonly>
-                                 </div>
-                                 @error('reflectedPrice')
-                                     <span class="text-danger error">{{ $message }}</span>
-                                 @enderror
-                             </div>
-                             <div class="col-md-6">
-                                 <div class="form-group">
-                                     <label class="form-label">Customer Price (after {{ $commission }}%
-                                         added)</label>
-                                     <input type="text" wire:model="customerPrice" class="form-control bg-light"
-                                         readonly>
-                                 </div>
-                                 @error('customerPrice')
-                                     <span class="text-danger error">{{ $message }}</span>
-                                 @enderror
-                             </div>
-
-                             <!-- Stock -->
+                              <!-- Stock -->
                              <div class="col-md-6">
                                  <div class="form-group">
                                      <label class="form-label">Stock<sup class="text-danger">*</sup></label>
@@ -397,13 +387,14 @@
                                  <th>S.No.</th>
                                  <th>Image</th>
                                  <th>Name</th>
-                                 <th>Unit</th>
-                                 {{-- <th>Brand</th> --}}
-                                 {{-- <th>Suitable For</th> --}}
-                                 <th>Price</th>
-                                 <th>Amount</th>
-                                 <th>Discount</th>
-                                 <th>Stock</th>
+                                  <th>Unit</th>
+                                  {{-- <th>Brand</th> --}}
+                                  {{-- <th>Suitable For</th> --}}
+                                  <th>Online Price</th>
+                                  <th>Offline Price</th>
+                                  <th>Commission %</th>
+                                  <th>Tax</th>
+                                  <th>Stock</th>
                                  <th>HSN Code</th>
                                  <th>Rack No.</th>
                                  @if (@$sparePart->hasPermissionTo('tools-edit') || @$sparePart->hasPermissionTo('tools-delete'))
@@ -425,13 +416,28 @@
                                          @endif
                                      </td>
                                      <td>{{ $tool->name }}</td>
-                                     <td>{{ $tool->unit?->title ?? '' }}</td>
-                                     {{-- <td> {{ $tool->brand }} </td> --}}
-                                     {{-- <td> {{ $tool->suitable_for }} </td> --}}
-                                     <td> {{ $tool->price }} </td>
-                                     <td> {{ $tool->amount }} </td>
-                                     <td> {{ $tool->discount }} </td>
-                                     <td> {{ $tool->stock }} </td>
+                                      <td>{{ $tool->unit?->title ?? '' }}</td>
+                                      {{-- <td> {{ $tool->brand }} </td> --}}
+                                      {{-- <td> {{ $tool->suitable_for }} </td> --}}
+                                      <td> {{ $tool->price }} </td>
+                                      <td>
+                                          @php
+                                              $offlinePrice = $tool->selling_amount;
+                                              if ($tool->tax_type == 'exclude' && $tool->tax_percentage) {
+                                                  $offlinePrice += ($offlinePrice * $tool->tax_percentage) / 100;
+                                              }
+                                          @endphp
+                                          {{ number_format($offlinePrice, 2) }}
+                                      </td>
+                                      <td> {{ $tool->platform_charge ?? 0 }}% </td>
+                                      <td>
+                                          @if ($tool->tax_percentage)
+                                              {{ $tool->tax_type == 'include' ? 'Include' : 'Exclude' }} {{ $tool->tax_percentage }}%
+                                          @else
+                                              —
+                                          @endif
+                                      </td>
+                                      <td> {{ $tool->stock }} </td>
                                      <td> {{ $tool->hsn_code }} </td>
                                      <td> {{ $tool->rack_no }} </td>
                                      @if (@$sparePart->hasPermissionTo('tools-edit') || @$sparePart->hasPermissionTo('tools-delete'))

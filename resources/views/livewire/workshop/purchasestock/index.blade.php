@@ -133,11 +133,11 @@
 
                         <!-- suppolier -->
                         <div class="col-md-12">
-                            <label class="form-label">Supplier</label>
-                            <select class="form-select searchable-select " data-placeholder="Select Supplier" wire:model="supplier_id">
-                                <option value="">Select Supplier</option>
+                            <label class="form-label">Company Name</label>
+                            <select class="form-select searchable-select " data-placeholder="Select Company Name" wire:model="supplier_id">
+                                <option value="">Select Company Name</option>
                                 @foreach ($suppliers as $supplier)
-                                    <option value="{{ $supplier->id }}">{{ $supplier->owner_first_name }}</option>
+                                    <option value="{{ $supplier->id }}">{{ $supplier->business_first_name }}</option>
                                 @endforeach
                             </select>
                         </div>

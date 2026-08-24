@@ -63,7 +63,7 @@ class LabourChargeController extends Component
     {
 
         $this->resetErrorBag();
-        $this->reset('title', 'price', 'tax_percentage', 'tax_type', 'total_price');
+        $this->reset('title', 'price', 'tax_percentage', 'tax_type', 'total_price', 'labour_type', 'outsource_price');
         $this->resetPage();
         $this->isEdit = false;
         $this->showModal = true;

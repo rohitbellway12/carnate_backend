@@ -37,6 +37,7 @@ class ToolsController extends Component
     public $tax_type, $tax_percentage, $category, $customerPrice = 0, $selling_amount = 0, $searchfilter;
     public $imageName, $imageImage, $image;
     public $units, $categories;
+    public $online_price = 0, $offline_price = 0;
     protected $listeners = ['delete'];
 
     protected $rules = [
@@ -95,7 +96,7 @@ class ToolsController extends Component
         }
         $tools = $tools->where('user_id', $this->sparepartId)->orderBy('created_at', 'desc')->paginate(10);
 
-        return view('livewire.sparepart.tools', compact('tools'));
+        return view('livewire.sparepart.tools', compact('tools'))->with('commission', $this->commission);
     }
 
     public function create()
@@ -239,6 +240,8 @@ class ToolsController extends Component
 
             $this->suitable_for = $sparePartVehicleModification->pluck('vehicle_modification_id')->toArray();
         }
+
+        $this->calculatePrice();
     }
 
     public function update()
@@ -408,6 +411,8 @@ class ToolsController extends Component
         $this->tax_percentage = 0;
         $this->reflectedPrice = 0;
         $this->customerPrice = 0;
+        $this->online_price = 0;
+        $this->offline_price = 0;
     }
     public function updatedSellingAmount($value)
     {
@@ -445,21 +450,18 @@ class ToolsController extends Component
     private function calculatePrice()
     {
         $price = 0;
-        // Ensure all properties are floats
         $sellingAmount = floatval($this->selling_amount);
         $taxPercentage = floatval($this->tax_percentage);
         $discount = floatval($this->discount);
-        $commission = floatval($this->commission);
 
-        if ($this->tax_type == 'include' && $taxPercentage) {
-            $includedPrice = $sellingAmount / ($taxPercentage / 100 + 1);
-            $price = round($includedPrice);
-        } elseif ($this->tax_type == 'exclude' && $taxPercentage) {
+        if ($this->tax_type == 'exclude' && $taxPercentage) {
             $tax = ($sellingAmount * $taxPercentage) / 100;
             $price = $sellingAmount + $tax;
         } else {
             $price = $sellingAmount;
         }
+
+        $this->offline_price = $price;
 
         if ($this->discount_type == 1) {
             $price -= $discount;
@@ -469,8 +471,8 @@ class ToolsController extends Component
         }
 
         $this->reflectedPrice = $this->price = $price;
-        $totalCommission = ($price * $commission) / 100;
-        $this->customerPrice = $price + $totalCommission;
+        $this->customerPrice = $price;
+        $this->online_price = $price;
     }
 
 
