@@ -511,10 +511,10 @@
                                 <th>Unit</th>
                                 <th>Brand</th>
                                 {{-- <th>Suitable For</th> --}}
-                                <th>Price</th>
-                                <th>Amount</th>
-                                <th>Discount</th>
-                                <th>Stock</th>
+                                <th>Online Price</th>
+                                <th>Offline Price</th>
+                                <th>Commission %</th>
+                                <th>Tax</th>
                                 <th>HSN Code</th>
                                 <th>Rack No.</th>
                                 @if (@$sparePart->hasPermissionTo('accessory-edit') || @$sparePart->hasPermissionTo('accessory-delete'))
@@ -541,9 +541,39 @@
                                     <td>{{ $accessory->unit?->title ?? '' }}</td>
                                     <td> {{ $accessory->brand }} </td>
                                     {{-- <td> {{ $accessory->suitable_for }} </td> --}}
-                                    <td> {{ $accessory->price }} </td>
-                                    <td> {{ $accessory->amount }} </td>
-                                    <td> {{ $accessory->discount }} </td>
+                                    <td>
+                                        @php
+                                            $onlinePrice = $accessory->selling_amount;
+                                            if ($accessory->tax_type == 'exclude' && $accessory->tax_percentage) {
+                                                $onlinePrice += ($onlinePrice * $accessory->tax_percentage) / 100;
+                                            }
+                                            if ($accessory->discount) {
+                                                if ($accessory->discount_type == 1) {
+                                                    $onlinePrice -= $accessory->discount;
+                                                } elseif ($accessory->discount_type == 2) {
+                                                    $onlinePrice -= ($onlinePrice * $accessory->discount) / 100;
+                                                }
+                                            }
+                                            echo number_format($onlinePrice, 2);
+                                        @endphp
+                                    </td>
+                                    <td>
+                                        @php
+                                            $offlinePrice = $accessory->selling_amount;
+                                            if ($accessory->tax_type == 'exclude' && $accessory->tax_percentage) {
+                                                $offlinePrice += ($offlinePrice * $accessory->tax_percentage) / 100;
+                                            }
+                                            echo number_format($offlinePrice, 2);
+                                        @endphp
+                                    </td>
+                                    <td> {{ $accessory->platform_charge ?? 0 }}% </td>
+                                    <td>
+                                        @if ($accessory->tax_percentage)
+                                            {{ $accessory->tax_type == 'include' ? 'Include' : 'Exclude' }} {{ $accessory->tax_percentage }}%
+                                        @else
+                                            —
+                                        @endif
+                                    </td>
                                     <td> {{ $accessory->stock }} </td>
                                     <td> {{ $accessory->hsn_code }} </td>
                                     <td> {{ $accessory->rack_no }} </td>

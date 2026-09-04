@@ -148,7 +148,7 @@
                             <li class="list-group-item list-group-item-action"
                                 wire:click="selectPart({{ $part->id }})"
                                 style="cursor:pointer;">
-                                {{ $part->name }} ({{ $part->part_number }}) - ₹{{ $part->price }}
+                                {{ $part->name }} ({{ $part->part_number }}) - ₹{{ $part->purchase_price ?? $part->price }}
                             </li>
                         @endforeach
                     </ul>

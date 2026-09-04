@@ -530,9 +530,10 @@
                                 <th>Unit</th>
                                 <th>Brand</th>
                               {{--<th>Suitable For</th>--}}
-                                <th>Price</th>
-                                <th>Amount</th>
-                                <th>Discount</th>
+                                <th>Online Price</th>
+                                <th>Offline Price</th>
+                                <th>Commission %</th>
+                                <th>Tax</th>
                                 <th>Stock</th>
                                 <th>HSN Code</th>
                                 <th>Rack No.</th>
@@ -560,9 +561,39 @@
                                     <td>{{ $lubricant->unit?->title ?? '' }}</td>
                                     <td> {{ $lubricant->brand }} </td>
                                    {{-- <td> {{ $lubricant->suitable_for }} </td>--}}
-                                    <td> {{ $lubricant->price }} </td>
-                                    <td> {{ $lubricant->amount }} </td>
-                                    <td> {{ $lubricant->discount }} </td>
+                                    <td>
+                                        @php
+                                            $onlinePrice = $lubricant->selling_amount;
+                                            if ($lubricant->tax_type == 'exclude' && $lubricant->tax_percentage) {
+                                                $onlinePrice += ($onlinePrice * $lubricant->tax_percentage) / 100;
+                                            }
+                                            if ($lubricant->discount) {
+                                                if ($lubricant->discount_type == 1) {
+                                                    $onlinePrice -= $lubricant->discount;
+                                                } elseif ($lubricant->discount_type == 2) {
+                                                    $onlinePrice -= ($onlinePrice * $lubricant->discount) / 100;
+                                                }
+                                            }
+                                            echo number_format($onlinePrice, 2);
+                                        @endphp
+                                    </td>
+                                    <td>
+                                        @php
+                                            $offlinePrice = $lubricant->selling_amount;
+                                            if ($lubricant->tax_type == 'exclude' && $lubricant->tax_percentage) {
+                                                $offlinePrice += ($offlinePrice * $lubricant->tax_percentage) / 100;
+                                            }
+                                            echo number_format($offlinePrice, 2);
+                                        @endphp
+                                    </td>
+                                    <td> {{ $lubricant->platform_charge ?? 0 }}% </td>
+                                    <td>
+                                        @if ($lubricant->tax_percentage)
+                                            {{ $lubricant->tax_type == 'include' ? 'Include' : 'Exclude' }} {{ $lubricant->tax_percentage }}%
+                                        @else
+                                            —
+                                        @endif
+                                    </td>
                                     <td> {{ $lubricant->stock }} </td>
                                     <td> {{ $lubricant->hsn_code }} </td>
                                     <td> {{ $lubricant->rack_no }} </td>

@@ -442,9 +442,9 @@ class PurchaseOrder extends Component
                 'unit_price' => $item->unit_price,
                 'total' => $item->total,
                 'hsn_code' => $item->hsn_code ?? '',
-                'gst_percent' => $item->gst_percent ?? 0,
-                'gst_type' => isset($item->gst_type) ? $item->gst_type : 'exclude',
-                'discount' => $item->discount ?? 0,
+                'gst_percent' => 0,
+                'gst_type' => 'exclude',
+                'discount' => 0,
                 'discount_type' => isset($item->discount_type) ? $item->discount_type : 1,
                 'selling_price' => $item->selling_price ?? '',
                 // Add any other fields you use in the table
@@ -880,9 +880,9 @@ class PurchaseOrder extends Component
             'unit_price' => $unit_price,
             'total' => $total,
             'hsn_code' => $part->hsn_code ?? '',
-            'gst_percent' => $part->tax_percentage ?? 0,
-            'gst_type' => $part->tax_type ?? 'exclude',
-            'discount' => $part->discount ?? 0,
+            'gst_percent' => 0,
+            'gst_type' => 'exclude',
+            'discount' => 0,
             'discount_type' => $part->discount_type ?? 1,
             'selling_price' => $part->selling_amount ?? '',
             'brand' => $part->brand ?? '',
@@ -1295,9 +1295,9 @@ class PurchaseOrder extends Component
             'unit_price' => $partObj->purchase_price ?? $partObj->price ?? 0,
             'total' => $partObj->purchase_price ?? $partObj->price ?? 0,
             'hsn_code' => $partObj->hsn_code ?? '',
-            'gst_percent' => $partObj->tax_percentage ?? 0,
-            'gst_type' => $partObj->tax_type ?? 'exclude',
-            'discount' => $partObj->discount ?? 0,
+            'gst_percent' => 0,
+            'gst_type' => 'exclude',
+            'discount' => 0,
             'discount_type' => $partObj->discount_type ?? 1,
             'selling_price' => $partObj->selling_amount ?? '',
             'brand' => $partObj->brand ?? '',
@@ -1433,87 +1433,25 @@ class PurchaseOrder extends Component
 
     public function calculateBillDetails()
     {
-        // Normalize items
-        foreach ($this->items as $i => $item) {
-            if (!isset($this->items[$i]['discount']))
-                $this->items[$i]['discount'] = 0;
-            if (!isset($this->items[$i]['gst_percent']))
-                $this->items[$i]['gst_percent'] = 0;
-            if (!isset($this->items[$i]['discount_type']))
-                $this->items[$i]['discount_type'] = 1;
-            if (!isset($this->items[$i]['gst_type']))
-                $this->items[$i]['gst_type'] = 'exclude';
-        }
-
         $subtotal = 0;
-        $totalGst = 0;
-        $discountTotal = 0;
 
         foreach ($this->items as &$item) {
-            $rowTotalBeforeDiscount = $item['qty'] * $item['unit_price'];
-
-            // Discount calculation
-            $discount = 0;
-            if (!empty($item['discount'])) {
-                if (isset($item['discount_type']) && $item['discount_type'] == 2) {
-                    $discount = ($rowTotalBeforeDiscount * $item['discount']) / 100;
-                } else {
-                    $discount = $item['discount'];
-                }
-            }
-
-            $discountTotal += $discount;
-            $priceAfterDiscount = $rowTotalBeforeDiscount - $discount;
-
-            // GST variables
-            $rowGST = 0;
-            $cgst = $sgst = 0;
-            $cgstPercent = $sgstPercent = 0;
-            $taxableAmount = $priceAfterDiscount;
-
-            if (!empty($item['gst_percent'])) {
-                if ($item['gst_type'] === 'include') {
-                    // GST included in price
-                    $taxableAmount = round($priceAfterDiscount / (1 + ($item['gst_percent'] / 100)), 2);
-                    $rowGST = round($priceAfterDiscount - $taxableAmount, 2);
-                    $item['total'] = $priceAfterDiscount;
-                } else {
-                    // GST excluded, add on top
-                    $rowGST = round(($taxableAmount * $item['gst_percent']) / 100, 2);
-                    $item['total'] = $priceAfterDiscount + $rowGST;
-                }
-
-                // Split into CGST/SGST
-                $cgstPercent = $item['gst_percent'] / 2;
-                $sgstPercent = $item['gst_percent'] / 2;
-                $cgst = round($rowGST / 2, 2);
-                $sgst = round($rowGST / 2, 2);
-            } else {
-                $item['total'] = $priceAfterDiscount;
-            }
-
-            // Assign values to item
-            $item['cgst'] = $cgst;
-            $item['sgst'] = $sgst;
-            $item['cgst_percent'] = $cgstPercent;
-            $item['sgst_percent'] = $sgstPercent;
-            $item['taxable_amount'] = $taxableAmount;
-            $subtotal += $taxableAmount;
-            $totalGst += $rowGST;
+            $item['total'] = $item['qty'] * $item['unit_price'];
+            $item['cgst'] = 0;
+            $item['sgst'] = 0;
+            $item['cgst_percent'] = 0;
+            $item['sgst_percent'] = 0;
+            $item['taxable_amount'] = $item['total'];
+            $item['discount'] = 0;
+            $subtotal += $item['total'];
         }
-        unset($item); // break reference
+        unset($item);
 
-        // Final amounts
-        // $this->subtotal = $subtotal;
-        // $this->gst = $totalGst;
-        // $this->total_payable = $subtotal + $totalGst;
         $this->subtotal = round($subtotal, 2);
-        $this->gst = round($totalGst, 2);
-        $this->total_payable = round($subtotal + $totalGst, 2);
-
+        $this->gst = 0;
+        $this->total_payable = round($subtotal, 2);
         $this->taxable_subtotal = $subtotal;
 
-        // Payment values
         $this->balance = floatval($this->total_payable) - floatval($this->po_payment);
         $this->paid = floatval($this->po_payment);
     }

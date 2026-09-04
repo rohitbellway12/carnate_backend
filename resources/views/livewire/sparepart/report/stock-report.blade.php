@@ -185,7 +185,16 @@
                                 <td>
                                     <div class="fw-bold text-dark">{{ $s->label->title ?? '-' }}</div>
                                 </td>
-                                <td><code>{{ $s->part_number ?: '-' }}</code></td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="flex-grow-1"><code class="part-number-text">{{ strtoupper($s->part_number ?: '-') }}</code></span>
+                                        @if($s->part_number)
+                                            <button class="btn btn-sm btn-light p-1 border-0 copy-part-number" data-part-number="{{ $s->part_number }}" title="Copy Part Number" style="line-height:1;">
+                                                <i class="bx bx-copy" style="font-size:16px;"></i>
+                                            </button>
+                                        @endif
+                                    </div>
+                                </td>
                                 <td>{{ $s->brand ?: '-' }}</td>
                                 <td class="text-center"><span class="badge bg-secondary">{{ $s->rack_no ?: '-' }}</span></td>
                                 <td class="text-center">
@@ -218,4 +227,20 @@
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('livewire:navigated', () => {
+            document.querySelectorAll('.copy-part-number').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const partNumber = this.getAttribute('data-part-number');
+                    navigator.clipboard.writeText(partNumber).then(() => {
+                        const icon = this.querySelector('i');
+                        icon.className = 'bx bx-check';
+                        setTimeout(() => {
+                            icon.className = 'bx bx-copy';
+                        }, 1500);
+                    });
+                });
+            });
+        });
+    </script>
 </div>
