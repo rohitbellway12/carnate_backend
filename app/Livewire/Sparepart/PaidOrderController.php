@@ -44,7 +44,11 @@ class PaidOrderController extends Component
                 }
             ])->orderBy('id', 'DESC');
             if($this->searchfilter){
-                $orders=$orders->where('id',  $this->searchfilter );
+                $orders=$orders->where(function($q) {
+                    $q->where('id', $this->searchfilter)
+                      ->orWhere('invoice_number', $this->searchfilter)
+                      ->orWhere('spare_invoice_number', $this->searchfilter);
+                });
             }
             if($this->startDate ||  $this->endDate ){
                 $orders = $orders ->whereRaw('DATE(order_date) BETWEEN ? AND ?', [$this->startDate, $this->endDate]);

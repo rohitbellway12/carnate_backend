@@ -249,7 +249,7 @@
             <div class="card-body">
                 <div class="row">
                 <div class="col-3">
-                    <input type="text" class="form-control" placeholder="Search Order Id " wire:model.live="searchfilter" fdprocessedid="blgf5">
+                    <input type="text" class="form-control" placeholder="Search Invoice No. " wire:model.live="searchfilter" fdprocessedid="blgf5">
                 </div>
                 <div class="col-3">
                     <input class="form-control form-control-solid" placeholder="Pick Dates" id="kt_daterangepicker_1"/>
@@ -269,7 +269,7 @@
                             <thead>
                                 <tr>
                                     <th>S.No.</th>
-                                    <th>Order No.</th>
+                                    <th>Invoice No.</th>
                                     <th>Order Date</th>
                                     <th>Total Amount</th>
                                     <th>Total Quantity</th>
@@ -284,7 +284,7 @@
                                 @foreach ($orders as $index => $order)
                                 <tr>
                                     <td>{{ $orders->total() - ($orders->firstItem() + $index) + 1 }}</td>
-                                    <td>{{ $order->id }}</td>
+                                    <td>{{ \sparepartOrderReference($order, $currentUser) }}</td>
                                     <td>
                                         {{ carbon\carbon::parse($order->order_date)->format('d-M-Y') }} <br>
                                         {{ carbon\carbon::parse($order->order_date)->format('h:i A') }}

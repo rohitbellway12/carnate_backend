@@ -525,10 +525,7 @@
                                 <th>S.No.</th>
                                 <th>Image</th>
                                 <th>Name</th>
-                                <th>Supplier</th>
-                                <th>part Number</th>
                                 <th>Unit</th>
-                                <th>Brand</th>
                               {{--<th>Suitable For</th>--}}
                                 <th>Online Price</th>
                                 <th>Offline Price</th>
@@ -556,10 +553,7 @@
                                         @endif
                                     </td>
                                     <td>{{ $lubricant->name }}</td>
-                                    <td>{{$lubricant->supplier?->owner_first_name ?? '-' }}</td>
-                                    <td>{{ $lubricant->part_number }}</td>
                                     <td>{{ $lubricant->unit?->title ?? '' }}</td>
-                                    <td> {{ $lubricant->brand }} </td>
                                    {{-- <td> {{ $lubricant->suitable_for }} </td>--}}
                                     <td>
                                         @php

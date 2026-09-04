@@ -506,15 +506,13 @@
                                 <th>S.No.</th>
                                 <th>Image</th>
                                 <th>Name</th>
-                                <th>Supplier</th>
-                                <th>Part Number</th>
                                 <th>Unit</th>
-                                <th>Brand</th>
                                 {{-- <th>Suitable For</th> --}}
                                 <th>Online Price</th>
                                 <th>Offline Price</th>
                                 <th>Commission %</th>
                                 <th>Tax</th>
+                                <th>Stock</th>
                                 <th>HSN Code</th>
                                 <th>Rack No.</th>
                                 @if (@$sparePart->hasPermissionTo('accessory-edit') || @$sparePart->hasPermissionTo('accessory-delete'))
@@ -536,10 +534,7 @@
                                         @endif
                                     </td>
                                     <td>{{ $accessory->name }}</td>
-                                    <td>{{ $accessory->supplier?->owner_first_name ?? '-' }}</td>
-                                    <td>{{ $accessory->part_number }}</td>
                                     <td>{{ $accessory->unit?->title ?? '' }}</td>
-                                    <td> {{ $accessory->brand }} </td>
                                     {{-- <td> {{ $accessory->suitable_for }} </td> --}}
                                     <td>
                                         @php
