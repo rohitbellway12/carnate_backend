@@ -22,7 +22,7 @@
                          <table class="table table-bordered data-table">
                              <thead>
                                  <tr>
-                                     <th>Spare Part</th>
+                                     <th>Item Name</th>
                                      <th>Category</th>
                                      <th>Rack No.</th>
                                      <th>Quantity</th>

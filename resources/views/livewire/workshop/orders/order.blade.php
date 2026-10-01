@@ -737,7 +737,7 @@
 
                                 <tr>
                                     <th>S.No.</th>
-                                    <th>Spare Part</th>
+                                    <th>Item Name</th>
                                     <th>Category</th>
                                     <th>Quantity</th>
                                     <th>Price</th>
