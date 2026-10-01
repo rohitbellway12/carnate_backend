@@ -175,7 +175,7 @@ class Msg91Service
         $currentDate = now()->format('d-m-Y');
 
         // Workshop contact phone for ##num1##
-        $workshopPhone = '9009775909';
+        $workshopPhone = '';
         $workshop = $jobcard->workshop ?? (\App\Models\WorkShopVendor::find($jobcard->user_id ?? 0));
         if ($workshop) {
             $wsNum = $workshop->mobile_no ?: ($workshop->branch_number ?: $workshop->landline_no);
