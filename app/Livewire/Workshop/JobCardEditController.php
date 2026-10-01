@@ -220,6 +220,7 @@ class JobCardEditController extends Component
         $this->payment_type = $jobcardData->payment_type;
         $this->transaction_number = $jobcardData->transaction_number;
         $this->notes = $jobcardData->notes;
+        $this->smsAlert = $jobcardData->sms_alert !== null ? (bool)$jobcardData->sms_alert : true;
 
         $extracharges = JobCardExtraCharge::where('jobcard_id', $this->jobId)->get();
         $jobcardImage = JobCardImage::where('job_card_number', $jobcardData->jobcard_number)->first();
@@ -3471,6 +3472,20 @@ class JobCardEditController extends Component
                 $SendJobCardPdfMail->jobcard_id = $jobcard->id;
                 $SendJobCardPdfMail->template_type = $step == 1 ? 0 : 1;
                 $SendJobCardPdfMail->save();
+            }
+
+            // Trigger MSG91 SMS based on status change
+            try {
+                $msg91Service = app(\App\Services\Msg91Service::class);
+                if (($status == 4 && $jobstatus != 4) || ($jobstatus == 0 && $step == 1)) {
+                    $msg91Service->sendJobCardSms($jobcard, 'process');
+                } elseif ($status == 1 && $jobstatus != 1) {
+                    $msg91Service->sendJobCardSms($jobcard, 'confirm');
+                } elseif ($status == 3 && $jobstatus != 3) {
+                    $msg91Service->sendJobCardSms($jobcard, 'close');
+                }
+            } catch (\Throwable $e) {
+                \Log::error('[MSG91] Error sending status change SMS: ' . $e->getMessage());
             }
 
             $this->dispatch('swal:toast', [

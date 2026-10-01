@@ -113,6 +113,7 @@ class JobCardAddController extends Component
         // echo"hello";die;
         $this->workshopId = Auth::guard('workshop')->user()->id;
         $this->branches = Branch::get();
+        $this->smsAlert = true;
 
         $this->customerVoices = !empty($jobCardsInspection)
             ? collect($jobCardsInspection)->pluck('customer_voice')->toArray()
@@ -928,7 +929,7 @@ class JobCardAddController extends Component
 
     public function updatedSearchVehicle($id)
     {
-        if(empty($id)) {
+        if (empty($id)) {
             $this->selectedVehicleName = '';
             $this->modificationId = null;
             return;
@@ -936,9 +937,9 @@ class JobCardAddController extends Component
 
         // Find from all_modifications
         $mod = collect($this->all_modifications)->firstWhere('id', $id);
-        
-        if($mod){
-            $this->modificationId = (object)[
+
+        if ($mod) {
+            $this->modificationId = (object) [
                 'id' => $mod['id'],
                 'brand_name' => is_array($this->brand_name) ? $this->brand_name['name'] : (collect($this->brands)->firstWhere('id', $this->selectedBrandId)['name'] ?? ''),
                 'variant_name' => is_array($this->variant_name) ? $this->variant_name['name'] : (collect($this->variants)->firstWhere('id', $this->selectedModelId)['name'] ?? ''),
@@ -949,12 +950,12 @@ class JobCardAddController extends Component
             $brand = $this->modificationId->brand_name ?? '';
             $model = $this->modificationId->variant_name ?? '';
             $modName = $this->modificationId->title ?? '';
-            
+
             $yearRange = ($mod['yearFrom'] ?? '') . '-' . ($mod['yearTo'] ?? '');
             $fuel = $mod['fuelType'] ? ' - ' . $mod['fuelType'] : '';
 
             $this->selectedVehicleName = trim("$brand $model | $modName ($yearRange)$fuel");
-        }else{
+        } else {
             $this->selectedVehicleName = '';
         }
     }
@@ -1091,7 +1092,7 @@ class JobCardAddController extends Component
         $mod = collect($this->all_modifications)->firstWhere('id', $this->search_vehicle);
         $fuelType = $mod ? ($mod['fuelType'] ?? null) : null;
         $typeEngineName = $mod ? ($mod['name'] ?? null) : null;
-        
+
         $startYear = substr($mod['yearFrom'] ?? '', 0, 4);
         $endYear = substr($mod['yearTo'] ?? '', 0, 4);
         $yearRange = $startYear;
@@ -1406,7 +1407,7 @@ class JobCardAddController extends Component
 
         $jobcard = new JobCard();
         $jobcard->jobcard_number = $this->jobcardNumbers;
-        
+
         $jobcard->customer_id = $this->customer_name;
         $jobcard->modification_id = $vehicleData->modification_id;
         $jobcard->customer_name = strtoupper($customer->name . ' ' . $customer->lastname);
@@ -1424,11 +1425,18 @@ class JobCardAddController extends Component
         $jobcard->km_runing = $this->km_reading ?? 0;
         $jobcard->fual_level = $this->fual_level ?? 0;
         $jobcard->supervisor_id = $this->supervisor ?? 0;
-        $jobcard->sms_alert = $this->sms_alert ?? 0;
+        $jobcard->sms_alert = !empty($this->smsAlert) ? 1 : 0;
         $jobcard->delivery_date = $this->delivery_date ?? Carbon::now();
         $jobcard->delivery_time = $this->delivery_time ?? Carbon::now();
         $jobcard->user_id = Auth::guard('workshop')->user()->id;
         $jobcard->save();
+
+        // Trigger MSG91 SMS for JobCard Creation
+        try {
+            app(\App\Services\Msg91Service::class)->sendJobCardSms($jobcard, 'create');
+        } catch (\Throwable $e) {
+            \Log::error('[MSG91] Failed sending create jobcard SMS: ' . $e->getMessage());
+        }
 
         $this->dispatch('swal:toast', [
             'type' => 'success',
@@ -1501,7 +1509,7 @@ class JobCardAddController extends Component
         $brand = json_decode($value, true);
         $brandId = $brand['id'] ?? null;
         $brandName = $brand['name'] ?? null;
-        
+
         $this->selectedBrandId = $brandId;
         $this->vehicleBrand = $brandName;
 
@@ -1510,7 +1518,7 @@ class JobCardAddController extends Component
         $this->modificationId = null;
         $this->search_vehicle = '';
         $this->selectedVehicleName = '';
-        
+
         $this->years = [];
         $this->modifications = [];
         $this->all_modifications = [];
@@ -1537,23 +1545,23 @@ class JobCardAddController extends Component
         $this->all_modifications = [];
         $this->search_vehicle = '';
         $this->modificationId = null;
-        
+
         if (empty($value) && $value !== '0' && $value !== 0) {
             return;
         }
 
         $variant = $this->variants[$value] ?? null;
-        
+
         if ($variant) {
             $modelId = $variant['id'] ?? null;
             $modelName = $variant['name'] ?? null;
             $modelYearFrom = $variant['modelYearFrom'] ?? null;
             $modelYearTo = $variant['modelYearTo'] ?? null;
-            
+
             if ($modelId && $modelYearFrom) {
-                $startYear = (int)substr($modelYearFrom, 0, 4);
-                $endYear = $modelYearTo ? (int)substr($modelYearTo, 0, 4) : (int)date('Y');
-                
+                $startYear = (int) substr($modelYearFrom, 0, 4);
+                $endYear = $modelYearTo ? (int) substr($modelYearTo, 0, 4) : (int) date('Y');
+
                 $yearRange = [];
                 for ($year = $endYear; $year >= $startYear; $year--) {
                     $yearRange[] = [
@@ -1563,7 +1571,7 @@ class JobCardAddController extends Component
                 }
                 $this->years = $yearRange;
             }
-            
+
             $this->selectedModelId = $modelId;
             $this->search_vehicle = '';
             $this->selectedVehicleName = $modelName;
@@ -1586,16 +1594,16 @@ class JobCardAddController extends Component
         $this->search_vehicle = '';
         $this->modificationId = null;
         $this->selectedVehicleName = '';
-        
+
         if (empty($value) || empty($this->all_modifications)) {
             $this->modifications = [];
             return;
         }
-        
-        $selectedYear = (int)$value;
-        
+
+        $selectedYear = (int) $value;
+
         $this->modifications = collect($this->all_modifications)
-            ->filter(function($item) use ($selectedYear) {
+            ->filter(function ($item) use ($selectedYear) {
                 $yearFrom = $item['yearFrom'] ?? 0;
                 $yearTo = $item['yearTo'] ?? date('Y');
                 return $selectedYear >= $yearFrom && $selectedYear <= $yearTo;
