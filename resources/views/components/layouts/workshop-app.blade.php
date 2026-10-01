@@ -20,6 +20,40 @@
     <link href="{{ asset('assets/plugins/metismenu/css/metisMenu.min.css') }}" rel="stylesheet">
     <!-- loader-->
     <link href="{{ asset('assets/css/pace.min.css') }}" rel="stylesheet">
+    <style>
+        /* Brand the global navigation / Livewire progress indicator. */
+        .pace .pace-progress { background: #e53935 !important; }
+        .pace .pace-progress-inner { box-shadow: 0 0 10px #e53935, 0 0 5px #e53935 !important; }
+        .pace .pace-activity { border-top-color: #e53935 !important; border-left-color: #e53935 !important; }
+
+        /* Brand Select2 highlight/selected color to Carnate Red */
+        .select2-container--default .select2-results__option--highlighted[aria-selected],
+        .select2-container--default .select2-results__option--highlighted,
+        .select2-container--default .select2-results__option[aria-selected="true"],
+        .select2-container--bootstrap4 .select2-results__option--highlighted,
+        .select2-container--bootstrap4 .select2-results__option--highlighted.select2-results__option[aria-selected="true"],
+        .select2-container--bootstrap4 .select2-dropdown .select2-results__option[aria-selected="true"],
+        .select2-results__option--highlighted,
+        .select2-results__option[aria-selected="true"] {
+            background-color: #e53935 !important;
+            color: #ffffff !important;
+        }
+
+        .select2-container--default.select2-container--focus .select2-selection--single,
+        .select2-container--default.select2-container--open .select2-selection--single,
+        .select2-container--bootstrap4.select2-container--focus .select2-selection--single,
+        .select2-container--bootstrap4.select2-container--open .select2-selection--single {
+            border-color: rgba(229, 57, 53, 0.6) !important;
+            box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.12) !important;
+        }
+
+        .select2-container--default .select2-search--dropdown .select2-search__field:focus,
+        .select2-container--bootstrap4 .select2-search--dropdown .select2-search__field:focus {
+            border-color: rgba(229, 57, 53, 0.6) !important;
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.12) !important;
+        }
+    </style>
     <script src="{{ asset('assets/js/pace.min.js') }}"></script>
     <!-- Bootstrap CSS -->
     <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet">
@@ -121,7 +155,7 @@
                 text: text,
                 icon: icon,
                 showCancelButton: showCancelButton,
-                confirmButtonColor: '#3085d6',
+                confirmButtonColor: '#e53935',
                 cancelButtonColor: '#d33',
                 confirmButtonText: confirmButtonText,
             }).then((result) => {
@@ -327,7 +361,7 @@
                                 <i class="fa-solid fa-bell bell-icon" style="font-size: 35px; color: #ffcc00;"></i>
                                 <h5 class="mt-3">${escapeHtml(notification.title)}</h5>
                                 <p>${escapeHtml(notification.message)}</p>
-                                <button type="button" class="btn btn-primary" onclick="handleNotificationModalAction(${JSON.stringify(orderId)})">
+                                <button type="button" class="btn btn-danger px-4" style="background-color: #e53935; border-color: #e53935; font-weight: 600;" onclick="handleNotificationModalAction(${JSON.stringify(orderId)})">
                                     ${orderId ? 'View Order' : 'OK'}
                                 </button>
                             </div>

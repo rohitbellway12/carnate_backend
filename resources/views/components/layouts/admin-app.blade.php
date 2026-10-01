@@ -117,7 +117,7 @@
                 text: text,
                 icon: icon,
                 showCancelButton: showCancelButton,
-                confirmButtonColor: '#3085d6',
+               confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
                 confirmButtonText: confirmButtonText,
             }).then((result) => {
@@ -201,7 +201,7 @@
 
             adminIsFetching = true;
 
-            fetch('/admin/get-notifications', {
+            fetch('/portal/admin/get-notifications', {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
@@ -340,7 +340,7 @@
 
         function markHeaderNotifAsReadSp(id) {
 
-            fetch(`/admin/notifications/${id}/read`, {
+            fetch(`/portal/admin/notifications/${id}/read`, {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
@@ -404,7 +404,8 @@
 
                         <button
                             type="button"
-                            class="btn btn-primary"
+                            class="btn btn-danger px-4"
+                            style="background-color: #e53935; border-color: #e53935; font-weight: 600;"
                             data-bs-dismiss="modal">
 
                             OK

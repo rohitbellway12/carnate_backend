@@ -53,6 +53,7 @@ class LubricantController extends Component
     public $supplier_id;
     public $suppliers;
     public $brandFilter = '';
+    public $online_price = 0, $offline_price = 0;
     protected $rules = [
         'name' => 'required',
         'purchase_amount' => 'required|numeric|min:1',
@@ -435,6 +436,7 @@ class LubricantController extends Component
         $this->discount_type = $lubricant->discount_type;
         $this->customerPrice = $lubricant->price;
         $this->part_number = $lubricant->part_number;
+        $this->supplier_id = $lubricant->supplier_id;
         $image = UploadImage::find($lubricant->image);
         // echo "<pre>"; print_r($image->toArray()); die;
         $this->license_image = $image ? $image : null;
@@ -443,6 +445,7 @@ class LubricantController extends Component
 
         $this->reflectedPrice = $lubricant->amount;
         $this->price = $lubricant->amount;
+        $this->calculatePrice();
 
         if ($lubricant->forAllVehicles == 1) {
             $this->forAllVehicles = true;
@@ -751,6 +754,9 @@ class LubricantController extends Component
         $this->part_image_url = null;
         $this->api_compatible_vehicles = [];
         $this->part_number = '';
+        $this->supplier_id = '';
+        $this->online_price = 0;
+        $this->offline_price = 0;
     }
 
     public function updatedSellingAmount($value)
@@ -789,21 +795,19 @@ class LubricantController extends Component
     private function calculatePrice()
     {
         $price = 0;
-        // Ensure all properties are floats
         $sellingAmount = floatval($this->selling_amount);
         $taxPercentage = floatval($this->tax_percentage);
         $discount = floatval($this->discount);
         $commission = floatval($this->commission);
 
-        if ($this->tax_type == 'include' && $taxPercentage) {
-            $includedPrice = $sellingAmount / ($taxPercentage / 100 + 1);
-            $price = round($includedPrice);
-        } elseif ($this->tax_type == 'exclude' && $taxPercentage) {
+        if ($this->tax_type == 'exclude' && $taxPercentage) {
             $tax = ($sellingAmount * $taxPercentage) / 100;
             $price = $sellingAmount + $tax;
         } else {
             $price = $sellingAmount;
         }
+
+        $this->offline_price = $price;
 
         if ($this->discount_type == 1) {
             $price -= $discount;
@@ -815,6 +819,7 @@ class LubricantController extends Component
         $this->reflectedPrice = $this->price = $price;
         $totalCommission = ($price * $commission) / 100;
         $this->customerPrice = $price + $totalCommission;
+        $this->online_price = $price;
     }
 
     public function updateSuitableFor($selectedValues)

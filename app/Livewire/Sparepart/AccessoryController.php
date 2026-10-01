@@ -42,6 +42,7 @@ class AccessoryController extends Component
     public $supplier_id;
     public $suppliers;
     public $brandFilter = '';
+    public $online_price = 0, $offline_price = 0;
     protected $rules = [
         'name' => 'required',
         'price' => 'required|numeric|min:1',
@@ -395,6 +396,7 @@ class AccessoryController extends Component
         $this->discount_type = $accessory->discount_type;
         $this->customerPrice = $accessory->price;
         $this->part_number = $accessory->part_number;
+        $this->supplier_id = $accessory->supplier_id;
 
         $image = UploadImage::find($accessory->image);
         $this->image = $image ? $image : null;
@@ -403,6 +405,7 @@ class AccessoryController extends Component
         $this->showModal = true;
         $this->reflectedPrice = $accessory->amount;
         $this->price = $accessory->amount;
+        $this->calculatePrice();
 
         if ($accessory->forAllVehicles == 1) {
             $this->forAllVehicles = true;
@@ -773,6 +776,11 @@ class AccessoryController extends Component
         $this->tax_percentage = 0;
         $this->reflectedPrice = 0;
         $this->customerPrice = 0;
+        $this->selling_amount = 0;
+        $this->part_number = '';
+        $this->supplier_id = '';
+        $this->online_price = 0;
+        $this->offline_price = 0;
     }
 
     public function updatedSellingAmount($value)
@@ -812,15 +820,14 @@ class AccessoryController extends Component
         $discount = floatval($this->discount);
         $commission = floatval($this->commission);
 
-        if ($this->tax_type == 'include' && $taxPercentage) {
-            $includedPrice = $sellingAmount / ($taxPercentage / 100 + 1);
-            $price = round($includedPrice);
-        } elseif ($this->tax_type == 'exclude' && $taxPercentage) {
+        if ($this->tax_type == 'exclude' && $taxPercentage) {
             $tax = ($sellingAmount * $taxPercentage) / 100;
             $price = $sellingAmount + $tax;
         } else {
             $price = $sellingAmount;
         }
+
+        $this->offline_price = $price;
 
         if ($this->discount_type == 1) {
             $price -= $discount;
@@ -832,6 +839,7 @@ class AccessoryController extends Component
         $this->reflectedPrice = $this->price = $price;
         $totalCommission = ($price * $commission) / 100;
         $this->customerPrice = $price + $totalCommission;
+        $this->online_price = $price;
     }
 
 

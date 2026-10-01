@@ -22,12 +22,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // code for livewire assets url for hostinger
-        // Livewire::setScriptRoute(function ($handle) {
-        //     return Route::get('/portal/livewire/livewire.js', $handle);
-        // });
+        Livewire::setScriptRoute(function ($handle) {
+            return Route::get('/portal/livewire/livewire.js', $handle);
+        });
 
-        // Livewire::setUpdateRoute(function ($handle) {
-        //     return Route::post('/portal/livewire/update', $handle)->middleware('web');
-        // });
+        Livewire::setUpdateRoute(function ($handle) {
+            return Route::post('/portal/livewire/update', $handle)->middleware('web');
+        });
     }
 }

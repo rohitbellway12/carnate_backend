@@ -1,14 +1,14 @@
-<div>
+<div class="carnate-parts-page">
     <style>
         /* ── Premium Parts Page Styles ── */
         :root {
-            --brand: #12477a;
-            --brand-light: #e8f0fb;
-            --brand-mid: #1d5f9c;
-            --accent: #0ea5e9;
-            --success: #22c55e;
-            --warning: #f59e0b;
-            --danger: #ef4444;
+            --brand: #e53935;
+            --brand-light: #fff5f5;
+            --brand-mid: #c62828;
+            --accent: #e53935;
+            --success: #16a34a;
+            --warning: #d97706;
+            --danger: #dc2626;
         }
         #suitable_for_select + .select2-container .select2-selection--multiple {
             max-height: 120px !important;
@@ -36,7 +36,7 @@
         .parts-table thead th { font-size: 11px; letter-spacing: .7px; padding: 14px 12px; white-space: nowrap; }
         .parts-table tbody td { padding: 12px 12px; vertical-align: middle; }
         .parts-table tbody tr { transition: background .15s; }
-        .parts-table tbody tr:hover { background: #f0f7ff; }
+        .parts-table tbody tr:hover { background: #fff8f8; }
         .part-img { width:52px;height:52px;border-radius:10px;object-fit:cover;border:1px solid #e2e8f0; }
         /* ── Action Buttons ── */
         .action-btn {
@@ -49,8 +49,8 @@
             color: #64748b;
             transition: all .2s;
         }
-        .action-btn:hover.view  { background: #e0f2fe; color: #0ea5e9; border-color: #bae6fd; }
-        .action-btn:hover.edit  { background: #eff6ff; color: #3b82f6; border-color: #bfdbfe; }
+        .action-btn:hover.view  { background: #fff5f5; color: #e53935; border-color: #fecaca; }
+        .action-btn:hover.edit  { background: #fff5f5; color: #c62828; border-color: #fecaca; }
         .action-btn:hover.del   { background: #fef2f2; color: #ef4444; border-color: #fecaca; }
         /* ── Form Sections ── */
         .form-section {
@@ -122,13 +122,13 @@
             background-color: #fff;
             transition: border-color .2s;
         }
-        .filter-select:focus { border-color: var(--brand) !important; box-shadow: 0 0 0 3px rgba(18,71,122,.08) !important; }
+        .filter-select:focus { border-color: var(--brand) !important; box-shadow: 0 0 0 3px rgba(229,57,53,.08) !important; }
         /* ── Header gradient ── */
         .page-header-gradient {
-            background: linear-gradient(135deg, #12477a 0%, #1a6bae 50%, #0ea5e9 100%);
+            background: #ffffff;
             border-radius: 18px;
             padding: 28px 30px;
-            color: #fff;
+            color: #111827;
             position: relative;
             overflow: hidden;
             margin-bottom: 28px;
@@ -139,7 +139,7 @@
             right: -40px; top: -40px;
             width: 200px; height: 200px;
             border-radius: 50%;
-            background: rgba(255,255,255,.07);
+            background: rgba(229,57,53,.06);
         }
         .page-header-gradient::after {
             content: '';
@@ -147,7 +147,7 @@
             right: 60px; bottom: -60px;
             width: 150px; height: 150px;
             border-radius: 50%;
-            background: rgba(255,255,255,.05);
+            background: rgba(229,57,53,.04);
         }
         /* ── Empty State ── */
         .empty-state { padding: 60px 20px; text-align: center; }
@@ -173,7 +173,7 @@
         }
         .form-control:focus, .form-select:focus {
             border-color: var(--brand) !important;
-            box-shadow: 0 0 0 3px rgba(18,71,122,.08) !important;
+            box-shadow: 0 0 0 3px rgba(229,57,53,.08) !important;
         }
         .input-group-text {
             border-radius: 10px 0 0 10px !important;
@@ -186,6 +186,133 @@
         /* Animate flash */
         @keyframes slideDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
         .flash-msg { animation: slideDown .35s ease; }
+    
+        /* ── Carnate UI refresh ── */
+        .carnate-parts-page {
+            --cp-bg: #f7f8fa;
+            --cp-card: #ffffff;
+            --cp-text: #111827;
+            --cp-muted: #64748b;
+            --cp-border: #e2e8f0;
+            --cp-red: #e53935;
+            --cp-red-soft: #fff5f5;
+            color: var(--cp-text);
+        }
+        .carnate-parts-page .page-header-gradient {
+            border: 1px solid var(--cp-border);
+            box-shadow: 0 6px 24px rgba(15,23,42,.05);
+            padding: 22px 24px;
+        }
+        .carnate-parts-page .page-header-gradient h4 {
+            color: var(--cp-text);
+            font-size: 20px;
+            letter-spacing: -.2px;
+        }
+        .carnate-parts-page .page-header-gradient p,
+        .carnate-parts-page .page-header-gradient .breadcrumb {
+            color: var(--cp-muted) !important;
+        }
+        .carnate-parts-page .card,
+        .carnate-parts-page .form-section {
+            box-shadow: 0 4px 18px rgba(15,23,42,.045) !important;
+        }
+        .carnate-parts-page .form-section-header {
+            background: #fff;
+            padding: 15px 18px;
+        }
+        .carnate-parts-page .form-section-header .icon-wrap {
+            background: var(--cp-red-soft);
+            color: var(--cp-red);
+            border: 1px solid #fecaca;
+        }
+        .carnate-parts-page .form-section-body {
+            padding: 22px;
+        }
+        .carnate-parts-page .parts-table thead th {
+            background: #f8fafc !important;
+            color: #64748b !important;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .carnate-parts-page .parts-table tbody tr:hover {
+            background: #fffafa;
+        }
+        .carnate-parts-page .action-btn {
+            box-shadow: 0 1px 2px rgba(15,23,42,.04);
+        }
+        .carnate-parts-page .btn-primary {
+            background: var(--cp-red) !important;
+            border-color: var(--cp-red) !important;
+        }
+        .carnate-parts-page .btn-primary:hover {
+            background: #c62828 !important;
+            border-color: #c62828 !important;
+        }
+        .carnate-parts-page .form-control:focus,
+        .carnate-parts-page .form-select:focus {
+            border-color: var(--cp-red) !important;
+            box-shadow: 0 0 0 3px rgba(229,57,53,.08) !important;
+        }
+        .carnate-parts-page .filter-select:focus {
+            border-color: var(--cp-red) !important;
+        }
+        .carnate-parts-page .vehicle-check-card:hover {
+            border-color: #f3a3a0;
+            background: #fffafa;
+        }
+        .carnate-parts-page .vehicle-badge {
+            background: #f8fafc;
+        }
+        .carnate-parts-page .modal-content {
+            border: 1px solid var(--cp-border) !important;
+            box-shadow: 0 24px 70px rgba(15,23,42,.16) !important;
+        }
+        .carnate-parts-page .modal-header {
+            background: #fff !important;
+            color: var(--cp-text) !important;
+            border-bottom: 1px solid var(--cp-border) !important;
+        }
+        .carnate-parts-page .modal-header .btn-close {
+            filter: none !important;
+        }
+        .carnate-parts-page .price-display,
+        .carnate-parts-page .price-display.offline {
+            background: #f8fafc;
+            border: 1px solid var(--cp-border);
+        }
+        .carnate-parts-page .price-display .fs-5 {
+            color: var(--cp-red) !important;
+        }
+        .carnate-parts-page .empty-state {
+            padding: 72px 20px;
+        }
+        .carnate-parts-page .empty-state-icon {
+            color: #cbd5e1;
+        }
+        @media (max-width: 767.98px) {
+            .carnate-parts-page .page-header-gradient {
+                padding: 18px;
+            }
+            .carnate-parts-page .page-header-gradient > div {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 16px;
+            }
+            .carnate-parts-page .page-header-gradient .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            .carnate-parts-page .form-section-body {
+                padding: 16px;
+            }
+            .carnate-parts-page .d-flex.gap-3.align-items-center {
+                flex-wrap: wrap;
+            }
+            .carnate-parts-page .search-wrap {
+                min-width: 100%;
+            }
+        }
+
     </style>
 
     {{-- Flash Message --}}
@@ -209,7 +336,7 @@
             <div class="d-flex align-items-center justify-content-between position-relative" style="z-index:1;">
                 <div>
                     <div class="d-flex align-items-center gap-3 mb-1">
-                        <div style="width:46px;height:46px;background:rgba(255,255,255,.15);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">
+                        <div style="width:46px;height:46px;background:#fff5f5;border:1px solid #fecaca;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#e53935;">
                             <i class='bx bx-package'></i>
                         </div>
                         <div>
@@ -221,7 +348,7 @@
                 @if (@$sparePart->hasPermissionTo('part-add'))
                     <a href="{{ route('sparepart.parts.create') }}"
                        class="btn fw-bold px-4 py-2 d-flex align-items-center gap-2"
-                       style="background:#fff;color:var(--brand);border-radius:12px;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.12);">
+                       style="background:var(--brand);color:#fff;border-radius:12px;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.12);">
                         <i class="bx bx-plus-circle fs-5"></i> Add New Part
                     </a>
                 @endif
@@ -307,7 +434,7 @@
                                     <th class="ps-4">#</th>
                                     <th>Image</th>
                                     <th>Part Details</th>
-                                     <th>Company</th>
+                                     <th>Supplier</th>
                                     <th>Pricing</th>
                                     <th>Stock</th>
                                     <th>HSN / Rack</th>
@@ -334,7 +461,7 @@
                                             <div class="fw-bold text-dark" style="font-size:14px;">{{ $part->name }}</div>
                                             <div class="d-flex align-items-center gap-2 mt-1 flex-wrap">
                                                 @if($part->part_number)
-                                                    <span class="badge" style="background:#eff6ff;color:#3b82f6;border:1px solid #bfdbfe;border-radius:6px;font-size:11px;">
+                                                    <span class="badge" style="background:#fff5f5;color:#c62828;border:1px solid #fecaca;border-radius:6px;font-size:11px;">
                                                          # {{ strtoupper($part->part_number) }}
                                                     </span>
                                                 @endif
@@ -367,7 +494,7 @@
                                                 <div class="fw-bold" style="color:#22c55e;">₹{{ number_format($part->price, 2) }}
                                                     <span class="fw-normal text-muted" style="font-size:10px;">online</span>
                                                 </div>
-                                                <div class="fw-bold" style="color:#3b82f6;">₹{{ number_format($offlinePrice, 2) }}
+                                                <div class="fw-bold" style="color:#c62828;">₹{{ number_format($offlinePrice, 2) }}
                                                     <span class="fw-normal text-muted" style="font-size:10px;">offline</span>
                                                 </div>
 
@@ -436,7 +563,7 @@
         <div class="page-header-gradient shadow-sm mb-4">
             <div class="d-flex align-items-center justify-content-between position-relative" style="z-index:1;">
                 <div class="d-flex align-items-center gap-3">
-                    <div style="width:46px;height:46px;background:rgba(255,255,255,.15);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">
+                    <div style="width:46px;height:46px;background:#fff5f5;border:1px solid #fecaca;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#e53935;">
                         <i class='bx {{ $isView ? "bx-show" : ($isEdit ? "bx-edit" : "bx-plus-circle") }}'></i>
                     </div>
                     <div>
@@ -445,15 +572,15 @@
                         </h4>
                         <nav aria-label="breadcrumb" class="mb-0">
                             <ol class="breadcrumb mb-0" style="font-size:12px;opacity:.8;">
-                                <li class="breadcrumb-item"><a href="{{ route('sparepart.parts') }}" class="text-white opacity-75">Parts Inventory</a></li>
-                                <li class="breadcrumb-item active text-white">{{ $isView ? 'View' : ($isEdit ? 'Edit' : 'Add New') }}</li>
+                                <li class="breadcrumb-item"><a href="{{ route('sparepart.parts') }}" style="color:#64748b;">Parts Inventory</a></li>
+                                <li class="breadcrumb-item active" style="color:#64748b;">{{ $isView ? 'View' : ($isEdit ? 'Edit' : 'Add New') }}</li>
                             </ol>
                         </nav>
                     </div>
                 </div>
                 <a href="{{ route('sparepart.parts') }}"
                    class="btn d-flex align-items-center gap-2 fw-semibold"
-                   style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:12px;backdrop-filter:blur(4px);">
+                   style="background:#fff;color:#111827;border:1px solid #e2e8f0;border-radius:12px;">
                     <i class='bx bx-arrow-back'></i> Back to List
                 </a>
             </div>
@@ -554,9 +681,9 @@
                                     @error('category') <span class="text-danger small">{{ $message }}</span> @enderror
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label">Company <sup class="text-danger">*</sup></label>
-                                    <select class="form-select" wire:model="supplier_id" {{ $isView ? 'disabled' : '' }}>
-                                        <option value="">— Select Company —</option>
+                                    <label class="form-label">Supplier <sup class="text-danger">*</sup></label>
+                                     <select class="form-select" wire:model="supplier_id" {{ $isView ? 'disabled' : '' }}>
+                                         <option value="">— Select Supplier —</option>
                                         @foreach ($suppliers as $supplier)
                                              <option value="{{ $supplier->id }}">{{ $supplier->business_first_name }}</option>
                                         @endforeach
@@ -604,7 +731,7 @@
                                 <div class="col-md-6">
                                     <div class="price-display offline">
                                         <div class="text-muted small mb-1">Offline Price (Auto)</div>
-                                        <div class="fw-bold fs-5" style="color:#3b82f6;">₹{{ number_format($offline_price ?? 0, 2) }}</div>
+                                        <div class="fw-bold fs-5" style="color:#c62828;">₹{{ number_format($offline_price ?? 0, 2) }}</div>
                                         <input type="hidden" wire:model="offline_price">
                                     </div>
                                 </div>
@@ -710,7 +837,7 @@
                                             <div class="form-check form-switch mb-0">
                                                 <input class="form-check-input" type="checkbox" wire:model.live="selectAll"
                                                     id="selectAll" {{ $isView ? 'disabled' : '' }}>
-                                                <label class="form-check-label small fw-semibold text-primary" for="selectAll">All</label>
+                                                <label class="form-check-label small fw-semibold text-danger" for="selectAll">All</label>
                                             </div>
                                         @endif
                                     </div>
@@ -829,7 +956,7 @@
                                                         @endif
                                                     </span>
                                                 @elseif($apiVeh)
-                                                    <span class="vehicle-badge" style="background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8;">
+                                                    <span class="vehicle-badge" style="background:#fff5f5;border-color:#fecaca;color:#c62828;">
                                                         <i class='bx bx-globe'></i>
                                                         {{ $apiVeh['manufacturerName'] }} {{ $apiVeh['modelName'] }} ({{ $apiVeh['year'] ?? '' }})
                                                         @if (!$isView)
@@ -944,8 +1071,7 @@
 
 </div>
 
-@section('footerscript')
-    <script>
+<script>
         document.addEventListener('livewire:init', () => {
             initialize();
             Livewire.hook('morphed', () => {
@@ -962,4 +1088,3 @@
             }
         }
     </script>
-@endsection

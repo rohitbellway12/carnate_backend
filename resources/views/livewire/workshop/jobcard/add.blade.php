@@ -1,10 +1,207 @@
-<div>
+<div class="carnate-jobcard-create">
+    <style>
+        /* Job card create page — aligned with the current workshop UI. */
+        .carnate-jobcard-create {
+            --jc-bg: #f7f8fa;
+            --jc-card: #fff;
+            --jc-text: #111827;
+            --jc-muted: #64748b;
+            --jc-border: #e2e8f0;
+            --jc-red: #e53935;
+            --jc-red-soft: #fff5f5;
+            color: var(--jc-text);
+        }
+
+        .carnate-jobcard-create *, .carnate-jobcard-create *::before, .carnate-jobcard-create *::after { box-sizing: border-box; }
+        .carnate-jobcard-create .jc-page { padding: 24px 0 28px; }
+        .carnate-jobcard-create .jc-page-header,
+        .carnate-jobcard-create .jc-card {
+            background: var(--jc-card);
+            border: 1px solid var(--jc-border) !important;
+            border-radius: 16px !important;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, .035);
+            overflow: hidden;
+        }
+        .carnate-jobcard-create .jc-page-header { margin-bottom: 18px; }
+        .carnate-jobcard-create .jc-page-header .card-body { padding: 18px 22px; }
+        .carnate-jobcard-create .jc-back-link {
+            display: inline-flex; align-items: center; gap: 10px; color: var(--jc-text);
+            font-size: 18px; font-weight: 700; text-decoration: none;
+        }
+        .carnate-jobcard-create .jc-back-link:hover { color: var(--jc-red); }
+        .carnate-jobcard-create .back-arrow {
+            width: 34px; height: 34px; padding: 8px; border-radius: 9px; background: #f1f5f9; object-fit: contain;
+        }
+        .carnate-jobcard-create .breadcrumb-title { font-size: inherit; font-weight: inherit; }
+        .carnate-jobcard-create .ulprofile .input-group-text,
+        .carnate-jobcard-create .ulprofile .form-control {
+            min-height: 38px; border-color: var(--jc-border); background: #f8fafc !important; color: #475569;
+            font-size: 12px; font-weight: 600;
+        }
+        .carnate-jobcard-create .ulprofile .input-group-text { border-radius: 8px 0 0 8px; }
+        .carnate-jobcard-create .ulprofile .form-control { border-radius: 0 8px 8px 0; }
+        .carnate-jobcard-create .jc-card { height: 100%; }
+        .carnate-jobcard-create .jc-card .card-body { padding: 22px; }
+        .carnate-jobcard-create .jc-card-title { color: var(--jc-text); font-size: 16px; font-weight: 700; }
+        .carnate-jobcard-create .jc-card hr { margin: 16px 0; border-color: var(--jc-border); opacity: 1; }
+        .carnate-jobcard-create .form-label { margin-bottom: 7px; color: #334155; font-size: 12px; font-weight: 650; }
+        .carnate-jobcard-create .form-control,
+        .carnate-jobcard-create .form-select {
+            min-height: 42px; border-color: var(--jc-border); border-radius: 9px; color: var(--jc-text);
+            font-size: 13px; box-shadow: none;
+        }
+        .carnate-jobcard-create .form-control:focus,
+        .carnate-jobcard-create .form-select:focus {
+            border-color: rgba(229, 57, 53, .5); box-shadow: 0 0 0 3px rgba(229, 57, 53, .08);
+        }
+        .carnate-jobcard-create .select2-container { flex: 1; min-width: 0; }
+        .carnate-jobcard-create .select2-container .select2-selection--single {
+            height: 42px !important; border: 1px solid var(--jc-border) !important; border-radius: 9px !important;
+        }
+        .carnate-jobcard-create .select2-container .select2-selection__rendered { line-height: 40px !important; padding-left: 13px !important; font-size: 13px; }
+        .carnate-jobcard-create .select2-container .select2-selection__arrow { height: 40px !important; }
+
+        /* Select2 Dropdown Highlight - Brand Red */
+        .select2-dropdown {
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 10px !important;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, .12) !important;
+            overflow: hidden !important;
+        }
+
+        .select2-container--default .select2-results__option--highlighted[aria-selected],
+        .select2-container--default .select2-results__option--highlighted,
+        .select2-container--default .select2-results__option[aria-selected="true"],
+        .select2-container--bootstrap4 .select2-results__option--highlighted,
+        .select2-container--bootstrap4 .select2-results__option--highlighted.select2-results__option[aria-selected="true"],
+        .select2-container--bootstrap4 .select2-dropdown .select2-results__option[aria-selected="true"],
+        .select2-results__option--highlighted,
+        .select2-results__option[aria-selected="true"] {
+            background-color: var(--jc-red, #e53935) !important;
+            color: #ffffff !important;
+        }
+
+        .select2-container--default .select2-results__option,
+        .select2-container--bootstrap4 .select2-results__option {
+            padding: 9px 13px !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            color: #334155;
+            transition: background-color .15s ease, color .15s ease;
+        }
+
+        .select2-container--default.select2-container--focus .select2-selection--single,
+        .select2-container--default.select2-container--open .select2-selection--single,
+        .select2-container--bootstrap4.select2-container--focus .select2-selection--single,
+        .select2-container--bootstrap4.select2-container--open .select2-selection--single {
+            border-color: rgba(229, 57, 53, .65) !important;
+            box-shadow: 0 0 0 3px rgba(229, 57, 53, .1) !important;
+        }
+
+        .carnate-jobcard-create .jc-add-customer {
+            width: 42px; min-width: 42px; height: 42px; padding: 0; border: 1px solid var(--jc-red) !important;
+            border-radius: 9px !important; background: var(--jc-red) !important; color: #fff !important; font-size: 20px;
+        }
+        .carnate-jobcard-create .jc-add-customer:hover { background: #d93431 !important; border-color: #d93431 !important; }
+        .carnate-jobcard-create .info-table { margin: 16px 0 0; border: 1px solid var(--jc-border); border-radius: 10px; overflow: hidden; }
+        .carnate-jobcard-create .info-table td { padding: 9px 10px !important; border-color: var(--jc-border) !important; color: #475569; font-size: 12px; }
+        .carnate-jobcard-create .info-table td b { color: #334155; }
+        .carnate-jobcard-create .form-floating > label { color: var(--jc-muted); font-size: 12px; }
+        .carnate-jobcard-create .jc-history-btn { border: 1px solid #bfdbfe; border-radius: 8px; background: #eff6ff; color: #2563eb; font-weight: 650; }
+        .carnate-jobcard-create .jc-inspection-actions { gap: 8px; margin-top: 15px; }
+        .carnate-jobcard-create .jc-inspection-actions > a {
+            flex: 1; min-width: 76px; align-items: center; border: 1px solid var(--jc-border); border-radius: 10px;
+            background: #fafbfc; color: #334155; text-decoration: none; transition: border-color .2s, transform .2s;
+        }
+        .carnate-jobcard-create .jc-inspection-actions > a:hover { border-color: rgba(229, 57, 53, .4); transform: translateY(-1px); }
+        .carnate-jobcard-create .jc-inspection-actions img { width: 52px !important; height: 52px; border-radius: 9px; object-fit: cover; }
+        .carnate-jobcard-create .jc-inspection-actions p { font-size: 12px !important; font-weight: 600; }
+        .carnate-jobcard-create .list-count { top: 7px; right: 7px; display: inline-flex; align-items: center; justify-content: center; background: var(--jc-red) !important; font-size: 11px; }
+        .carnate-jobcard-create .jc-footer { margin-top: 20px; padding: 18px 0; }
+        .carnate-jobcard-create .jc-footer .form-check-label { color: #475569; font-size: 13px !important; font-weight: 600; }
+        .carnate-jobcard-create .jc-create-btn {
+            min-height: 44px; padding: 0 22px; border: 1px solid var(--jc-red) !important; border-radius: 10px !important;
+            background: var(--jc-red) !important; color: #fff !important; font-size: 13px; font-weight: 700;
+            box-shadow: 0 5px 14px rgba(229, 57, 53, .16);
+        }
+        .carnate-jobcard-create .jc-create-btn:hover { background: #d93431 !important; border-color: #d93431 !important; transform: translateY(-1px); }
+        .carnate-jobcard-create .text-danger { color: var(--jc-red) !important; }
+        /* All job-card workflows use the same modal system, including the
+           customer, inspection, photo and vehicle-detail popups. */
+        .carnate-jobcard-create .modal { z-index: 1060; overflow-y: auto; }
+        .carnate-jobcard-create .modal-dialog { margin: 1.75rem auto; }
+        .carnate-jobcard-create .modal-content {
+            overflow: visible; border: 0; border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(15, 23, 42, .18);
+        }
+        .carnate-jobcard-create .modal-header {
+            min-height: 68px; padding: 18px 22px; border-bottom: 1px solid var(--jc-border);
+            background: #fff;
+        }
+        .carnate-jobcard-create .modal-title { color: var(--jc-text); font-size: 18px; font-weight: 700; }
+        .carnate-jobcard-create .modal-header .btn { margin: 0 !important; }
+        .carnate-jobcard-create .modal-body { padding: 22px !important; background: #fff; }
+        .carnate-jobcard-create .modal-footer { padding: 15px 22px; border-top: 1px solid var(--jc-border); background: #fff; }
+        .carnate-jobcard-create .modal .btn {
+            min-height: 40px; border-radius: 9px; font-size: 13px; font-weight: 650;
+            box-shadow: none;
+        }
+        .carnate-jobcard-create .modal .btn-primary,
+        .carnate-jobcard-create .modal .btn-success,
+        .carnate-jobcard-create .modal .btn-info {
+            border-color: var(--jc-red) !important; background: var(--jc-red) !important; color: #fff !important;
+        }
+        .carnate-jobcard-create .modal .btn-primary:hover,
+        .carnate-jobcard-create .modal .btn-success:hover,
+        .carnate-jobcard-create .modal .btn-info:hover { border-color: #d93431 !important; background: #d93431 !important; }
+        .carnate-jobcard-create .modal .btn-secondary,
+        .carnate-jobcard-create .modal .btn-light {
+            border-color: var(--jc-border) !important; background: #fff !important; color: #475569 !important;
+        }
+        .carnate-jobcard-create .modal .btn-danger { border-color: #fecaca !important; background: var(--jc-red-soft) !important; color: var(--jc-red) !important; }
+        .carnate-jobcard-create .modal .card { border: 1px solid var(--jc-border); border-radius: 12px; box-shadow: none; overflow: hidden; }
+        .carnate-jobcard-create .modal .card + .card { margin-top: 16px; }
+        .carnate-jobcard-create .modal .card-header { padding: 14px 17px; border-bottom: 1px solid var(--jc-border); background: #f8fafc; }
+        .carnate-jobcard-create .modal .card-header h5 { margin: 0; color: #334155; font-size: 13px; font-weight: 700; letter-spacing: .02em; }
+        .carnate-jobcard-create .modal .card-body { padding: 18px; }
+        .carnate-jobcard-create .modal textarea.form-control { min-height: 90px; resize: vertical; }
+        .carnate-jobcard-create .modal .input-group-text { border-color: var(--jc-border); background: #f8fafc; color: #475569; font-size: 13px; }
+        .carnate-jobcard-create .modal .badge.bg-primary { background: var(--jc-red) !important; border-radius: 8px; font-size: 13px !important; font-weight: 600; }
+        .carnate-jobcard-create .modal .list-group { overflow: hidden; border: 1px solid var(--jc-border); border-radius: 9px; box-shadow: 0 8px 20px rgba(15,23,42,.1); }
+        .carnate-jobcard-create .modal .list-group-item { padding:11px 13px; border-color: var(--jc-border); color: #475569; font-size: 13px; }
+        .carnate-jobcard-create .modal .list-group-item-action:hover { background: var(--jc-red-soft); color: var(--jc-red); }
+        .carnate-jobcard-create .modal .list-group { max-height: min(300px, calc(100dvh - 330px)) !important; }
+        .carnate-jobcard-create .jc-search-title { margin: 0 0 12px; color: #334155; font-size: 15px; font-weight: 700; text-align: left !important; }
+        .carnate-jobcard-create .modal .img-thumbnail { border-color: var(--jc-border); border-radius: 10px; padding: 3px; }
+        .carnate-jobcard-create .modal #toggleDetailsBtn { border-color: var(--jc-red); background: var(--jc-red); }
+        .carnate-jobcard-create .modal .controls { gap: 8px; padding-bottom: 16px; border-bottom: 1px solid var(--jc-border); }
+        .carnate-jobcard-create .modal .controls .btn-group { border: 0 !important; border-radius: 9px !important; overflow: hidden; }
+        .carnate-jobcard-create .modal .controls .btn { min-height: 34px; border-radius: 0; }
+        .carnate-jobcard-create .modal #dentBtn { border-color: var(--jc-red) !important; background: var(--jc-red) !important; color: #fff; }
+        .carnate-jobcard-create .modal #scratchBtn { border-color: #f59e0b !important; background: #fffbeb !important; color: #b45309 !important; }
+        .carnate-jobcard-create .modal #breakBtn { border-color: #fecaca !important; background: var(--jc-red-soft) !important; color: var(--jc-red) !important; }
+        .carnate-jobcard-create .modal #eraseBtn, .carnate-jobcard-create .modal #clearBtn { border-color: var(--jc-border) !important; background: #f8fafc !important; color: #475569 !important; }
+        .carnate-jobcard-create .modal #saveBtn { border-color: var(--jc-red) !important; background: var(--jc-red) !important; color: #fff !important; }
+        @media (max-width: 767px) {
+            .carnate-jobcard-create .jc-page { padding-top: 16px; }
+            .carnate-jobcard-create .jc-page-header .card-body, .carnate-jobcard-create .jc-card .card-body { padding: 17px; }
+            .carnate-jobcard-create .jc-page-header nav { gap: 14px; align-items: flex-start !important; }
+            .carnate-jobcard-create .jc-inspection-actions > a { min-width: calc(33.333% - 8px); }
+            .carnate-jobcard-create .jc-footer .row { gap: 14px; }
+            .carnate-jobcard-create .jc-footer .col-auto { width: 100%; }
+            .carnate-jobcard-create .jc-create-btn { width: 100%; }
+            .carnate-jobcard-create .modal-dialog { margin: .75rem; }
+            .carnate-jobcard-create .modal-header, .carnate-jobcard-create .modal-body { padding: 17px !important; }
+            .carnate-jobcard-create .modal-footer { padding: 13px 17px; }
+        }
+    </style>
     <div class="modal @if ($showDentCar) show @endif" tabindex="-1"
         style="opacity: 1; background-color: #0606068c; display: @if ($showDentCar) block @else none @endif;">
         <div class="modal-dialog modal-md">
             <div class="modal-content">
                 {{-- <form wire:submit.prevent="{{ $showDentCar ? 'saveImage' : 'saveImage' }}"> --}}
-                <div class="modal-header">
+                <div class="modal-header d-flex justify-content-between align-items-center">
+                    <h5 class="modal-title">Dent Marks</h5>
                     <button type="button" class="btn-close" wire:click="closeModal" aria-label="Close"></button>
                 </div>
 
@@ -327,6 +524,7 @@
                             </div>
                             <div class="col-12 position-relative">
                                 <!-- Search Input -->
+                                <h3 class="jc-search-title">Search Accessories</h3>
                                 <input type="text" class="form-control" placeholder="Search Accessory..."
                                     autocomplete="off" wire:model.live="search_accessory" id="accessoryVoiceInput">
 
@@ -451,7 +649,7 @@
                             <!--</div>-->
                             <div class="col-12 position-relative">
                                 <!-- Search Input -->
-                                <h3 class="text-center"><b>Search Work Note</b></h3>
+                                <h3 class="jc-search-title">Search Work Note</h3>
                                 <input type="text" class="form-control" placeholder="Search Work Note..."
                                     autocomplete="off" wire:model.live="search_work_notes" id="workNoteInput">
 
@@ -499,15 +697,15 @@
     @include('livewire.workshop.jobcard.vehical_modal')
 
 
-    <div class="py-3">
-        <div class="card h-100">
+    <div class="py-3 jc-page">
+        <div class="card h-100 jc-page-header">
             <div class="card-body">
                 <div class="page-title ">
                     <div class="nav_menu">
                         <nav class="d-flex align-items-center justify-content-between flex-wrap">
                             <!-- Navigation Toggle and Back Link -->
                             <div class="nav toggle">
-                                <a href="{{ route('workshop.jobcard') }}" class="d-flex align-items-center">
+                                <a href="{{ route('workshop.jobcard') }}" class="jc-back-link">
                                     <img src="{{ asset('supplier/Back Arrow.png') }}" class="back-arrow me-2">
                                     <div class="breadcrumb-title pe-2 text-dark" style="border: none;">Add Job-Card
                                     </div>
@@ -537,10 +735,10 @@
         @csrf
         <div class="row g-3">
             <div class="col-lg-6">
-                <div class="card h-100">
+                <div class="card h-100 jc-card">
                     <div class="card-body">
                         <div class="text-center">
-                            <h6 class="fw-bold m-0">Search or Create New User</h6>
+                            <h6 class="fw-bold m-0 jc-card-title">Search or Create New User</h6>
                         </div>
                         <hr>
                         <label for="customer-dropdown" class="form-label">Customer Name Or Vehicle</label>
@@ -554,7 +752,7 @@
                                 @endforeach
                             </select>
                             <button type="button"
-                                class="btn btn-outline-secondary text-light bg-primary fl margin-left-0"
+                                class="btn btn-outline-secondary text-light bg-primary fl margin-left-0 jc-add-customer"
                                 wire:click="addCustomer">
                                 {{ trans('+') }}
                             </button>
@@ -646,11 +844,11 @@
                 </div>
             </div>
             <div class="col-lg-6">
-                <div class="card h-100">
+                <div class="card h-100 jc-card">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
-                            <h6 class="fw-bold m-0">Job-Card Details</h6>
-                            <button type="button" class="btn btn-sm btn-info py-0"><small>Last
+                            <h6 class="fw-bold m-0 jc-card-title">Job-Card Details</h6>
+                            <button type="button" class="btn btn-sm btn-info py-0 jc-history-btn"><small>Last
                                     History</small></button>
                         </div>
                         <hr>
@@ -693,7 +891,7 @@
                             </div>
 
                         </div>
-                        <div class="d-flex justify-content-between flex-wrap">
+                        <div class="d-flex justify-content-between flex-wrap jc-inspection-actions">
                             <a href="javascript:void(0)" wire:click="addVoice"
                                 class="text-center p-2 position-relative d-flex flex-column justify-content-between">
                                 <img src="{{ asset('assets/jobcard_img/customer_voice2.jpg') }}" alt="image"
@@ -751,7 +949,7 @@
 
 
     </div>
-    <div class="footer align-items-center">
+    <div class="footer align-items-center jc-footer">
         <div class="row">
             <!-- SMS Alert Section -->
             <div class="col-auto">
@@ -765,7 +963,7 @@
             <!-- Create Job-Card Button Section -->
             <div class="col-auto ms-auto">
                 <button wire:click="createJobCard" wire:loading.attr="disabled"
-                    class="btn btn-primary rounded border-0 text-white">Create Job
+                    class="btn btn-primary rounded border-0 text-white jc-create-btn">Create Job
                     Card</button>
             </div>
         </div>

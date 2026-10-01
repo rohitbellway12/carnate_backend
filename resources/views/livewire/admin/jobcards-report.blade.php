@@ -1,19 +1,715 @@
-<div class="container-fluid mt-3">
-    <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white py-3 d-flex flex-wrap align-items-center justify-content-between">
-            <h5 class="mb-0"><i class="fas fa-tasks text-primary me-2"></i> Job Cards Report</h5>
+<div class="container-fluid mt-3 carnate-jobcards-report">
+    <style>
+        .carnate-jobcards-report {
+            --carnate-red: #e53935;
+            --carnate-red-soft: #fff5f5;
+            --carnate-text: #111827;
+            --carnate-muted: #64748b;
+            --carnate-border: #e2e8f0;
+            --carnate-bg: #f7f8fa;
+            --carnate-success: #16a34a;
+            --carnate-success-soft: #f0fdf4;
+            --carnate-warning: #d97706;
+            --carnate-warning-soft: #fffbeb;
+            --carnate-blue: #2563eb;
+            --carnate-blue-soft: #eff6ff;
+        }
 
-            <div class="d-flex flex-wrap align-items-end justify-content-end gap-3">
-                <!-- 🔍 Search -->
-                <div>
-                    <label class="form-label mb-1">Search</label>
-                    <input type="text" class="form-control form-control-sm" placeholder="Search number, customer..." wire:model.live="search" style="min-width:180px;">
+        .carnate-jobcards-report .report-card {
+            background: #fff;
+            border: 1px solid var(--carnate-border);
+            border-radius: 16px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, .04);
+        }
+
+        .carnate-jobcards-report .report-header {
+            padding: 20px 22px;
+            border-bottom: 1px solid var(--carnate-border);
+        }
+
+        .carnate-jobcards-report .report-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--carnate-text);
+        }
+
+        .carnate-jobcards-report .report-title-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--carnate-red-soft);
+            color: var(--carnate-red);
+            font-size: 18px;
+        }
+
+        .carnate-jobcards-report .report-title h5 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -.25px;
+        }
+
+        .carnate-jobcards-report .report-title p {
+            margin: 3px 0 0;
+            color: var(--carnate-muted);
+            font-size: 13px;
+        }
+
+        .carnate-jobcards-report .filter-area {
+            padding: 18px 22px;
+            background: #fbfcfd;
+            border-bottom: 1px solid var(--carnate-border);
+        }
+
+        .carnate-jobcards-report .filter-label {
+            display: block;
+            margin-bottom: 6px;
+            color: #475569;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .carnate-jobcards-report .form-control,
+        .carnate-jobcards-report .form-select {
+            min-height: 40px;
+            border: 1px solid var(--carnate-border);
+            border-radius: 9px;
+            color: var(--carnate-text);
+            background-color: #fff;
+            font-size: 13px;
+            box-shadow: none;
+        }
+
+        .carnate-jobcards-report .form-control:focus,
+        .carnate-jobcards-report .form-select:focus {
+            border-color: rgba(229, 57, 53, .45);
+            box-shadow: 0 0 0 3px rgba(229, 57, 53, .08);
+        }
+
+        .carnate-jobcards-report .search-box {
+            position: relative;
+        }
+
+        .carnate-jobcards-report .search-box i {
+            position: absolute;
+            left: 13px;
+            top: 13px;
+            color: #94a3b8;
+            font-size: 14px;
+            z-index: 2;
+        }
+
+        .carnate-jobcards-report .search-box input {
+            padding-left: 36px;
+        }
+
+        .carnate-jobcards-report .filter-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .carnate-jobcards-report .btn-export {
+            min-height: 40px;
+            border-radius: 9px;
+            padding: 0 13px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid var(--carnate-border);
+            background: #fff;
+            color: #475569;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            transition: all .2s ease;
+        }
+
+        .carnate-jobcards-report .btn-export:hover {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+            color: var(--carnate-text);
+        }
+
+        .carnate-jobcards-report .btn-export.pdf:hover {
+            border-color: rgba(229, 57, 53, .25);
+            background: var(--carnate-red-soft);
+            color: var(--carnate-red);
+        }
+
+        .carnate-jobcards-report .btn-export.excel:hover {
+            border-color: rgba(22, 163, 74, .25);
+            background: var(--carnate-success-soft);
+            color: var(--carnate-success);
+        }
+
+        .carnate-jobcards-report .stats-area {
+            padding: 20px 22px;
+        }
+
+        .carnate-jobcards-report .stat-card {
+            height: 100%;
+            background: #fff;
+            border: 1px solid var(--carnate-border);
+            border-radius: 14px;
+            padding: 17px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .carnate-jobcards-report .stat-card::after {
+            content: "";
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            right: -28px;
+            bottom: -32px;
+            background: rgba(148, 163, 184, .06);
+        }
+
+        .carnate-jobcards-report .stat-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .carnate-jobcards-report .stat-label {
+            margin: 0 0 7px;
+            color: var(--carnate-muted);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .carnate-jobcards-report .stat-value {
+            color: var(--carnate-text);
+            font-size: 24px;
+            font-weight: 750;
+            line-height: 1.1;
+        }
+
+        .carnate-jobcards-report .stat-icon {
+            width: 42px;
+            height: 42px;
+            flex: 0 0 42px;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .carnate-jobcards-report .stat-meta {
+            margin-top: 9px;
+            color: var(--carnate-muted);
+            font-size: 11px;
+        }
+
+        .carnate-jobcards-report .stat-meta strong {
+            color: #334155;
+            font-weight: 700;
+        }
+
+        .carnate-jobcards-report .stat-card.red .stat-icon {
+            background: var(--carnate-red-soft);
+            color: var(--carnate-red);
+        }
+
+        .carnate-jobcards-report .stat-card.green .stat-icon {
+            background: var(--carnate-success-soft);
+            color: var(--carnate-success);
+        }
+
+        .carnate-jobcards-report .stat-card.blue .stat-icon {
+            background: var(--carnate-blue-soft);
+            color: var(--carnate-blue);
+        }
+
+        .carnate-jobcards-report .stat-card.gold .stat-icon {
+            background: var(--carnate-warning-soft);
+            color: var(--carnate-warning);
+        }
+
+        .carnate-jobcards-report .table-wrap {
+            border-top: 1px solid var(--carnate-border);
+        }
+
+        .carnate-jobcards-report .table-responsive {
+            overflow-x: auto;
+        }
+
+        .carnate-jobcards-report table {
+            min-width: 1250px;
+            margin-bottom: 0;
+        }
+
+        .carnate-jobcards-report .table thead th {
+            padding: 13px 15px;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--carnate-border);
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .035em;
+            white-space: nowrap;
+        }
+
+        .carnate-jobcards-report .table tbody td {
+            padding: 14px 15px;
+            border-bottom: 1px solid #edf1f5;
+            color: #334155;
+            font-size: 13px;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        .carnate-jobcards-report .table tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .carnate-jobcards-report .table tbody tr {
+            transition: background .15s ease;
+        }
+
+        .carnate-jobcards-report .table tbody tr:hover {
+            background: #fafafa;
+        }
+
+        .carnate-jobcards-report .job-number {
+            color: var(--carnate-text);
+            font-weight: 700;
+        }
+
+        .carnate-jobcards-report .customer-name {
+            color: var(--carnate-text);
+            font-weight: 600;
+        }
+
+        .carnate-jobcards-report .vehicle-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 8px;
+            border-radius: 7px;
+            background: #f1f5f9;
+            color: #334155;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .carnate-jobcards-report .amount {
+            color: var(--carnate-text);
+            font-weight: 700;
+        }
+
+        .carnate-jobcards-report .paid {
+            color: var(--carnate-success);
+            font-weight: 600;
+        }
+
+        .carnate-jobcards-report .balance {
+            color: var(--carnate-red);
+            font-weight: 700;
+        }
+
+        .carnate-jobcards-report .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 9px;
+            border-radius: 7px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .carnate-jobcards-report .status-badge::before {
+            content: "";
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .carnate-jobcards-report .status-open {
+            background: var(--carnate-red-soft);
+            color: var(--carnate-red);
+        }
+
+        .carnate-jobcards-report .status-confirmed {
+            background: var(--carnate-blue-soft);
+            color: var(--carnate-blue);
+        }
+
+        .carnate-jobcards-report .status-completed {
+            background: var(--carnate-success-soft);
+            color: var(--carnate-success);
+        }
+
+        .carnate-jobcards-report .status-closed {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .carnate-jobcards-report .view-btn {
+            width: 34px;
+            height: 34px;
+            border: 1px solid var(--carnate-border);
+            border-radius: 9px;
+            background: #fff;
+            color: #64748b;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .2s ease;
+        }
+
+        .carnate-jobcards-report .view-btn:hover {
+            color: var(--carnate-red);
+            background: var(--carnate-red-soft);
+            border-color: rgba(229, 57, 53, .2);
+        }
+
+        .carnate-jobcards-report .pagination-area {
+            padding: 15px 20px;
+            border-top: 1px solid var(--carnate-border);
+        }
+
+        .carnate-jobcards-report .pagination-area small {
+            color: var(--carnate-muted);
+            font-size: 12px;
+        }
+
+        .carnate-jobcards-report .empty-state {
+            padding: 60px 20px !important;
+            text-align: center;
+            color: var(--carnate-muted);
+        }
+
+        .carnate-jobcards-report .empty-icon {
+            width: 52px;
+            height: 52px;
+            margin: 0 auto 12px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f5f9;
+            color: #94a3b8;
+            font-size: 20px;
+        }
+
+        /* Modal */
+        .carnate-jobcards-report .jobcard-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 1050;
+            background: rgba(15, 23, 42, .48);
+            backdrop-filter: blur(3px);
+            overflow-y: auto;
+        }
+
+        .carnate-jobcards-report .jobcard-modal {
+            width: calc(100% - 30px);
+            max-width: 1180px;
+            margin: 35px auto;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 25px 70px rgba(15, 23, 42, .20);
+            overflow: hidden;
+        }
+
+        .carnate-jobcards-report .modal-header-modern {
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--carnate-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            background: #fff;
+        }
+
+        .carnate-jobcards-report .modal-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .carnate-jobcards-report .modal-title-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 11px;
+            background: var(--carnate-red-soft);
+            color: var(--carnate-red);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .carnate-jobcards-report .modal-title {
+            margin: 0;
+            color: var(--carnate-text);
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .carnate-jobcards-report .modal-subtitle {
+            margin: 3px 0 0;
+            color: var(--carnate-muted);
+            font-size: 12px;
+        }
+
+        .carnate-jobcards-report .modal-close {
+            width: 34px;
+            height: 34px;
+            border: 1px solid var(--carnate-border);
+            border-radius: 9px;
+            background: #fff;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .carnate-jobcards-report .modal-close:hover {
+            background: #f8fafc;
+            color: var(--carnate-text);
+        }
+
+        .carnate-jobcards-report .modal-body-modern {
+            padding: 22px;
+            background: #f8fafc;
+        }
+
+        .carnate-jobcards-report .detail-card {
+            height: 100%;
+            background: #fff;
+            border: 1px solid var(--carnate-border);
+            border-radius: 13px;
+            padding: 17px;
+        }
+
+        .carnate-jobcards-report .detail-heading {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding-bottom: 12px;
+            margin-bottom: 14px;
+            border-bottom: 1px solid var(--carnate-border);
+            color: var(--carnate-text);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .carnate-jobcards-report .detail-heading i {
+            color: var(--carnate-red);
+        }
+
+        .carnate-jobcards-report .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 11px;
+            font-size: 12px;
+        }
+
+        .carnate-jobcards-report .detail-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .carnate-jobcards-report .detail-label {
+            color: var(--carnate-muted);
+        }
+
+        .carnate-jobcards-report .detail-value {
+            color: var(--carnate-text);
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .carnate-jobcards-report .detail-value.left {
+            text-align: left;
+        }
+
+        .carnate-jobcards-report .detail-note {
+            color: var(--carnate-muted);
+            line-height: 1.6;
+            font-size: 12px;
+        }
+
+        .carnate-jobcards-report .billing-total {
+            padding-top: 11px;
+            margin-top: 11px;
+            border-top: 1px solid var(--carnate-border);
+        }
+
+        .carnate-jobcards-report .billing-final {
+            color: var(--carnate-text);
+            font-size: 16px;
+            font-weight: 750;
+        }
+
+        .carnate-jobcards-report .billing-paid {
+            color: var(--carnate-success);
+            font-weight: 700;
+        }
+
+        .carnate-jobcards-report .billing-balance {
+            color: var(--carnate-red);
+            font-weight: 700;
+        }
+
+        .carnate-jobcards-report .detail-table {
+            min-width: 650px;
+        }
+
+        .carnate-jobcards-report .detail-table th {
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            font-weight: 700;
+            padding: 10px;
+            border-bottom: 1px solid var(--carnate-border);
+        }
+
+        .carnate-jobcards-report .detail-table td {
+            padding: 11px 10px;
+            color: #334155;
+            font-size: 12px;
+            border-bottom: 1px solid #edf1f5;
+        }
+
+        .carnate-jobcards-report .detail-table tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .carnate-jobcards-report .modal-footer-modern {
+            padding: 15px 22px;
+            border-top: 1px solid var(--carnate-border);
+            display: flex;
+            justify-content: flex-end;
+            background: #fff;
+        }
+
+        .carnate-jobcards-report .close-modern {
+            min-height: 38px;
+            padding: 0 17px;
+            border: 1px solid var(--carnate-border);
+            border-radius: 9px;
+            background: #fff;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .carnate-jobcards-report .close-modern:hover {
+            background: #f8fafc;
+            color: var(--carnate-text);
+        }
+
+        @media (max-width: 1199px) {
+            .carnate-jobcards-report .report-header {
+                align-items: flex-start !important;
+            }
+
+            .carnate-jobcards-report .filter-area {
+                padding-top: 15px;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .carnate-jobcards-report {
+                margin-top: 10px !important;
+            }
+
+            .carnate-jobcards-report .report-header {
+                padding: 16px;
+            }
+
+            .carnate-jobcards-report .report-title h5 {
+                font-size: 17px;
+            }
+
+            .carnate-jobcards-report .filter-area,
+            .carnate-jobcards-report .stats-area {
+                padding: 15px;
+            }
+
+            .carnate-jobcards-report .filter-actions {
+                width: 100%;
+            }
+
+            .carnate-jobcards-report .btn-export {
+                flex: 1;
+                justify-content: center;
+            }
+
+            .carnate-jobcards-report .pagination-area {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 10px;
+            }
+
+            .carnate-jobcards-report .jobcard-modal {
+                width: calc(100% - 16px);
+                margin: 15px auto;
+            }
+
+            .carnate-jobcards-report .modal-body-modern {
+                padding: 14px;
+            }
+
+            .carnate-jobcards-report .modal-header-modern {
+                padding: 15px;
+            }
+        }
+    </style>
+
+    {{-- Header --}}
+    <div class="report-card">
+        <div class="report-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div class="report-title">
+                <div class="report-title-icon">
+                    <i class="fas fa-tasks"></i>
                 </div>
 
-                <!-- Status Filter -->
                 <div>
-                    <label class="form-label mb-1">Status</label>
-                    <select class="form-select form-select-sm" wire:model.live="statusFilter" style="min-width:130px;">
+                    <h5>Job Cards Report</h5>
+                    <p>Monitor job cards, billing, payments and service status</p>
+                </div>
+            </div>
+        </div>
+
+        {{-- Filters --}}
+        <div class="filter-area">
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-lg-3">
+                    <label class="filter-label">Search</label>
+                    <div class="search-box">
+                        <i class="bx bx-search"></i>
+                        <input
+                            type="text"
+                            class="form-control"
+                            placeholder="Search number, customer..."
+                            wire:model.live="search"
+                        >
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-4 col-lg-2">
+                    <label class="filter-label">Status</label>
+                    <select class="form-select" wire:model.live="statusFilter">
                         <option value="">All Statuses</option>
                         <option value="0">Open</option>
                         <option value="1">Confirmed</option>
@@ -22,10 +718,9 @@
                     </select>
                 </div>
 
-                <!-- 🗓️ Filter Type -->
-                <div>
-                    <label class="form-label mb-1">Date Range</label>
-                    <select class="form-select form-select-sm" wire:model.live="filterType" style="min-width:130px;">
+                <div class="col-6 col-md-4 col-lg-2">
+                    <label class="filter-label">Date Range</label>
+                    <select class="form-select" wire:model.live="filterType">
                         <option value="">All Time</option>
                         <option value="daily">Today</option>
                         <option value="weekly">This Week</option>
@@ -33,319 +728,672 @@
                     </select>
                 </div>
 
-                <!-- 📅 From Date -->
-                <div>
-                    <label class="form-label mb-1">From</label>
-                    <input type="date" class="form-control form-control-sm" wire:model.live="fromDate">
+                <div class="col-6 col-md-4 col-lg-1">
+                    <label class="filter-label">From</label>
+                    <input
+                        type="date"
+                        class="form-control"
+                        wire:model.live="fromDate"
+                    >
                 </div>
 
-                <!-- 📅 To Date -->
-                <div>
-                    <label class="form-label mb-1">To</label>
-                    <input type="date" class="form-control form-control-sm" wire:model.live="toDate">
+                <div class="col-6 col-md-4 col-lg-1">
+                    <label class="filter-label">To</label>
+                    <input
+                        type="date"
+                        class="form-control"
+                        wire:model.live="toDate"
+                    >
                 </div>
 
-                <!-- 🧾 Export PDF & Excel -->
-                <div class="d-flex gap-2">
-                    <div>
-                        <label class="form-label mb-1 text-white">.</label>
-                        <button class="btn btn-sm btn-secondary d-flex align-items-center gap-1" wire:click="downloadPDF">
-                            <i class="bx bxs-file-pdf"></i> Export PDF
+                <div class="col-12 col-lg-3">
+                    <label class="filter-label">Export</label>
+
+                    <div class="filter-actions">
+                        <button
+                            type="button"
+                            class="btn-export pdf"
+                            wire:click="downloadPDF"
+                        >
+                            <i class="bx bxs-file-pdf"></i>
+                            <span>Export PDF</span>
                         </button>
-                    </div>
-                    <div>
-                        <label class="form-label mb-1 text-white">.</label>
-                        <button class="btn btn-sm btn-success text-white d-flex align-items-center gap-1" wire:click="downloadExcel">
-                            <i class="bx bxs-spreadsheet"></i> Export Excel
+
+                        <button
+                            type="button"
+                            class="btn-export excel"
+                            wire:click="downloadExcel"
+                        >
+                            <i class="bx bxs-spreadsheet"></i>
+                            <span>Export Excel</span>
                         </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="px-3 pt-3 w-100">
+        {{-- Statistics --}}
+        <div class="stats-area">
             <div class="row g-3">
-                <!-- Total Job Cards - Light Blue -->
-                <div class="col-6 col-md-3">
-                    <div class="card rounded-4 shadow-sm h-100 border-0" style="background:#dbeafe;">
-                        <div class="card-body py-3 d-flex justify-content-between align-items-center">
+
+                {{-- Total --}}
+                <div class="col-6 col-xl-3">
+                    <div class="stat-card blue">
+                        <div class="stat-top">
                             <div>
-                                <p class="mb-0 small fw-semibold" style="color:#1d4ed8;">Total Job Cards</p>
-                                <span class="fw-bold fs-4" style="color:#1e3a8a;">{{ $totals['total'] ?? 0 }}</span>
+                                <p class="stat-label">Total Job Cards</p>
+                                <div class="stat-value">
+                                    {{ $totals['total'] ?? 0 }}
+                                </div>
+                                <div class="stat-meta">
+                                    All matching job cards
+                                </div>
                             </div>
-                            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:40px;height:40px;background:#bfdbfe;">
-                                <i class="fas fa-file-invoice" style="color:#1d4ed8;"></i>
+
+                            <div class="stat-icon">
+                                <i class="fas fa-file-invoice"></i>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- Open & Confirmed - Light Red -->
-                <div class="col-6 col-md-3">
-                    <div class="card rounded-4 shadow-sm h-100 border-0" style="background:#fee2e2;">
-                        <div class="card-body py-3 d-flex justify-content-between align-items-center">
+
+                {{-- Open / Confirmed --}}
+                <div class="col-6 col-xl-3">
+                    <div class="stat-card red">
+                        <div class="stat-top">
                             <div>
-                                <p class="mb-0 small fw-semibold" style="color:#dc2626;">Open & Confirmed</p>
-                                <span class="fw-bold fs-5" style="color:#7f1d1d;">Open: {{ $totals['open'] ?? 0 }}</span>
-                                <span class="d-block small" style="color:#b91c1c;">Confirmed: {{ $totals['confirmed'] ?? 0 }}</span>
+                                <p class="stat-label">Open & Confirmed</p>
+                                <div class="stat-value">
+                                    {{ ($totals['open'] ?? 0) + ($totals['confirmed'] ?? 0) }}
+                                </div>
+
+                                <div class="stat-meta">
+                                    Open:
+                                    <strong>{{ $totals['open'] ?? 0 }}</strong>
+                                    &nbsp;·&nbsp;
+                                    Confirmed:
+                                    <strong>{{ $totals['confirmed'] ?? 0 }}</strong>
+                                </div>
                             </div>
-                            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:40px;height:40px;background:#fecaca;">
-                                <i class="fas fa-clock" style="color:#dc2626;"></i>
+
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- Completed & Closed - Light Green -->
-                <div class="col-6 col-md-3">
-                    <div class="card rounded-4 shadow-sm h-100 border-0" style="background:#dcfce7;">
-                        <div class="card-body py-3 d-flex justify-content-between align-items-center">
+
+                {{-- Completed / Closed --}}
+                <div class="col-6 col-xl-3">
+                    <div class="stat-card green">
+                        <div class="stat-top">
                             <div>
-                                <p class="mb-0 small fw-semibold" style="color:#15803d;">Completed & Closed</p>
-                                <span class="fw-bold fs-5" style="color:#14532d;">Done: {{ $totals['completed'] ?? 0 }}</span>
-                                <span class="d-block small" style="color:#166534;">Closed: {{ $totals['closed'] ?? 0 }}</span>
+                                <p class="stat-label">Completed & Closed</p>
+                                <div class="stat-value">
+                                    {{ ($totals['completed'] ?? 0) + ($totals['closed'] ?? 0) }}
+                                </div>
+
+                                <div class="stat-meta">
+                                    Completed:
+                                    <strong>{{ $totals['completed'] ?? 0 }}</strong>
+                                    &nbsp;·&nbsp;
+                                    Closed:
+                                    <strong>{{ $totals['closed'] ?? 0 }}</strong>
+                                </div>
                             </div>
-                            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:40px;height:40px;background:#bbf7d0;">
-                                <i class="fas fa-check-double" style="color:#15803d;"></i>
+
+                            <div class="stat-icon">
+                                <i class="fas fa-check-double"></i>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- Total Value - Light Purple -->
-                <div class="col-6 col-md-3">
-                    <div class="card rounded-4 shadow-sm h-100 border-0" style="background:#ede9fe;">
-                        <div class="card-body py-3 d-flex justify-content-between align-items-center">
+
+                {{-- Billing --}}
+                <div class="col-6 col-xl-3">
+                    <div class="stat-card gold">
+                        <div class="stat-top">
                             <div>
-                                <p class="mb-0 small fw-semibold" style="color:#7c3aed;">Total Value / Balance</p>
-                                <span class="fw-bold fs-5" style="color:#4c1d95;">₹{{ number_format($totals['total_amount'] ?? 0, 2) }}</span>
-                                <span class="d-block small" style="color:#6d28d9;">Bal: ₹{{ number_format($totals['total_balance'] ?? 0, 2) }}</span>
+                                <p class="stat-label">Total Value / Balance</p>
+                                <div class="stat-value">
+                                    ₹{{ number_format($totals['total_amount'] ?? 0, 2) }}
+                                </div>
+
+                                <div class="stat-meta">
+                                    Balance:
+                                    <strong>
+                                        ₹{{ number_format($totals['total_balance'] ?? 0, 2) }}
+                                    </strong>
+                                </div>
                             </div>
-                            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:40px;height:40px;background:#ddd6fe;">
-                                <i class="fas fa-wallet" style="color:#7c3aed;"></i>
+
+                            <div class="stat-icon">
+                                <i class="fas fa-wallet"></i>
                             </div>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
 
-        <div class="card-body p-0 mt-3">
+        {{-- Table --}}
+        <div class="table-wrap">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
+                <table class="table align-middle">
+                    <thead>
                         <tr>
                             <th>#</th>
-                            <th>Job Card #</th>
-                            <th>Customer Name</th>
+                            <th>Job Card</th>
+                            <th>Customer</th>
                             <th>Vehicle No</th>
                             <th>Vehicle</th>
                             <th>Workshop</th>
                             <th>Date</th>
                             <th class="text-end">Final Bill</th>
-                            <th class="text-end">Paid (Adv)</th>
+                            <th class="text-end">Paid</th>
                             <th class="text-end">Balance</th>
                             <th>Status</th>
                             <th class="text-center">Action</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         @forelse($jobcards as $j)
                             <tr>
-                                <td>{{ $loop->iteration + ($jobcards->currentPage()-1)*$jobcards->perPage() }}</td>
-                                <td class="fw-bold">{{ $j->jobcard_number }}</td>
-                                <td>{{ $j->customer_name ?? 'N/A' }}</td>
-                                <td><span class="badge bg-secondary text-white">{{ $j->vehical_number ?? 'N/A' }}</span></td>
-                                <td>{{ $j->vehical ?? 'N/A' }}</td>
-                                <td>{{ $j->workshop->company_name ?? ($j->workshop ? $j->workshop->name.' '.$j->workshop->lastname : 'N/A') }}</td>
-                                <td>{{ $j->entry_date ? \Carbon\Carbon::parse($j->entry_date)->format('d M Y') : 'N/A' }}</td>
-                                <td class="text-end fw-semibold">₹{{ number_format((float)($j->final_amount ?? $j->amount ?? 0), 2) }}</td>
-                                <td class="text-end text-success">₹{{ number_format((float)($j->advance ?? 0), 2) }}</td>
-                                <td class="text-end text-danger fw-semibold">₹{{ number_format((float)($j->balance_amount ?? 0), 2) }}</td>
+                                <td class="text-muted">
+                                    {{ $loop->iteration + ($jobcards->currentPage() - 1) * $jobcards->perPage() }}
+                                </td>
+
+                                <td>
+                                    <span class="job-number">
+                                        {{ $j->jobcard_number }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="customer-name">
+                                        {{ $j->customer_name ?? 'N/A' }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="vehicle-badge">
+                                        <i class="bx bx-car"></i>
+                                        {{ $j->vehical_number ?? 'N/A' }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    {{ $j->vehical ?? 'N/A' }}
+                                </td>
+
+                                <td>
+                                    {{ $j->workshop->company_name ??
+                                        ($j->workshop
+                                            ? $j->workshop->name . ' ' . $j->workshop->lastname
+                                            : 'N/A') }}
+                                </td>
+
+                                <td>
+                                    {{ $j->entry_date
+                                        ? \Carbon\Carbon::parse($j->entry_date)->format('d M Y')
+                                        : 'N/A' }}
+                                </td>
+
+                                <td class="text-end amount">
+                                    ₹{{ number_format((float)($j->final_amount ?? $j->amount ?? 0), 2) }}
+                                </td>
+
+                                <td class="text-end paid">
+                                    ₹{{ number_format((float)($j->advance ?? 0), 2) }}
+                                </td>
+
+                                <td class="text-end balance">
+                                    ₹{{ number_format((float)($j->balance_amount ?? 0), 2) }}
+                                </td>
+
                                 <td>
                                     @switch($j->status)
                                         @case(1)
-                                            <span class="badge bg-primary text-white px-2 py-1">Confirmed</span>
+                                            <span class="status-badge status-confirmed">
+                                                Confirmed
+                                            </span>
                                             @break
+
                                         @case(2)
-                                            <span class="badge bg-success text-white px-2 py-1">Completed</span>
+                                            <span class="status-badge status-completed">
+                                                Completed
+                                            </span>
                                             @break
+
                                         @case(3)
-                                            <span class="badge bg-info text-dark px-2 py-1">Closed</span>
+                                            <span class="status-badge status-closed">
+                                                Closed
+                                            </span>
                                             @break
+
                                         @default
-                                            <span class="badge bg-danger text-white px-2 py-1">Open</span>
+                                            <span class="status-badge status-open">
+                                                Open
+                                            </span>
                                     @endswitch
                                 </td>
+
                                 <td class="text-center">
-                                    <button class="btn btn-sm btn-link p-0 text-primary" wire:click="viewJobCard({{ $j->id }})" title="View Details">
-                                        <i class="bx bx-show fs-4"></i>
+                                    <button
+                                        type="button"
+                                        class="view-btn"
+                                        wire:click="viewJobCard({{ $j->id }})"
+                                        title="View Details"
+                                    >
+                                        <i class="bx bx-show"></i>
                                     </button>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="12" class="text-center py-4 text-muted">No Job Cards found matching filters.</td>
+                                <td colspan="12" class="empty-state">
+                                    <div class="empty-icon">
+                                        <i class="bx bx-file"></i>
+                                    </div>
+                                    <div class="fw-semibold text-dark mb-1">
+                                        No Job Cards Found
+                                    </div>
+                                    <div>
+                                        No job cards match the selected filters.
+                                    </div>
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-            <div class="px-3 py-3 d-flex justify-content-between align-items-center">
-                <small class="text-muted">Showing {{ $jobcards->firstItem() ?? 0 }}–{{ $jobcards->lastItem() ?? 0 }} of {{ $jobcards->total() }}</small>
+
+            {{-- Pagination --}}
+            <div class="pagination-area d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <small>
+                    Showing {{ $jobcards->firstItem() ?? 0 }}–{{ $jobcards->lastItem() ?? 0 }}
+                    of {{ $jobcards->total() }}
+                </small>
+
                 {!! $jobcards->links() !!}
             </div>
         </div>
     </div>
 
-    <!-- Details Modal -->
-    <div class="modal fade @if($detail) show d-block @endif" tabindex="-1" style="@if($detail) display:block; background:rgba(0,0,0,.45); @endif">
-        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header bg-light">
-                    <h5 class="modal-title fw-bold"><i class="fas fa-file-invoice me-2 text-primary"></i> Job Card Details: {{ $detail->jobcard_number ?? '' }}</h5>
-                    <button type="button" class="btn-close" wire:click="$set('viewJobCardId', null)"></button>
-                </div>
-                <div class="modal-body p-4">
-                    @if($detail)
-                        <div class="row g-4">
-                            <!-- Column 1: General Info -->
-                            <div class="col-12 col-md-4">
-                                <div class="border rounded p-3 bg-light bg-opacity-50 h-100">
-                                    <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="fas fa-info-circle text-primary me-2"></i> General Info</h6>
-                                    <div class="mb-2"><strong>Job Card #:</strong> {{ $detail->jobcard_number }}</div>
-                                    <div class="mb-2"><strong>Date Created:</strong> {{ $detail->entry_date ? \Carbon\Carbon::parse($detail->entry_date)->format('d M Y, h:i A') : 'N/A' }}</div>
-                                    <div class="mb-2"><strong>Workshop Name:</strong> {{ $detail->workshop->company_name ?? ($detail->workshop ? $detail->workshop->name.' '.$detail->workshop->lastname : 'N/A') }}</div>
-                                    <div class="mb-2">
-                                        <strong>Status:</strong>
-                                        @switch($detail->status)
-                                            @case(1)
-                                                <span class="badge bg-primary">Confirmed</span>
-                                                @break
-                                            @case(2)
-                                                <span class="badge bg-success">Completed</span>
-                                                @break
-                                            @case(3)
-                                                <span class="badge bg-info text-dark">Closed</span>
-                                                @break
-                                            @default
-                                                <span class="badge bg-danger">Open</span>
-                                        @endswitch
-                                    </div>
-                                    <div class="mb-0 text-muted small"><strong>Notes:</strong> {{ $detail->notes ?? 'No special notes.' }}</div>
-                                </div>
-                            </div>
+    {{-- Details Modal --}}
+    @if($detail)
+        <div class="jobcard-modal-backdrop">
+            <div class="jobcard-modal">
 
-                            <!-- Column 2: Customer & Vehicle Info -->
-                            <div class="col-12 col-md-4">
-                                <div class="border rounded p-3 bg-light bg-opacity-50 h-100">
-                                    <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="fas fa-car text-success me-2"></i> Customer & Vehicle</h6>
-                                    <div class="mb-2"><strong>Customer Name:</strong> {{ $detail->customer_name ?? ($detail->customer ? $detail->customer->name.' '.$detail->customer->lastname : 'N/A') }}</div>
-                                    <div class="mb-2"><strong>Mobile:</strong> {{ $detail->customer->mobile_no ?? 'N/A' }}</div>
-                                    <div class="mb-2"><strong>Vehicle Model:</strong> {{ $detail->vehical ?? 'N/A' }}</div>
-                                    <div class="mb-2"><strong>Plate Number:</strong> <span class="badge bg-dark">{{ $detail->vehical_number ?? 'N/A' }}</span></div>
-                                    <div class="mb-2"><strong>KM Running:</strong> {{ number_format((float)($detail->km_runing ?? 0)) }} km</div>
-                                    <div class="mb-0"><strong>Fuel Level:</strong> {{ $detail->fual_level ?? 'N/A' }}</div>
-                                </div>
-                            </div>
+                {{-- Modal Header --}}
+                <div class="modal-header-modern">
+                    <div class="modal-title-wrap">
+                        <div class="modal-title-icon">
+                            <i class="fas fa-file-invoice"></i>
+                        </div>
 
-                            <!-- Column 3: Billing Info -->
-                            <div class="col-12 col-md-4">
-                                <div class="border rounded p-3 bg-light bg-opacity-50 h-100">
-                                    <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="fas fa-calculator text-warning me-2"></i> Billing Summary</h6>
-                                    <div class="mb-2 d-flex justify-content-between"><span>Base Amount:</span> <span class="fw-semibold">₹{{ number_format((float)($detail->amount ?? 0), 2) }}</span></div>
-                                    <div class="mb-2 d-flex justify-content-between"><span>Discount:</span> <span class="text-danger">-₹{{ number_format((float)($detail->discount ?? 0), 2) }}</span></div>
-                                    <div class="mb-2 d-flex justify-content-between border-top pt-2"><strong>Final Total:</strong> <strong class="text-primary">₹{{ number_format((float)($detail->final_amount ?? $detail->amount ?? 0), 2) }}</strong></div>
-                                    <div class="mb-2 d-flex justify-content-between"><span>Advance Paid:</span> <span class="text-success">₹{{ number_format((float)($detail->advance ?? 0), 2) }}</span></div>
-                                    <div class="mb-2 d-flex justify-content-between border-top pt-2"><strong>Outstanding:</strong> <strong class="text-danger">₹{{ number_format((float)($detail->balance_amount ?? 0), 2) }}</strong></div>
-                                    <div class="mb-0"><strong>Payment Type:</strong> {{ $detail->payment_type ?? 'N/A' }}</div>
-                                </div>
-                            </div>
+                        <div>
+                            <h5 class="modal-title">
+                                Job Card Details
+                            </h5>
 
-                            <!-- Row 2: Spare Parts Used & Labours -->
-                            <div class="col-12 col-md-6">
-                                <div class="border rounded p-3 bg-light bg-opacity-50 h-100">
-                                    <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="fas fa-cogs text-secondary me-2"></i> Spare Parts Used</h6>
-                                    <div class="table-responsive">
-                                        <table class="table table-sm table-hover align-middle mb-0">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th>Part Name</th>
-                                                    <th class="text-center">Qty</th>
-                                                    <th class="text-end">Price</th>
-                                                    <th class="text-end">Tax %</th>
-                                                    <th class="text-end">Total</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @forelse($detail->jobCardSpareParts as $part)
-                                                    @php
-                                                        $partQty = (float)($part->qty ?? 1);
-                                                        $partPrice = (float)($part->price ?? 0);
-                                                    @endphp
-                                                    <tr>
-                                                        <td>
-                                                            <div class="fw-semibold">{{ $part->productStock->sparePart->name ?? 'Spare Part' }}</div>
-                                                            <small class="text-muted">{{ $part->productStock->sparePart->sku ?? 'N/A' }}</small>
-                                                        </td>
-                                                        <td class="text-center">{{ $partQty }}</td>
-                                                        <td class="text-end">₹{{ number_format($partPrice, 2) }}</td>
-                                                        <td class="text-end">{{ $part->tax_percentage ?? 0 }}%</td>
-                                                        <td class="text-end fw-semibold">₹{{ number_format($partQty * $partPrice, 2) }}</td>
-                                                    </tr>
-                                                @empty
-                                                    <tr>
-                                                        <td colspan="5" class="text-center py-3 text-muted">No spare parts recorded.</td>
-                                                    </tr>
-                                                @endforelse
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-12 col-md-6">
-                                <div class="border rounded p-3 bg-light bg-opacity-50 h-100">
-                                    <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="fas fa-wrench text-dark me-2"></i> Labours & Extra Charges</h6>
-                                    <div class="table-responsive">
-                                        <table class="table table-sm table-hover align-middle mb-0">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th>Label / Charge Type</th>
-                                                    <th class="text-center">Qty</th>
-                                                    <th class="text-end">Rate</th>
-                                                    <th class="text-end">Total</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @forelse($detail->labours as $labour)
-                                                    @php
-                                                        $labourQty = (float)($labour->qty ?? 1);
-                                                        $labourRate = (float)($labour->amount ?? $labour->charges ?? 0);
-                                                    @endphp
-                                                    <tr>
-                                                        <td>
-                                                            <div class="fw-semibold">{{ $labour->label }}</div>
-                                                            <small class="text-muted">{{ ucfirst($labour->charge_type ?? 'labour') }}</small>
-                                                        </td>
-                                                        <td class="text-center">{{ $labourQty }}</td>
-                                                        <td class="text-end">₹{{ number_format($labourRate, 2) }}</td>
-                                                        <td class="text-end fw-semibold">₹{{ number_format($labourQty * $labourRate, 2) }}</td>
-                                                    </tr>
-                                                @empty
-                                                    <tr>
-                                                        <td colspan="4" class="text-center py-3 text-muted">No labour or extra charges recorded.</td>
-                                                    </tr>
-                                                @endforelse
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
+                            <div class="modal-subtitle">
+                                #{{ $detail->jobcard_number ?? '' }}
                             </div>
                         </div>
-                    @endif
+                    </div>
+
+                    <button
+                        type="button"
+                        class="modal-close"
+                        wire:click="$set('viewJobCardId', null)"
+                        aria-label="Close"
+                    >
+                        <i class="bx bx-x fs-5"></i>
+                    </button>
                 </div>
-                <div class="modal-footer bg-light">
-                    <button class="btn btn-secondary" wire:click="$set('viewJobCardId', null)">Close</button>
+
+                {{-- Modal Body --}}
+                <div class="modal-body-modern">
+                    <div class="row g-3">
+
+                        {{-- General Information --}}
+                        <div class="col-12 col-md-4">
+                            <div class="detail-card">
+
+                                <div class="detail-heading">
+                                    <i class="fas fa-info-circle"></i>
+                                    General Information
+                                </div>
+
+                                <div class="detail-row">
+                                    <span class="detail-label">Job Card #</span>
+                                    <span class="detail-value">
+                                        {{ $detail->jobcard_number }}
+                                    </span>
+                                </div>
+
+                                <div class="detail-row">
+                                    <span class="detail-label">Date Created</span>
+                                    <span class="detail-value">
+                                        {{ $detail->entry_date
+                                            ? \Carbon\Carbon::parse($detail->entry_date)->format('d M Y, h:i A')
+                                            : 'N/A' }}
+                                    </span>
+                                </div>
+
+                                <div class="detail-row">
+                                    <span class="detail-label">Workshop</span>
+                                    <span class="detail-value">
+                                        {{ $detail->workshop->company_name ??
+                                            ($detail->workshop
+                                                ? $detail->workshop->name . ' ' . $detail->workshop->lastname
+                                                : 'N/A') }}
+                                    </span>
+                                </div>
+
+                                <div class="detail-row">
+                                    <span class="detail-label">Status</span>
+                                    <span class="detail-value">
+                                        @switch($detail->status)
+                                            @case(1)
+                                                <span class="status-badge status-confirmed">Confirmed</span>
+                                                @break
+
+                                            @case(2)
+                                                <span class="status-badge status-completed">Completed</span>
+                                                @break
+
+                                            @case(3)
+                                                <span class="status-badge status-closed">Closed</span>
+                                                @break
+
+                                            @default
+                                                <span class="status-badge status-open">Open</span>
+                                        @endswitch
+                                    </span>
+                                </div>
+
+                                <div class="mt-3 pt-3 border-top">
+                                    <div class="detail-label mb-1">
+                                        Notes
+                                    </div>
+
+                                    <div class="detail-note">
+                                        {{ $detail->notes ?? 'No special notes.' }}
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        {{-- Customer & Vehicle --}}
+                        <div class="col-12 col-md-4">
+                            <div class="detail-card">
+
+                                <div class="detail-heading">
+                                    <i class="fas fa-car"></i>
+                                    Customer & Vehicle
+                                </div>
+
+                                <div class="detail-row">
+                                    <span class="detail-label">Customer</span>
+                                    <span class="detail-value">
+                                        {{ $detail->customer_name ??
+                                            ($detail->customer
+                                                ? $detail->customer->name . ' ' . $detail->customer->lastname
+                                                : 'N/A') }}
+                                    </span>
+                                </div>
+
+                                <div class="detail-row">
+                                    <span class="detail-label">Mobile</span>
+                                    <span class="detail-value">
+                                        {{ $detail->customer->mobile_no ?? 'N/A' }}
+                                    </span>
+                                </div>
+
+                                <div class="detail-row">
+                                    <span class="detail-label">Vehicle Model</span>
+                                    <span class="detail-value">
+                                        {{ $detail->vehical ?? 'N/A' }}
+                                    </span>
+                                </div>
+
+                                <div class="detail-row">
+                                    <span class="detail-label">Plate Number</span>
+                                    <span class="detail-value">
+                                        <span class="vehicle-badge">
+                                            {{ $detail->vehical_number ?? 'N/A' }}
+                                        </span>
+                                    </span>
+                                </div>
+
+                                <div class="detail-row">
+                                    <span class="detail-label">KM Running</span>
+                                    <span class="detail-value">
+                                        {{ number_format((float)($detail->km_runing ?? 0)) }} km
+                                    </span>
+                                </div>
+
+                                <div class="detail-row">
+                                    <span class="detail-label">Fuel Level</span>
+                                    <span class="detail-value">
+                                        {{ $detail->fual_level ?? 'N/A' }}
+                                    </span>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        {{-- Billing --}}
+                        <div class="col-12 col-md-4">
+                            <div class="detail-card">
+
+                                <div class="detail-heading">
+                                    <i class="fas fa-calculator"></i>
+                                    Billing Summary
+                                </div>
+
+                                <div class="detail-row">
+                                    <span class="detail-label">Base Amount</span>
+                                    <span class="detail-value">
+                                        ₹{{ number_format((float)($detail->amount ?? 0), 2) }}
+                                    </span>
+                                </div>
+
+                                <div class="detail-row">
+                                    <span class="detail-label">Discount</span>
+                                    <span class="detail-value" style="color:#e53935;">
+                                        -₹{{ number_format((float)($detail->discount ?? 0), 2) }}
+                                    </span>
+                                </div>
+
+                                <div class="billing-total">
+                                    <div class="detail-row">
+                                        <span class="detail-label">Final Total</span>
+                                        <span class="billing-final">
+                                            ₹{{ number_format((float)($detail->final_amount ?? $detail->amount ?? 0), 2) }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="detail-row">
+                                    <span class="detail-label">Advance Paid</span>
+                                    <span class="billing-paid">
+                                        ₹{{ number_format((float)($detail->advance ?? 0), 2) }}
+                                    </span>
+                                </div>
+
+                                <div class="billing-total">
+                                    <div class="detail-row">
+                                        <span class="detail-label">Outstanding</span>
+                                        <span class="billing-balance">
+                                            ₹{{ number_format((float)($detail->balance_amount ?? 0), 2) }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="detail-row">
+                                    <span class="detail-label">Payment Type</span>
+                                    <span class="detail-value">
+                                        {{ $detail->payment_type ?? 'N/A' }}
+                                    </span>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        {{-- Spare Parts --}}
+                        <div class="col-12 col-lg-6">
+                            <div class="detail-card">
+
+                                <div class="detail-heading">
+                                    <i class="fas fa-cogs"></i>
+                                    Spare Parts Used
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table detail-table align-middle mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Part Name</th>
+                                                <th class="text-center">Qty</th>
+                                                <th class="text-end">Price</th>
+                                                <th class="text-end">Tax %</th>
+                                                <th class="text-end">Total</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            @forelse($detail->jobCardSpareParts as $part)
+                                                @php
+                                                    $partQty = (float)($part->qty ?? 1);
+                                                    $partPrice = (float)($part->price ?? 0);
+                                                @endphp
+
+                                                <tr>
+                                                    <td>
+                                                        <div class="fw-semibold text-dark">
+                                                            {{ $part->productStock->sparePart->name ?? 'Spare Part' }}
+                                                        </div>
+
+                                                        <small class="text-muted">
+                                                            {{ $part->productStock->sparePart->sku ?? 'N/A' }}
+                                                        </small>
+                                                    </td>
+
+                                                    <td class="text-center">
+                                                        {{ $partQty }}
+                                                    </td>
+
+                                                    <td class="text-end">
+                                                        ₹{{ number_format($partPrice, 2) }}
+                                                    </td>
+
+                                                    <td class="text-end">
+                                                        {{ $part->tax_percentage ?? 0 }}%
+                                                    </td>
+
+                                                    <td class="text-end fw-semibold">
+                                                        ₹{{ number_format($partQty * $partPrice, 2) }}
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="5" class="text-center py-4 text-muted">
+                                                        No spare parts recorded.
+                                                    </td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        {{-- Labours --}}
+                        <div class="col-12 col-lg-6">
+                            <div class="detail-card">
+
+                                <div class="detail-heading">
+                                    <i class="fas fa-wrench"></i>
+                                    Labours & Extra Charges
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table detail-table align-middle mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Label / Charge Type</th>
+                                                <th class="text-center">Qty</th>
+                                                <th class="text-end">Rate</th>
+                                                <th class="text-end">Total</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            @forelse($detail->labours as $labour)
+                                                @php
+                                                    $labourQty = (float)($labour->qty ?? 1);
+                                                    $labourRate = (float)($labour->amount ?? $labour->charges ?? 0);
+                                                @endphp
+
+                                                <tr>
+                                                    <td>
+                                                        <div class="fw-semibold text-dark">
+                                                            {{ $labour->label }}
+                                                        </div>
+
+                                                        <small class="text-muted">
+                                                            {{ ucfirst($labour->charge_type ?? 'labour') }}
+                                                        </small>
+                                                    </td>
+
+                                                    <td class="text-center">
+                                                        {{ $labourQty }}
+                                                    </td>
+
+                                                    <td class="text-end">
+                                                        ₹{{ number_format($labourRate, 2) }}
+                                                    </td>
+
+                                                    <td class="text-end fw-semibold">
+                                                        ₹{{ number_format($labourQty * $labourRate, 2) }}
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="4" class="text-center py-4 text-muted">
+                                                        No labour or extra charges recorded.
+                                                    </td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
+
+                {{-- Modal Footer --}}
+                <div class="modal-footer-modern">
+                    <button
+                        type="button"
+                        class="close-modern"
+                        wire:click="$set('viewJobCardId', null)"
+                    >
+                        Close
+                    </button>
+                </div>
+
             </div>
         </div>
-    </div>
+    @endif
 </div>

@@ -1,271 +1,798 @@
 @php
-    $headerBg = 'linear-gradient(135deg, #4b5563, #6b7280)'; // default for Total (mode 6)
-    if ($mode === 0) {
-        $headerBg = 'linear-gradient(135deg, #e63946, #ff6b6b)'; // Open (Red)
-    } elseif ($mode == 5) {
-        $headerBg = 'linear-gradient(135deg, #e63946, #ff6b6b)'; // Deleted (Red)
-    } elseif ($mode == 4) {
-        $headerBg = 'linear-gradient(135deg, #f39c12, #f1c40f)'; // Process (Yellow)
-    } elseif ($mode == 1) {
-        $headerBg = 'linear-gradient(135deg, #007bff, #409eff)'; // Confirmed (Blue)
-    } elseif ($mode == 2) {
-        $headerBg = 'linear-gradient(135deg, #28a745, #72d572)'; // Completed (Green)
-    } elseif ($mode == 3) {
-        $headerBg = 'linear-gradient(135deg, #17a2b8, #67d1f3)'; // Closed (Cyan)
-    }
+    $headerBg = match($mode) {
+        0 => 'linear-gradient(135deg, #ca8a04, #eab308)', // Open - Yellow
+        1 => 'linear-gradient(135deg, #2563eb, #3b82f6)', // Confirmed - Blue
+        2 => 'linear-gradient(135deg, #16a34a, #22c55e)', // Completed - Green
+        3 => 'linear-gradient(135deg, #0891b2, #06b6d4)', // Closed - Cyan
+        4 => 'linear-gradient(135deg, #ea580c, #f97316)', // Process - Orange
+        5 => 'linear-gradient(135deg, #dc2626, #ef4444)', // Deleted - Red
+        6 => 'linear-gradient(135deg, #475569, #64748b)', // Total - Slate
+        default => 'linear-gradient(135deg, #ca8a04, #eab308)',
+    };
 @endphp
-<div>
+
+
+<div class="carnate-jobcard-report">
+
     <style>
-        .mode {
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            cursor: pointer;
+        .carnate-jobcard-report {
+            --cj-bg: #f7f8fa;
+            --cj-card: #ffffff;
+            --cj-text: #111827;
+            --cj-muted: #64748b;
+            --cj-border: #e2e8f0;
+            --cj-red: #e53935;
+            --cj-red-soft: #fff5f5;
+            --cj-shadow: 0 8px 24px rgba(15, 23, 42, .06);
+            color: var(--cj-text);
+        }
+
+        .carnate-jobcard-report .cj-page {
+            background: var(--cj-bg);
+            border-radius: 18px;
+            padding: 24px;
+        }
+
+        .carnate-jobcard-report .cj-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 22px;
+        }
+
+        .carnate-jobcard-report .cj-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+        }
+
+        .carnate-jobcard-report .cj-title-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--cj-red-soft);
+            color: var(--cj-red);
+            font-size: 20px;
+        }
+
+        .carnate-jobcard-report .cj-title {
+            margin: 0;
+            font-size: 23px;
+            line-height: 1.2;
+            font-weight: 750;
+            letter-spacing: -.02em;
+            color: var(--cj-text);
+        }
+
+        .carnate-jobcard-report .cj-subtitle {
+            margin: 4px 0 0;
+            color: var(--cj-muted);
+            font-size: 13px;
+        }
+
+        .carnate-jobcard-report .cj-add-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 42px;
+            padding: 0 17px;
+            border-radius: 10px;
+            border: 1px solid var(--cj-red);
+            background: var(--cj-red);
+            color: #fff !important;
             font-size: 14px;
+            font-weight: 650;
+            text-decoration: none;
+            box-shadow: 0 5px 14px rgba(229, 57, 53, .18);
+            transition: all .2s ease;
         }
 
-        .mode:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        .carnate-jobcard-report .cj-add-btn:hover {
+            background: #d9322f;
+            border-color: #d9322f;
+            color: #fff !important;
+            transform: translateY(-1px);
         }
 
-        .jobcardtable td {
+        /* Status cards */
+        .carnate-jobcard-report .cj-status-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .carnate-jobcard-report .cj-status-card {
+            position: relative;
+            overflow: hidden;
+            min-height: 94px;
+            border-radius: 14px;
+            padding: 16px;
+            color: #fff;
             cursor: pointer;
+            border: 0;
+            box-shadow: 0 7px 20px rgba(15, 23, 42, .08);
+            transition: transform .2s ease, box-shadow .2s ease;
         }
 
-        .jobcardtable td a:hover {
-            color: #EA6B00;
+        .carnate-jobcard-report .cj-status-card::after {
+            content: "";
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            right: -25px;
+            bottom: -35px;
+            background: rgba(255,255,255,.12);
         }
 
-        .jobcardtable td a {
-            color: inherit;
+        .carnate-jobcard-report .cj-status-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px rgba(15, 23, 42, .13);
         }
 
-        .bg-danger {
-            background: linear-gradient(135deg, #e63946, #ff6b6b);
+        .carnate-jobcard-report .cj-status-card.active {
+            box-shadow:
+                0 0 0 3px rgba(229,57,53,.16),
+                0 12px 28px rgba(15,23,42,.14);
         }
 
-        .bg-primary {
-            background: linear-gradient(135deg, #007bff, #409eff);
+        .carnate-jobcard-report .cj-status-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
         }
 
-        .bg-info {
-            background: linear-gradient(135deg, #17a2b8, #67d1f3);
+        .carnate-jobcard-report .cj-status-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,.16);
+            font-size: 15px;
         }
 
-        .bg-warning {
-            background: linear-gradient(135deg, #f39c12, #f1c40f);
+        .carnate-jobcard-report .cj-status-count {
+            font-size: 23px;
+            line-height: 1;
+            font-weight: 750;
         }
 
-        .bg-success {
-            background: linear-gradient(135deg, #28a745, #72d572);
+        .carnate-jobcard-report .cj-status-name {
+            display: block;
+            margin-top: 13px;
+            font-size: 12px;
+            font-weight: 650;
+            opacity: .95;
         }
 
-        /* Premium Table Header styling */
-        .jobcardtable thead th {
-            background-color: transparent !important;
+        .carnate-jobcard-report .cj-open {
+            background: linear-gradient(135deg, #ca8a04, #eab308);
+        }
+
+        .carnate-jobcard-report .cj-process {
+            background: linear-gradient(135deg, #ea580c, #f97316);
+        }
+
+        .carnate-jobcard-report .cj-confirmed {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+        }
+
+        .carnate-jobcard-report .cj-completed {
+            background: linear-gradient(135deg, #16a34a, #22c55e);
+        }
+
+        .carnate-jobcard-report .cj-closed {
+            background: linear-gradient(135deg, #0891b2, #06b6d4);
+        }
+
+        .carnate-jobcard-report .cj-deleted {
+            background: linear-gradient(135deg, #dc2626, #ef4444);
+        }
+
+        .carnate-jobcard-report .cj-total {
+            background: linear-gradient(135deg, #475569, #64748b);
+        }
+
+        /* Main table card */
+        .carnate-jobcard-report .cj-table-card {
+            background: var(--cj-card);
+            border: 1px solid var(--cj-border);
+            border-radius: 16px;
+            box-shadow: var(--cj-shadow);
+            overflow: hidden;
+        }
+
+        .carnate-jobcard-report .cj-table-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--cj-border);
+        }
+
+        .carnate-jobcard-report .cj-toolbar-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--cj-text);
+        }
+
+        .carnate-jobcard-report .cj-toolbar-meta {
+            margin-top: 3px;
+            font-size: 12px;
+            color: var(--cj-muted);
+        }
+
+        .carnate-jobcard-report .cj-filters {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .carnate-jobcard-report .cj-search {
+            width: 270px;
+            height: 40px;
+            border: 1px solid var(--cj-border);
+            border-radius: 9px;
+            background: #fff;
+            color: var(--cj-text);
+            padding: 0 13px;
+            font-size: 13px;
+            outline: none;
+            transition: border-color .2s ease, box-shadow .2s ease;
+        }
+
+        .carnate-jobcard-report .cj-search:focus {
+            border-color: rgba(229,57,53,.55);
+            box-shadow: 0 0 0 3px rgba(229,57,53,.08);
+        }
+
+        .carnate-jobcard-report .cj-clear {
+            height: 40px;
+            padding: 0 15px;
+            border-radius: 9px;
+            border: 1px solid var(--cj-border);
+            background: #fff;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all .2s ease;
+        }
+
+        .carnate-jobcard-report .cj-clear:hover {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+            color: var(--cj-text);
+        }
+
+        .carnate-jobcard-report .cj-table-wrap {
+            overflow-x: auto;
+        }
+
+        .carnate-jobcard-report .jobcardtable {
+            width: 100%;
+            min-width: 1200px;
+            margin: 0;
+            border: 0;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .carnate-jobcard-report .jobcardtable thead,
+        .carnate-jobcard-report .jobcardtable thead tr {
+            background: {{ $headerBg }} !important;
+        }
+
+        .carnate-jobcard-report .jobcardtable thead th {
+            background: transparent !important;
             color: #ffffff !important;
-            font-weight: 700 !important;
-            font-size: 13px !important;
-            border-bottom: 2px solid rgba(0,0,0,0.1) !important;
-            padding: 12px 8px !important;
+            border: 0 !important;
+            border-bottom: 1px solid rgba(255,255,255,.2) !important;
+            padding: 13px 12px !important;
+            font-size: 11px !important;
+            font-weight: 750 !important;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.18) !important;
             vertical-align: middle;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
         }
 
-        /* Status row styling */
-        .jobcardtable tbody tr {
-            transition: all 0.2s ease;
-        }
-
-        .jobcardtable tbody tr:hover {
-            filter: brightness(0.95);
-        }
-
-        /* Open & Deleted (Red) */
-        .jobcard-row-status-0, .jobcard-row-status-5 {
-            background-color: #fce8e6 !important; /* Soft red */
-            border-left: 5px solid #e63946 !important;
-        }
-        .jobcard-row-status-0 td, .jobcard-row-status-5 td {
-            color: #a8201a !important;
+        .carnate-jobcard-report .jobcardtable tbody td {
+            padding: 13px 12px;
+            border: 0;
+            border-bottom: 1px solid #edf1f5;
+            color: #334155;
+            font-size: 13px;
             font-weight: 500;
+            vertical-align: middle;
+            white-space: nowrap;
         }
-        .jobcard-row-status-0 td a, .jobcard-row-status-5 td a {
-            color: #a8201a !important;
+
+        .carnate-jobcard-report .jobcardtable tbody tr {
+            transition: background .18s ease;
+        }
+
+        .carnate-jobcard-report .jobcardtable tbody tr:hover {
+            filter: none !important;
+        }
+
+        .carnate-jobcard-report .jobcardtable tbody tr:hover td {
+            background: rgba(248,250,252,.9);
+        }
+
+        .carnate-jobcard-report .jobcardtable tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .carnate-jobcard-report .jobcardtable td a {
+            color: #334155;
+            text-decoration: none;
             font-weight: 600;
         }
 
-        /* Process (Yellow/Orange) */
-        .jobcard-row-status-4 {
-            background-color: #fef5e7 !important; /* Soft yellow/orange */
-            border-left: 5px solid #f39c12 !important;
-        }
-        .jobcard-row-status-4 td {
-            color: #b25e00 !important;
-            font-weight: 500;
-        }
-        .jobcard-row-status-4 td a {
-            color: #b25e00 !important;
-            font-weight: 600;
+        .carnate-jobcard-report .jobcardtable td a:hover {
+            color: var(--cj-red) !important;
+            text-decoration: none !important;
         }
 
-        /* Confirmed (Blue) */
-        .jobcard-row-status-1 {
-            background-color: #e8f4fd !important; /* Soft blue */
-            border-left: 5px solid #007bff !important;
-        }
-        .jobcard-row-status-1 td {
-            color: #0056b3 !important;
-            font-weight: 500;
-        }
-        .jobcard-row-status-1 td a {
-            color: #0056b3 !important;
-            font-weight: 600;
+        .carnate-jobcard-report .jobcardtable td:first-child {
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: 650;
         }
 
-        /* Completed (Green) */
-        .jobcard-row-status-2 {
-            background-color: #eafaf1 !important; /* Soft green */
-            border-left: 5px solid #28a745 !important;
-        }
-        .jobcard-row-status-2 td {
-            color: #1e7e34 !important;
-            font-weight: 500;
-        }
-        .jobcard-row-status-2 td a {
-            color: #1e7e34 !important;
-            font-weight: 600;
+        .carnate-jobcard-report .jobcardtable td:nth-child(2) {
+            color: #64748b;
         }
 
-        /* Closed (Teal/Cyan) */
-        .jobcard-row-status-3 {
-            background-color: #e6f7ff !important; /* Soft cyan/teal */
-            border-left: 5px solid #17a2b8 !important;
-        }
-        .jobcard-row-status-3 td {
-            color: #0f758a !important;
-            font-weight: 500;
-        }
-        .jobcard-row-status-3 td a {
-            color: #0f758a !important;
-            font-weight: 600;
+        .carnate-jobcard-report .jobcardtable td:nth-child(3) a {
+            color: #111827;
+            font-weight: 750;
         }
 
-        /* Hover effect for clickable links */
-        .jobcardtable tbody tr td a:hover {
-            color: #EA6B00 !important;
-            text-decoration: underline !important;
+        .carnate-jobcard-report .jobcardtable td:nth-child(7) {
+            white-space: normal;
+            min-width: 250px;
+            max-width: 320px;
+        }
+
+        /* Preserve status row meaning, but use much softer colors */
+        .carnate-jobcard-report .jobcard-row-status-0 td {
+            background: #fefce8;
+            color: #854d0e !important;
+        }
+
+        .carnate-jobcard-report .jobcard-row-status-0 {
+            border-left: 3px solid #eab308;
+        }
+
+        .carnate-jobcard-report .jobcard-row-status-5 td {
+            background: #fff8f8;
+            color: #7f1d1d !important;
+        }
+
+        .carnate-jobcard-report .jobcard-row-status-5 {
+            border-left: 3px solid #dc2626;
+        }
+
+        .carnate-jobcard-report .jobcard-row-status-4 td {
+            background: #fffbeb;
+        }
+
+        .carnate-jobcard-report .jobcard-row-status-4 {
+            border-left: 3px solid #f59e0b;
+        }
+
+        .carnate-jobcard-report .jobcard-row-status-1 td {
+            background: #f8fbff;
+        }
+
+        .carnate-jobcard-report .jobcard-row-status-1 {
+            border-left: 3px solid #3b82f6;
+        }
+
+        .carnate-jobcard-report .jobcard-row-status-2 td {
+            background: #f7fcf8;
+        }
+
+        .carnate-jobcard-report .jobcard-row-status-2 {
+            border-left: 3px solid #22c55e;
+        }
+
+        .carnate-jobcard-report .jobcard-row-status-3 td {
+            background: #f5fcfd;
+        }
+
+        .carnate-jobcard-report .jobcard-row-status-3 {
+            border-left: 3px solid #06b6d4;
+        }
+
+        .carnate-jobcard-report .jobcard-row-status-4 td {
+            color: #854d0e !important;
+        }
+
+        .carnate-jobcard-report .jobcard-row-status-1 td {
+            color: #1e40af !important;
+        }
+
+        .carnate-jobcard-report .jobcard-row-status-2 td {
+            color: #166534 !important;
+        }
+
+        .carnate-jobcard-report .jobcard-row-status-3 td {
+            color: #155e75 !important;
+        }
+
+        .carnate-jobcard-report .jobcardtable .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 76px;
+            padding: 6px 9px;
+            border-radius: 999px;
+            font-size: 11px;
+            line-height: 1;
+            font-weight: 700;
+            border: 0;
+        }
+
+        .carnate-jobcard-report .jobcardtable .badge.badge-open {
+            background: #fef9c3 !important;
+            color: #854d0e !important;
+            border: 1px solid #fde047 !important;
+        }
+
+        .carnate-jobcard-report .text-open {
+            color: #ca8a04 !important;
+        }
+
+        .carnate-jobcard-report .jobcardtable .badge.bg-danger {
+            background: #fff0f0 !important;
+            color: #dc2626 !important;
+        }
+
+        .carnate-jobcard-report .jobcardtable .badge.bg-warning {
+            background: #fff7df !important;
+            color: #b45309 !important;
+        }
+
+        .carnate-jobcard-report .jobcardtable .badge.bg-primary {
+            background: #eff6ff !important;
+            color: #2563eb !important;
+        }
+
+        .carnate-jobcard-report .jobcardtable .badge.bg-success {
+            background: #ecfdf3 !important;
+            color: #15803d !important;
+        }
+
+        .carnate-jobcard-report .jobcardtable .badge.bg-info {
+            background: #ecfeff !important;
+            color: #0e7490 !important;
+        }
+
+        .carnate-jobcard-report .cj-actions {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .carnate-jobcard-report .cj-action-btn {
+            width: 32px;
+            height: 32px;
+            padding: 0 !important;
+            border-radius: 8px;
+            border: 1px solid var(--cj-border);
+            background: #fff;
+            color: #64748b;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .18s ease;
+        }
+
+        .carnate-jobcard-report .cj-action-btn:hover {
+            background: var(--cj-red-soft);
+            border-color: rgba(229,57,53,.25);
+            color: var(--cj-red);
+        }
+
+        .carnate-jobcard-report .cj-empty {
+            padding: 48px 20px;
+            text-align: center;
+            background: #fff;
+        }
+
+        .carnate-jobcard-report .cj-empty-icon {
+            width: 54px;
+            height: 54px;
+            margin: 0 auto 12px;
+            border-radius: 14px;
+            background: #f1f5f9;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .carnate-jobcard-report .cj-empty-title {
+            margin: 0;
+            color: #334155;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .carnate-jobcard-report .cj-empty-text {
+            margin: 5px 0 0;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        .carnate-jobcard-report .cj-pagination {
+            padding: 15px 20px;
+            border-top: 1px solid var(--cj-border);
+            background: #fff;
+        }
+
+        .carnate-jobcard-report .pagination-wrapper nav {
+            margin: 0;
+        }
+
+        /* Add/Edit components remain untouched */
+        .carnate-jobcard-report > style + div {
+            width: 100%;
+        }
+
+        @media (max-width: 1400px) {
+            .carnate-jobcard-report .cj-status-grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 900px) {
+            .carnate-jobcard-report .cj-page {
+                padding: 16px;
+            }
+
+            .carnate-jobcard-report .cj-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .carnate-jobcard-report .cj-status-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .carnate-jobcard-report .cj-table-toolbar {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .carnate-jobcard-report .cj-filters {
+                width: 100%;
+            }
+
+            .carnate-jobcard-report .cj-search {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 575px) {
+            .carnate-jobcard-report .cj-page {
+                padding: 12px;
+                border-radius: 12px;
+            }
+
+            .carnate-jobcard-report .cj-status-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .carnate-jobcard-report .cj-filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .carnate-jobcard-report .cj-clear {
+                width: 100%;
+            }
+
+            .carnate-jobcard-report .cj-title {
+                font-size: 20px;
+            }
         }
     </style>
+
     @if ($isAdd == true)
         @livewire('Workshop.JobCardAddController')
+
     @elseif($isEdit == true)
         @livewire('Workshop.JobCardEditController', ['id' => $jobId])
+
     @else
-        <div class="card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="breadcrumb-title pe-2" style="border: none;">Job-Card</div>
-                    <div class="row">
-                        <div class="pe-3">
-                            @if ($user->hasPermissionTo('Jobcard-add'))
-                                <a href="{{ route('workshop.jobcardadd') }}"
-                                    class="btn btn-primary radius-30 mt-2 mt-lg-0">
-                                    <i class="bx bxs-plus-square"></i>Add
-                                </a>
-                            @endif
-                        </div>
+
+        <div class="cj-page">
+
+            {{-- Page Header --}}
+            <div class="cj-header">
+                <div class="cj-title-wrap">
+                    <div class="cj-title-icon">
+                        <i class="fa-solid fa-clipboard-list"></i>
+                    </div>
+
+                    <div>
+                        <h1 class="cj-title">Job Cards</h1>
+                        <p class="cj-subtitle">Manage and track workshop job cards</p>
                     </div>
                 </div>
-                <div class="row g-3 py-3">
-                    <div class="col-lg-3 col-md-6 col-12">
-                        <div class="" wire:click="$set('mode', 0)">
-                            <div class="card-body  mode bg-danger text-white d-flex justify-content-between">
-                                <span><b><i class="fa-solid fa-unlock"></i> Open</b></span>
-                                <span><b>( {{ count($jobcardsCount->where('soft_delete', 0)->where('status', 0)) }}
-                                        )</b></span>
-                            </div>
+
+                @if ($user->hasPermissionTo('Jobcard-add'))
+                    <a href="{{ route('workshop.jobcardadd') }}" class="cj-add-btn">
+                        <i class="bx bx-plus"></i>
+                        <span>Add Job Card</span>
+                    </a>
+                @endif
+            </div>
+
+            {{-- Status Cards --}}
+            <div class="cj-status-grid">
+
+                <div class="cj-status-card cj-open {{ $mode === 0 ? 'active' : '' }}"
+                     wire:click="$set('mode', 0)">
+                    <div class="cj-status-top">
+                        <span class="cj-status-icon">
+                            <i class="fa-solid fa-unlock"></i>
+                        </span>
+
+                        <span class="cj-status-count">
+                            {{ count($jobcardsCount->where('soft_delete', 0)->where('status', 0)) }}
+                        </span>
+                    </div>
+                    <span class="cj-status-name">Open</span>
+                </div>
+
+                <div class="cj-status-card cj-process {{ $mode === 4 ? 'active' : '' }}"
+                     wire:click="$set('mode', 4)">
+                    <div class="cj-status-top">
+                        <span class="cj-status-icon">
+                            <i class="fa-solid fa-gears"></i>
+                        </span>
+
+                        <span class="cj-status-count">
+                            {{ count($jobcardsCount->where('soft_delete', 0)->where('status', 4)) }}
+                        </span>
+                    </div>
+                    <span class="cj-status-name">Process</span>
+                </div>
+
+                <div class="cj-status-card cj-confirmed {{ $mode === 1 ? 'active' : '' }}"
+                     wire:click="$set('mode', 1)">
+                    <div class="cj-status-top">
+                        <span class="cj-status-icon">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </span>
+
+                        <span class="cj-status-count">
+                            {{ count($jobcardsCount->where('soft_delete', 0)->where('status', 1)) }}
+                        </span>
+                    </div>
+                    <span class="cj-status-name">Confirmed</span>
+                </div>
+
+                <div class="cj-status-card cj-completed {{ $mode === 2 ? 'active' : '' }}"
+                     wire:click="$set('mode', 2)">
+                    <div class="cj-status-top">
+                        <span class="cj-status-icon">
+                            <i class="fa-solid fa-flag-checkered"></i>
+                        </span>
+
+                        <span class="cj-status-count">
+                            {{ count($jobcardsCount->where('soft_delete', 0)->where('status', 2)) }}
+                        </span>
+                    </div>
+                    <span class="cj-status-name">Completed</span>
+                </div>
+
+                <div class="cj-status-card cj-closed {{ $mode === 3 ? 'active' : '' }}"
+                     wire:click="$set('mode', 3)">
+                    <div class="cj-status-top">
+                        <span class="cj-status-icon">
+                            <i class="fa-solid fa-xmark"></i>
+                        </span>
+
+                        <span class="cj-status-count">
+                            {{ count($jobcardsCount->where('soft_delete', 0)->where('status', 3)) }}
+                        </span>
+                    </div>
+                    <span class="cj-status-name">Closed</span>
+                </div>
+
+                <div class="cj-status-card cj-deleted {{ $mode === 5 ? 'active' : '' }}"
+                     wire:click="$set('mode', 5)">
+                    <div class="cj-status-top">
+                        <span class="cj-status-icon">
+                            <i class="fa-solid fa-trash"></i>
+                        </span>
+
+                        <span class="cj-status-count">
+                            {{ count($jobcardsCount->where('soft_delete', 1)) }}
+                        </span>
+                    </div>
+                    <span class="cj-status-name">Deleted</span>
+                </div>
+
+                <div class="cj-status-card cj-total {{ $mode === 6 ? 'active' : '' }}"
+                     wire:click="$set('mode', 6)">
+                    <div class="cj-status-top">
+                        <span class="cj-status-icon">
+                            <i class="fa-solid fa-layer-group"></i>
+                        </span>
+
+                        <span class="cj-status-count">
+                            {{ count($jobcardsCount) }}
+                        </span>
+                    </div>
+                    <span class="cj-status-name">Total</span>
+                </div>
+
+            </div>
+
+            {{-- Table --}}
+            <div class="cj-table-card">
+
+                <div class="cj-table-toolbar">
+
+                    <div>
+                        <div class="cj-toolbar-title">Job Card List</div>
+                        <div class="cj-toolbar-meta">
+                            View and manage workshop job card records
                         </div>
                     </div>
 
-                      <div class="col-lg-3 col-md-6 col-12">
-                        <div class="" wire:click="$set('mode', 4)">
-                            <div class="card-body mode bg-warning text-white d-flex justify-content-between">
-                                <span><b><i class="fa-solid fa-cogs"></i> Process</b></span>
-                                <span><b>( {{ count($jobcardsCount->where('soft_delete', 0)->where('status', 4)) }}
-                                        )</b></span>
-                            </div>
-                        </div>
+                    <div class="cj-filters">
+                        <input
+                            type="text"
+                            class="cj-search"
+                            placeholder="Search Customer"
+                            wire:model.live="searchjobcart"
+                        >
+
+                        <button
+                            type="button"
+                            class="cj-clear"
+                            wire:click="resetFilter">
+                            Clear
+                        </button>
                     </div>
 
-                    <div class="col-lg-3 col-md-6 col-12">
-                        <div class="" wire:click="$set('mode', 1)">
-                            <div class="card-body mode bg-primary text-white d-flex justify-content-between">
-                                <span><b><i class="fa-solid fa-circle-check"></i> Confirmed</b></span>
-                                <span><b>( {{ count($jobcardsCount->where('soft_delete', 0)->where('status', 1)) }}
-                                        )</b></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6 col-12">
-                        <div class="" wire:click="$set('mode', 2)">
-                            <div class="card-body mode bg-success text-white d-flex justify-content-between">
-                                <span><b><i class="fa-solid fa-flag-checkered"></i> Completed</b></span>
-                                <span><b>( {{ count($jobcardsCount->where('soft_delete', 0)->where('status', 2)) }}
-                                        )</b></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6 col-12">
-                        <div class="" wire:click="$set('mode', 3)">
-                            <div class="card-body mode bg-info text-white d-flex justify-content-between" style>
-                                <span><b><i class="fa-solid fa-close"></i> Closed</b></span>
-                                <span><b>( {{ count($jobcardsCount->where('soft_delete', 0)->where('status', 3)) }}
-                                        )</b></span>
-                            </div>
-                        </div>
-                    </div>
+                </div>
 
-                    <div class="col-lg-3 col-md-6 col-12">
-                        <div class="" wire:click="$set('mode', 5)">
-                            <div class="card-body mode bg-danger text-white d-flex justify-content-between" style>
-                                <span><b><i class="fa-solid fa-trash"></i> Deleted</b></span>
-                                <span><b>( {{ count($jobcardsCount->where('soft_delete', 1)) }} )</b></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6 col-12">
-                        <div class="" wire:click="$set('mode', 6)">
-                            <div class="card-body mode bg-secondary text-white d-flex justify-content-between">
-                                <span><b><i class="fa-solid fa-flag-checkered"></i> Total</b></span>
-                                <span><b>( {{ count($jobcardsCount) }} )</b></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row ">
-                    <div class="col-3">
-                        <input type="text" class="form-control" placeholder="Search Customer"
-                            wire:model.live="searchjobcart" fdprocessedid="blgf5">
-                    </div>
-                    <div class="col-9 text-right">
-                        <button type="button" class="mr-2 btn btn-info text-white rounded-0  float-end"
-                            wire:click="resetFilter" fdprocessedid="orntg">Clear</button>
-                    </div>
-                </div>
                 @if (!empty($items) && $items->count())
-                    <div class="table-responsive mt-4">
-                        <table class="table table-bordered data-table jobcardtable">
-                            <thead style="background: {{ $headerBg }};">
-                                <tr>
+
+                    <div class="cj-table-wrap">
+                        <table class="table jobcardtable">
+
+                            <thead style="background: {{ $headerBg }} !important;">
+                                <tr style="background: {{ $headerBg }} !important;">
                                     <th>S.No.</th>
                                     <th>Entry Date</th>
                                     <th>Job-Card Number</th>
+
                                     @if ($items->contains('status', 2) || $items->contains('status', 3))
                                         <th>Invoice No.</th>
                                     @endif
+
                                     <!-- <th>Shared Serial</th> -->
+
                                     <th>Customer Name</th>
                                     <th>Vehicle Number</th>
                                     <th>Vehicle</th>
@@ -278,47 +805,74 @@
                                     <th>Action</th>
                                 </tr>
                             </thead>
-                         <tbody>
+
+                            <tbody>
+
                                 @foreach ($items as $index => $jobcard)
+
                                     <tr class="jobcard-row-status-{{ $jobcard->soft_delete == 1 ? 5 : $jobcard->status }}">
-                                        <td>{{ $items->total() - ($items->firstItem() + $index) + 1 }}</td>
+
                                         <td>
-                                            <a @if ($jobcard->soft_delete == 0) @if ($jobcard->soft_delete == 0)href="{{ route('workshop.jobcardedit', $jobcard->id) }}" @endif
-                                                @endif>
+                                            {{ $items->total() - ($items->firstItem() + $index) + 1 }}
+                                        </td>
+
+                                        <td>
+                                            <a
+                                                @if ($jobcard->soft_delete == 0)
+                                                    href="{{ route('workshop.jobcardedit', $jobcard->id) }}"
+                                                @endif
+                                            >
                                                 @if ($jobcard->entry_date)
                                                     {{ \Carbon\Carbon::parse($jobcard->entry_date)->format('d-m-Y') }}
                                                     <br>
-                                                    {{ \Carbon\Carbon::parse($jobcard->entry_date)->format('h:i A') }}
+                                                    <small>
+                                                        {{ \Carbon\Carbon::parse($jobcard->entry_date)->format('h:i A') }}
+                                                    </small>
                                                 @else
                                                     -
                                                 @endif
                                             </a>
                                         </td>
+
                                         <td>
                                             <a
-                                                @if ($jobcard->soft_delete == 0) href="{{ route('workshop.jobcardedit', $jobcard->id) }}" @endif
-                                                class="{{ $jobcard->status == 0 ? 'text-danger fw-bold' : '' }}">
+                                                @if ($jobcard->soft_delete == 0)
+                                                    href="{{ route('workshop.jobcardedit', $jobcard->id) }}"
+                                                @endif
+                                                class="{{ $jobcard->status == 0 ? 'text-open fw-bold' : '' }}"
+                                            >
                                                 {{ $jobcard->jobcard_number ?? '-' }}
+
                                                 @if($jobcard->status == 0)
-                                                    <i class="bx bxs-circle font-10 ms-1"></i>
+                                                    <i class="bx bxs-circle font-10 ms-1 text-open"></i>
                                                 @endif
                                             </a>
                                         </td>
+
                                         @if ($items->contains('status', 2) || $items->contains('status', 3))
+
                                             <td>
-                                                @if ($jobcard->status == 2 || $jobcard->status == 3 )
+                                                @if ($jobcard->status == 2 || $jobcard->status == 3)
                                                     <a
-                                                       @if ($jobcard->soft_delete == 0) href="{{ route('workshop.jobcardedit', $jobcard->id) }}" @endif>
-                                                       {{ $jobcard->shared_serial ?? '-' }}
-                                                   </a>
+                                                        @if ($jobcard->soft_delete == 0)
+                                                            href="{{ route('workshop.jobcardedit', $jobcard->id) }}"
+                                                        @endif
+                                                    >
+                                                        {{ $jobcard->shared_serial ?? '-' }}
+                                                    </a>
                                                 @else
                                                     -
                                                 @endif
                                             </td>
+
                                         @endif
+
                                         <td>
                                             <a
-                                                @if ($jobcard->soft_delete == 0) href="{{ route('workshop.jobcardedit', $jobcard->id) }}" @endif>
+                                                @if ($jobcard->soft_delete == 0)
+                                                    href="{{ route('workshop.jobcardedit', $jobcard->id) }}"
+                                                @endif
+                                            >
                                                 @if ($jobcard->cust_type == 1)
                                                     {{ 'M/S ' . $jobcard->company_name ?? ($jobcard->customer_name ?? '-') }}
                                                 @else
@@ -326,39 +880,58 @@
                                                 @endif
                                             </a>
                                         </td>
+
                                         <td>
                                             <a
-                                                @if ($jobcard->soft_delete == 0) href="{{ route('workshop.jobcardedit', $jobcard->id) }}" @endif>
+                                                @if ($jobcard->soft_delete == 0)
+                                                    href="{{ route('workshop.jobcardedit', $jobcard->id) }}"
+                                                @endif
+                                            >
                                                 {{ $jobcard->vehical_number ?? '-' }}
                                             </a>
                                         </td>
-                                        <td  style="min-width:300px;max-width: 350px;text-wrap:wrap;">
+
+                                        <td>
                                             <a
-                                                @if ($jobcard->soft_delete == 0) href="{{ route('workshop.jobcardedit', $jobcard->id) }}" @endif>
+                                                @if ($jobcard->soft_delete == 0)
+                                                    href="{{ route('workshop.jobcardedit', $jobcard->id) }}"
+                                                @endif
+                                            >
                                                 {{ $jobcard->vehical ?? '-' }}
                                             </a>
                                         </td>
+
                                         <td>
                                             <a
-                                                @if ($jobcard->soft_delete == 0) href="{{ route('workshop.jobcardedit', $jobcard->id) }}" @endif>
+                                                @if ($jobcard->soft_delete == 0)
+                                                    href="{{ route('workshop.jobcardedit', $jobcard->id) }}"
+                                                @endif
+                                            >
                                                 {{ $jobcard->final_amount ?? '-' }}
                                             </a>
                                         </td>
+
                                         <td>
                                             {{ $jobcard->advance ?? '-' }}
                                         </td>
+
                                         <td>
                                             {{ $jobcard->final_discount ?? '-' }}
                                         </td>
+
                                         <td>
                                             {{ $jobcard->final_paid ?? '-' }}
                                         </td>
+
                                         <td>
                                             {{ $jobcard->balance_amount ?? '-' }}
                                         </td>
+
                                         <td>
                                             @if ($jobcard->soft_delete == 0)
+
                                                 @switch($jobcard->status)
+
                                                     @case(1)
                                                         <span class="badge bg-primary">Confirmed</span>
                                                     @break
@@ -376,69 +949,111 @@
                                                     @break
 
                                                     @default
-                                                        <span class="badge bg-danger">Open</span>
+                                                        <span class="badge badge-open">Open</span>
+
                                                 @endswitch
+
                                             @else
+
                                                 <span class="badge bg-danger">Deleted</span>
+
                                             @endif
                                         </td>
-                                        <td>
 
+                                        <td>
                                             @if ($jobcard->soft_delete == 0)
-                                                @if ($user->hasPermissionTo('Jobcard-edit'))
-                                                    <a href="{{ route('workshop.jobcardedit', $jobcard->id) }}"
-                                                        class="btn btn-sm p-0">
-                                                        <i class="bx bxs-edit"></i>
-                                                    </a>
-                                                @endif
-                                                @if ($user->hasPermissionTo('Jobcard-delete'))
-                                                    @if ($jobcard->status != 3)
-                                                        <a wire:click="confirmDelete({{ $jobcard->id }})"
-                                                            class="btn btn-sm p-0">
-                                                            <i class="fadeIn animated bx bx-trash"></i>
+
+                                                <div class="cj-actions">
+
+                                                    @if ($user->hasPermissionTo('Jobcard-edit'))
+                                                        <a
+                                                            href="{{ route('workshop.jobcardedit', $jobcard->id) }}"
+                                                            class="cj-action-btn"
+                                                            title="Edit Job Card"
+                                                        >
+                                                            <i class="bx bxs-edit"></i>
                                                         </a>
                                                     @endif
-                                                @endif
+
+                                                    @if ($user->hasPermissionTo('Jobcard-delete'))
+                                                        @if ($jobcard->status != 3)
+                                                            <a
+                                                                wire:click="confirmDelete({{ $jobcard->id }})"
+                                                                class="cj-action-btn"
+                                                                title="Delete Job Card"
+                                                            >
+                                                                <i class="bx bx-trash"></i>
+                                                            </a>
+                                                        @endif
+                                                    @endif
+
+                                                </div>
+
                                             @else
                                                 -
                                             @endif
                                         </td>
+
                                     </tr>
+
                                 @endforeach
+
                             </tbody>
 
-
-
                         </table>
-                        <div class="pagination-wrapper">
-                            {{ $items->links() }}
-                        </div>
                     </div>
+
+                    <div class="cj-pagination pagination-wrapper">
+                        {{ $items->links() }}
+                    </div>
+
                 @else
-                    <div class="my-2">
-                        <div class="alert alert-info">No Job-Card Found!</div>
+
+                    <div class="cj-empty">
+                        <div class="cj-empty-icon">
+                            <i class="bx bx-clipboard"></i>
+                        </div>
+
+                        <p class="cj-empty-title">No Job Card Found</p>
+                        <p class="cj-empty-text">
+                            There are no job cards available for the selected filter.
+                        </p>
                     </div>
+
                 @endif
+
             </div>
+
         </div>
+
     @endif
 </div>
+
 @section('footerscript')
+
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
     <script>
         document.addEventListener('livewire:init', function() {
 
-
-
             Livewire.hook('morphed', (message, component) => {
+
                 $('.select2').select2().on('change', function(e) {
+
                     const selectedValues = $(this).val();
-                    @this.set(e.target.dataset.property, selectedValues);
+
+                    @this.set(
+                        e.target.dataset.property,
+                        selectedValues
+                    );
+
                 });
+
             });
 
-
         });
+
+
         document.addEventListener('show-dent-modal', () => {
 
             const modal = document.querySelector('.modal');
@@ -449,189 +1064,295 @@
             const carImageTag = document.getElementById('carImageTag');
             const carImage = new Image();
 
+            carImage.src = "{{ asset('assets/dentcar/car.png') }}";
 
-            // Set the source dynamically using Laravel's `asset()` helper function
-            carImage.src = "{{ asset('assets/dentcar/car.png') }}"; // This will insert the correct URL
+            const showModalButton = document.getElementById('showModalButton');
 
-            // When modal is triggered
-            const showModalButton = document.getElementById(
-                'showModalButton'); // Assuming you have a button to show the modal
             if (showModalButton) {
+
                 showModalButton.addEventListener('click', () => {
+
                     modal.classList.add('show');
-                    modal.style.display = 'block'; // Make sure modal is visible
-                    carImageTag.style.display = 'block'; // Ensure the image is also visible
+                    modal.style.display = 'block';
+                    carImageTag.style.display = 'block';
+
                 });
+
             }
 
-            // Image load event to ensure image is drawn when fully loaded
             carImage.onload = () => {
-                const scaleFactor = 0.7; // Resize image to 70%
+
+                const scaleFactor = 0.7;
+
                 const newWidth = carImage.width * scaleFactor;
                 const newHeight = carImage.height * scaleFactor;
 
-                // Set canvas dimensions
                 backgroundCanvas.width = newWidth;
                 backgroundCanvas.height = newHeight;
+
                 overlayCanvas.width = newWidth;
                 overlayCanvas.height = newHeight;
 
-                // Draw the image on the background canvas
-                bgCtx.drawImage(carImage, 0, 0, newWidth, newHeight);
+                bgCtx.drawImage(
+                    carImage,
+                    0,
+                    0,
+                    newWidth,
+                    newHeight
+                );
+
             };
 
-            // Drawing Logic
             let drawing = false;
-            let mode = 'dent'; // Default mode
+            let mode = 'dent';
 
             const penSettings = {
+
                 dent: {
                     color: 'yellow',
                     size: 5
                 },
+
                 scratch: {
                     color: 'green',
                     size: 5
                 },
+
                 break: {
                     color: 'red',
                     size: 5
                 },
+
                 erase: {
                     size: 15
-                } // Eraser size
+                }
+
             };
 
-            // Mode Switching
             const buttons = document.querySelectorAll('.controls button');
+
             buttons.forEach(button => {
+
                 button.addEventListener('click', () => {
-                    buttons.forEach(btn => btn.classList.remove('active'));
+
+                    buttons.forEach(btn =>
+                        btn.classList.remove('active')
+                    );
+
                     button.classList.add('active');
+
                     mode = button.id.replace('Btn', '');
+
                 });
+
             });
 
-            // Overlay Canvas Event Listeners
             overlayCanvas.addEventListener('mousedown', () => {
+
                 drawing = true;
                 overlayCtx.beginPath();
+
             });
+
             overlayCanvas.addEventListener('mouseup', () => {
+
                 drawing = false;
                 overlayCtx.beginPath();
+
             });
+
             overlayCanvas.addEventListener('mousemove', draw);
 
             function draw(event) {
+
                 if (!drawing) return;
 
                 const rect = overlayCanvas.getBoundingClientRect();
+
                 const x = event.clientX - rect.left;
                 const y = event.clientY - rect.top;
 
                 overlayCtx.lineCap = 'round';
 
                 if (mode === 'erase') {
-                    overlayCtx.globalCompositeOperation = 'destination-out';
-                    overlayCtx.lineWidth = penSettings.erase.size;
+
+                    overlayCtx.globalCompositeOperation =
+                        'destination-out';
+
+                    overlayCtx.lineWidth =
+                        penSettings.erase.size;
+
                 } else {
-                    overlayCtx.globalCompositeOperation = 'source-over';
-                    overlayCtx.strokeStyle = penSettings[mode].color;
-                    overlayCtx.lineWidth = penSettings[mode].size;
+
+                    overlayCtx.globalCompositeOperation =
+                        'source-over';
+
+                    overlayCtx.strokeStyle =
+                        penSettings[mode].color;
+
+                    overlayCtx.lineWidth =
+                        penSettings[mode].size;
+
                 }
 
                 overlayCtx.lineTo(x, y);
                 overlayCtx.stroke();
+
                 overlayCtx.beginPath();
                 overlayCtx.moveTo(x, y);
+
             }
 
-            // Clear Overlay Canvas
-            document.getElementById('clearBtn').addEventListener('click', () => {
-                overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
-            });
+            document.getElementById('clearBtn').addEventListener(
+                'click',
+                () => {
+
+                    overlayCtx.clearRect(
+                        0,
+                        0,
+                        overlayCanvas.width,
+                        overlayCanvas.height
+                    );
+
+                }
+            );
+
             let beta = 0;
 
-            // Save Merged Image and Send to Laravel
-            document.getElementById('saveBtn').addEventListener('click', () => {
-                if (beta = 0) {
-                    beta = 1;
-                    if (!confirm("Are you sure you want to save the changes?")) return;
+            document.getElementById('saveBtn').addEventListener(
+                'click',
+                () => {
+
+                    if (beta = 0) {
+
+                        beta = 1;
+
+                        if (!confirm(
+                            "Are you sure you want to save the changes?"
+                        )) return;
+
+                    }
+
+                    const mergedCanvas =
+                        document.createElement('canvas');
+
+                    const mergedCtx =
+                        mergedCanvas.getContext('2d');
+
+                    mergedCanvas.width =
+                        backgroundCanvas.width;
+
+                    mergedCanvas.height =
+                        backgroundCanvas.height;
+
+                    mergedCtx.drawImage(
+                        backgroundCanvas,
+                        0,
+                        0
+                    );
+
+                    mergedCtx.drawImage(
+                        overlayCanvas,
+                        0,
+                        0
+                    );
+
+                    const mergedImageData =
+                        mergedCanvas.toDataURL('image/png');
+
+                    Livewire.dispatch('saveImage', {
+                        mergedImageData: mergedImageData
+                    });
+
                 }
-                //    ekk variable banano bata name rahe 1 ho jaye agar
+            );
 
-
-                const mergedCanvas = document.createElement('canvas');
-                const mergedCtx = mergedCanvas.getContext('2d');
-
-                mergedCanvas.width = backgroundCanvas.width;
-                mergedCanvas.height = backgroundCanvas.height;
-
-                mergedCtx.drawImage(backgroundCanvas, 0, 0);
-                mergedCtx.drawImage(overlayCanvas, 0, 0);
-
-                const mergedImageData = mergedCanvas.toDataURL('image/png');
-
-                // Send the image data to Livewire
-                Livewire.dispatch('saveImage', {
-                    mergedImageData: mergedImageData
-                });
-
-            });
         });
 
-        function validateMaxQuantity(input) {
-            // Get the max quantity value
-            var maxQuantity = parseInt(input.getAttribute('max'));
 
-            // If the current value exceeds max quantity, reset it to max
+        function validateMaxQuantity(input) {
+
+            var maxQuantity =
+                parseInt(input.getAttribute('max'));
+
             if (parseInt(input.value) > maxQuantity) {
+
                 input.value = maxQuantity;
+
             }
+
         }
 
 
         document.addEventListener('razorpay-show', (event) => {
-            // Access event data using event.detail
 
             amount = event.__livewire.params[0].amount;
             orderId = event.__livewire.params[0].orderId;
 
             var options = {
+
                 "key": "{{ env('RAZORPAY_KEY') }}",
-                "amount": amount * 100, // Convert to paise
+
+                "amount": amount * 100,
+
                 "currency": "INR",
+
                 "order_id": orderId,
+
                 "name": "Test Payment",
+
                 "description": "Payment for product/service",
+
                 "image": "https://example.com/your-logo.png",
+
                 "handler": function(response) {
-                    console.log(response)
-                    // Example data to send
+
+                    console.log(response);
+
                     const paymentResponse = {
-                        razorpay_payment_id: response.razorpay_payment_id,
-                        razorpay_order_id: response.razorpay_order_id,
+
+                        razorpay_payment_id:
+                            response.razorpay_payment_id,
+
+                        razorpay_order_id:
+                            response.razorpay_order_id,
+
                         amount: amount,
+
                     };
+
                     Livewire.dispatch('storePayment', {
                         paymentResponse: paymentResponse
                     });
 
                 },
+
                 "prefill": {
-                    "name": @json(Auth::guard('workshop')->user()->name),
-                    "email": @json(Auth::guard('workshop')->user()->email),
-                    "contact": @json(Auth::guard('workshop')->user()->mobile_no)
+
+                    "name":
+                        @json(Auth::guard('workshop')->user()->name),
+
+                    "email":
+                        @json(Auth::guard('workshop')->user()->email),
+
+                    "contact":
+                        @json(Auth::guard('workshop')->user()->mobile_no)
+
                 },
+
                 "theme": {
                     "color": "#009dec"
                 }
+
             };
 
             var rzp1 = new Razorpay(options);
+
             rzp1.open();
+
             event.preventDefault();
+
         });
     </script>
+
 @endsection

@@ -33,12 +33,15 @@
                         <strong class="text-danger">{{ $message }}</strong>
                     @enderror
                 </div>
-                <div class="col-md-6">
-                    <div class="form-check form-switch new_input_margin">
+                <div class="col-md-9 d-flex align-items-center justify-content-between mb-3">
+                    <div class="form-check form-switch new_input_margin mb-0">
                         <input class="form-check-input" type="checkbox" id="remember"
                             {{ old('remember') ? 'checked' : '' }}>
                         <label class="form-check-label" for="remember">Remember Me</label>
                     </div>
+                    <a href="{{ route('unified.password.request') }}" class="text-danger fw-semibold text-decoration-none" style="font-size: 13px;">
+                        Forgot Password?
+                    </a>
                 </div>
                 @if (session()->has('error'))
                     <div class="text-danger mt-2">{{ session('error') }}</div>

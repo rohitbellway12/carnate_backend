@@ -9,7 +9,7 @@ class OrderItem extends Model
 {
     use HasFactory;
     public function SpareParts(){
-        return $this->belongsTo(SparePart::class,'spare_part_id','id');
+        return $this->belongsTo(SparePart::class,'spare_part_id','id')->withTrashed();
     }
     public function user(){
         return $this->belongsTo(User::class);

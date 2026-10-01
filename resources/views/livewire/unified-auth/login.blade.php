@@ -1,204 +1,1286 @@
-<div>
-    <div class="row g-0 min-vh-100">
-        <!-- Left Side - Branding Section -->
-        <div class="d-none d-sm-block col-lg-6" style="background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); position: relative; overflow: hidden; min-height: 100vh;">
+<div class="carnate-login-page">
 
-            <!-- Decorative Elements -->
-            <div style="position: absolute; top: 5%; left: -10%; width: 300px; height: 300px; background: rgba(255,107,53,0.08); border-radius: 50%;"></div>
-            <div style="position: absolute; bottom: 5%; right: -10%; width: 400px; height: 400px; background: rgba(255,107,53,0.06); border-radius: 50%;"></div>
-            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 500px; height: 500px; background: rgba(255,107,53,0.03); border-radius: 50%;"></div>
+    <style>
+        /* =========================================================
+           CARNATE LOGIN — PREMIUM SAAS STYLE
+        ========================================================= */
 
-            <div class="h-100 d-flex flex-column justify-content-center align-items-center px-4 px-xl-5" style="position: relative; z-index: 2;">
-                
-                <!-- Logo -->
-                <div class="text-center mb-4">
-                    <a href="{{ route('home') }}">
-                        <img src="{{ asset('assets/images/logo.png') }}" 
-                             class="img-fluid" 
-                             style="max-width: 220px; width: 100%; height: auto; object-fit: contain;" 
-                             alt="CARNATE">
-                    </a>
+        .carnate-login-page {
+            min-height: 100vh;
+            width: 100%;
+            background: #f7f8fa;
+            color: #111827;
+            overflow: hidden;
+        }
+
+        /* =========================================================
+           MAIN LAYOUT
+        ========================================================= */
+
+        .carnate-login-page .login-layout {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 44% 56%;
+        }
+
+        /* =========================================================
+           LEFT BRAND AREA
+        ========================================================= */
+
+        .carnate-login-page .brand-side {
+            position: relative;
+            min-height: 100vh;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 50px;
+
+            background: #f1f4f7;
+
+            border-right: 1px solid #e2e8f0;
+
+            overflow: hidden;
+        }
+
+        .carnate-login-page .brand-side::before {
+            content: "";
+
+            position: absolute;
+
+            width: 520px;
+            height: 520px;
+
+            left: -270px;
+            top: -240px;
+
+            border-radius: 50%;
+
+            background: rgba(229, 57, 53, 0.05);
+
+            pointer-events: none;
+        }
+
+        .carnate-login-page .brand-side::after {
+            content: "";
+
+            position: absolute;
+
+            width: 460px;
+            height: 460px;
+
+            right: -260px;
+            bottom: -240px;
+
+            border-radius: 50%;
+
+            background: rgba(15, 23, 42, 0.035);
+
+            pointer-events: none;
+        }
+
+        /* =========================================================
+           BRAND CONTENT
+        ========================================================= */
+
+        .carnate-login-page .brand-content {
+            position: relative;
+
+            z-index: 2;
+
+            width: 100%;
+
+            max-width: 560px;
+
+            text-align: center;
+        }
+
+        /* =========================================================
+           LOGO AREA
+        ========================================================= */
+
+        .carnate-login-page .brand-logo-wrapper {
+            position: relative;
+
+            width: 100%;
+            max-width: 480px;
+
+            height: 170px;
+
+            margin: 0 auto 42px;
+
+            padding: 25px 40px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: #0f0f0f;
+
+            border: 1px solid #202020;
+
+            border-radius: 22px;
+
+            box-shadow:
+                0 20px 50px rgba(15, 23, 42, 0.12);
+
+            overflow: hidden;
+
+            text-decoration: none;
+        }
+
+        .carnate-login-page .brand-logo-wrapper::before {
+            content: "";
+
+            position: absolute;
+
+            width: 230px;
+            height: 230px;
+
+            left: -110px;
+            top: -130px;
+
+            border-radius: 50%;
+
+            background: rgba(229, 57, 53, 0.13);
+
+            pointer-events: none;
+        }
+
+        .carnate-login-page .brand-logo-wrapper::after {
+            content: "";
+
+            position: absolute;
+
+            width: 200px;
+            height: 200px;
+
+            right: -100px;
+            bottom: -130px;
+
+            border-radius: 50%;
+
+            background: rgba(255, 255, 255, 0.04);
+
+            pointer-events: none;
+        }
+
+        .carnate-login-page .brand-logo {
+            position: relative;
+
+            z-index: 2;
+
+            display: block;
+
+            width: 100%;
+
+            max-width: 370px;
+
+            height: auto;
+
+            max-height: 100px;
+
+            object-fit: contain;
+        }
+
+        /* =========================================================
+           BRAND TITLE
+        ========================================================= */
+
+        .carnate-login-page .brand-title {
+            margin: 0 0 14px;
+
+            color: #111827;
+
+            font-size: 30px;
+
+            font-weight: 700;
+
+            line-height: 1.25;
+
+            letter-spacing: -0.7px;
+        }
+
+        .carnate-login-page .brand-description {
+            max-width: 450px;
+
+            margin: 0 auto;
+
+            color: #64748b;
+
+            font-size: 15px;
+
+            line-height: 1.7;
+        }
+
+        /* =========================================================
+           FEATURES
+        ========================================================= */
+
+        .carnate-login-page .feature-list {
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            gap: 10px;
+
+            margin-top: 30px;
+
+            flex-wrap: wrap;
+        }
+
+        .carnate-login-page .feature-item {
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 7px;
+
+            min-height: 38px;
+
+            padding: 8px 13px;
+
+            background: #ffffff;
+
+            border: 1px solid #e2e8f0;
+
+            border-radius: 9px;
+
+            color: #64748b;
+
+            font-size: 12px;
+
+            font-weight: 500;
+
+            box-shadow:
+                0 3px 10px rgba(15, 23, 42, 0.025);
+        }
+
+        .carnate-login-page .feature-item i {
+            color: #e53935;
+
+            font-size: 15px;
+        }
+
+        /* =========================================================
+           RIGHT FORM AREA
+        ========================================================= */
+
+        .carnate-login-page .form-side {
+            min-height: 100vh;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 50px 70px;
+
+            background: #ffffff;
+        }
+
+        /* =========================================================
+           FORM CONTAINER
+        ========================================================= */
+
+        .carnate-login-page .login-container {
+            width: 100%;
+
+            max-width: 440px;
+        }
+
+        /* =========================================================
+           MOBILE LOGO
+        ========================================================= */
+
+        .carnate-login-page .mobile-logo {
+            display: none;
+
+            width: 200px;
+
+            max-height: 70px;
+
+            height: auto;
+
+            object-fit: contain;
+
+            margin: 0 auto 35px;
+        }
+
+        /* =========================================================
+           FORM HEADER
+        ========================================================= */
+
+        .carnate-login-page .login-header {
+            margin-bottom: 32px;
+        }
+
+        .carnate-login-page .login-heading {
+            margin: 0 0 9px;
+
+            color: #111827;
+
+            font-size: 32px;
+
+            font-weight: 700;
+
+            line-height: 1.2;
+
+            letter-spacing: -0.8px;
+        }
+
+        .carnate-login-page .login-subtitle {
+            margin: 0;
+
+            color: #64748b;
+
+            font-size: 14px;
+
+            line-height: 1.6;
+        }
+
+        /* =========================================================
+           FORM GROUP
+        ========================================================= */
+
+        .carnate-login-page .form-group {
+            margin-bottom: 20px;
+        }
+
+        .carnate-login-page .form-label {
+            display: block;
+
+            margin-bottom: 8px;
+
+            color: #334155;
+
+            font-size: 13px;
+
+            font-weight: 600;
+        }
+
+        .carnate-login-page .required {
+            color: #e53935;
+        }
+
+        /* =========================================================
+           INPUT
+        ========================================================= */
+
+        .carnate-login-page .form-control {
+            width: 100%;
+
+            height: 52px;
+
+            padding: 0 15px;
+
+            border: 1px solid #dbe2ea;
+
+            border-radius: 9px;
+
+            background: #ffffff;
+
+            color: #111827;
+
+            font-size: 14px;
+
+            box-shadow: none;
+
+            transition:
+                border-color .2s ease,
+                box-shadow .2s ease,
+                background-color .2s ease;
+        }
+
+        .carnate-login-page .form-control::placeholder {
+            color: #a1aab7;
+        }
+
+        .carnate-login-page .form-control:hover {
+            border-color: #cbd5e1;
+        }
+
+        .carnate-login-page .form-control:focus {
+            border-color: #e53935;
+
+            background: #ffffff;
+
+            box-shadow:
+                0 0 0 3px rgba(229, 57, 53, 0.08);
+
+            outline: none;
+        }
+
+        /* =========================================================
+           PASSWORD
+        ========================================================= */
+
+        .carnate-login-page .password-wrapper {
+            position: relative;
+        }
+
+        .carnate-login-page .password-wrapper .form-control {
+            padding-right: 50px;
+        }
+
+        .carnate-login-page .password-toggle {
+            position: absolute;
+
+            top: 50%;
+            right: 7px;
+
+            width: 38px;
+            height: 38px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            transform: translateY(-50%);
+
+            border: 0;
+
+            border-radius: 7px;
+
+            background: transparent;
+
+            color: #64748b;
+
+            cursor: pointer;
+
+            font-size: 18px;
+
+            transition: all .2s ease;
+        }
+
+        .carnate-login-page .password-toggle:hover {
+            background: #f8fafc;
+
+            color: #e53935;
+        }
+
+        /* =========================================================
+           VALIDATION
+        ========================================================= */
+
+        .carnate-login-page .field-error {
+            display: block;
+
+            margin-top: 6px;
+
+            color: #dc2626;
+
+            font-size: 12px;
+
+            line-height: 1.4;
+        }
+
+        .carnate-login-page .session-error {
+            margin-bottom: 18px;
+
+            padding: 11px 13px;
+
+            border: 1px solid #fecaca;
+
+            border-radius: 8px;
+
+            background: #fef2f2;
+
+            color: #b91c1c;
+
+            font-size: 13px;
+        }
+
+        /* =========================================================
+           REMEMBER ME
+        ========================================================= */
+
+        .carnate-login-page .remember-row {
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            margin: 4px 0 25px;
+        }
+
+        .carnate-login-page .remember-row .forgot-link {
+            color: #e53935;
+
+            font-size: 13px;
+
+            font-weight: 500;
+
+            text-decoration: none;
+
+            transition: color .2s ease, text-decoration .2s ease;
+        }
+
+        .carnate-login-page .remember-row .forgot-link:hover {
+            color: #b91c1c;
+
+            text-decoration: underline;
+        }
+
+        .carnate-login-page .remember-row .form-check-input {
+            width: 18px;
+            height: 18px;
+
+            margin: 0;
+
+            border: 1px solid #cbd5e1;
+
+            border-radius: 5px;
+
+            box-shadow: none;
+
+            cursor: pointer;
+        }
+
+        .carnate-login-page .remember-row .form-check-input:checked {
+            background-color: #e53935;
+
+            border-color: #e53935;
+        }
+
+        .carnate-login-page .remember-row .form-check-label {
+            margin-left: 9px;
+
+            color: #64748b;
+
+            font-size: 13px;
+
+            cursor: pointer;
+        }
+
+        /* =========================================================
+           LOGIN BUTTON
+        ========================================================= */
+
+        .carnate-login-page .login-btn {
+            width: 100%;
+
+            height: 52px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            gap: 8px;
+
+            border: 0;
+
+            border-radius: 9px;
+
+            background: #e53935;
+
+            color: #ffffff;
+
+            font-size: 14px;
+
+            font-weight: 600;
+
+            box-shadow:
+                0 7px 18px rgba(229, 57, 53, 0.18);
+
+            transition:
+                background .2s ease,
+                transform .2s ease,
+                box-shadow .2s ease;
+        }
+
+        .carnate-login-page .login-btn:hover {
+            background: #d92f2b;
+
+            color: #ffffff;
+
+            transform: translateY(-1px);
+
+            box-shadow:
+                0 10px 22px rgba(229, 57, 53, 0.22);
+        }
+
+        .carnate-login-page .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .carnate-login-page .login-btn:disabled {
+            opacity: .7;
+
+            cursor: not-allowed;
+
+            transform: none;
+        }
+
+        /* =========================================================
+           DIVIDER
+        ========================================================= */
+
+        .carnate-login-page .login-divider {
+            display: flex;
+
+            align-items: center;
+
+            gap: 14px;
+
+            margin: 25px 0;
+        }
+
+        .carnate-login-page .login-divider::before,
+        .carnate-login-page .login-divider::after {
+            content: "";
+
+            flex: 1;
+
+            height: 1px;
+
+            background: #e2e8f0;
+        }
+
+        .carnate-login-page .login-divider span {
+            color: #94a3b8;
+
+            font-size: 11px;
+
+            font-weight: 600;
+
+            letter-spacing: 1px;
+        }
+
+        /* =========================================================
+           SWITCH LOGIN
+        ========================================================= */
+
+        .carnate-login-page .switch-login-btn {
+            width: 100%;
+
+            height: 52px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            gap: 8px;
+
+            border: 1px solid #dbe2ea;
+
+            border-radius: 9px;
+
+            background: #ffffff;
+
+            color: #334155;
+
+            font-size: 14px;
+
+            font-weight: 600;
+
+            transition: all .2s ease;
+        }
+
+        .carnate-login-page .switch-login-btn:hover {
+            border-color: #e53935;
+
+            background: #fff5f5;
+
+            color: #e53935;
+        }
+
+        .carnate-login-page .switch-login-btn:disabled {
+            opacity: .7;
+
+            cursor: not-allowed;
+        }
+
+        /* =========================================================
+           LOADER
+        ========================================================= */
+
+        .carnate-login-page .spinner-border {
+            width: 15px;
+
+            height: 15px;
+
+            border-width: 2px;
+        }
+
+        /* =========================================================
+           RESPONSIVE
+        ========================================================= */
+
+        @media (max-width: 1100px) {
+
+            .carnate-login-page .login-layout {
+                grid-template-columns: 40% 60%;
+            }
+
+            .carnate-login-page .brand-side {
+                padding: 35px;
+            }
+
+            .carnate-login-page .form-side {
+                padding: 40px;
+            }
+
+            .carnate-login-page .brand-logo-wrapper {
+                max-width: 400px;
+            }
+
+            .carnate-login-page .brand-title {
+                font-size: 26px;
+            }
+        }
+
+        @media (max-width: 767px) {
+
+            .carnate-login-page {
+                overflow-y: auto;
+            }
+
+            .carnate-login-page .login-layout {
+                display: block;
+
+                min-height: 100vh;
+            }
+
+            .carnate-login-page .brand-side {
+                display: none;
+            }
+
+            .carnate-login-page .form-side {
+                min-height: 100vh;
+
+                padding: 35px 22px;
+            }
+
+            .carnate-login-page .mobile-logo {
+                display: block;
+            }
+
+            .carnate-login-page .login-container {
+                max-width: 430px;
+            }
+
+            .carnate-login-page .login-heading {
+                font-size: 28px;
+            }
+        }
+
+        @media (max-width: 400px) {
+
+            .carnate-login-page .form-side {
+                padding: 30px 18px;
+            }
+
+            .carnate-login-page .login-heading {
+                font-size: 25px;
+            }
+
+            .carnate-login-page .brand-logo-wrapper {
+                height: 150px;
+            }
+        }
+    </style>
+
+
+    {{-- =====================================================
+         MAIN LAYOUT
+    ====================================================== --}}
+
+    <div class="login-layout">
+
+
+        {{-- =================================================
+             LEFT BRAND SIDE
+        ================================================== --}}
+
+        <div class="brand-side">
+
+            <div class="brand-content">
+
+
+                {{-- =================================================
+                     CARNATE LOGO
+                ================================================== --}}
+
+                <a
+                    href="{{ route('home') }}"
+                    class="brand-logo-wrapper"
+                >
+
+                    <img
+                        src="{{ asset('assets/images/logo.png') }}"
+                        class="brand-logo"
+                        alt="Carnate"
+                    >
+
+                </a>
+
+
+                {{-- =================================================
+                     BRAND TITLE
+                ================================================== --}}
+
+                <h2 class="brand-title">
+                    Everything your workshop needs.
+                </h2>
+
+
+                {{-- =================================================
+                     BRAND DESCRIPTION
+                ================================================== --}}
+
+                <p class="brand-description">
+
+                    Manage customers, vehicles, job cards,
+                    spare parts, payments and workshop
+                    operations from one simple platform.
+
+                </p>
+
+
+                {{-- =================================================
+                     FEATURES
+                ================================================== --}}
+
+                <div class="feature-list">
+
+                    <div class="feature-item">
+
+                        <i class="bx bx-check-circle"></i>
+
+                        <span>
+                            Workshop Management
+                        </span>
+
+                    </div>
+
+
+                    <div class="feature-item">
+
+                        <i class="bx bx-check-circle"></i>
+
+                        <span>
+                            Job Cards
+                        </span>
+
+                    </div>
+
+
+                    <div class="feature-item">
+
+                        <i class="bx bx-check-circle"></i>
+
+                        <span>
+                            Vehicle Management
+                        </span>
+
+                    </div>
+
                 </div>
 
-                <!-- Main Heading -->
-                <div class="text-center text-white">
-                    <h1 style="font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700; margin-bottom: 0.25rem; background: linear-gradient(135deg, #ffffff 0%, #ff6b35 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-                        WorkShop
-                    </h1>
-                    <h1 style="font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700; margin-bottom: 0.25rem; color: #ffffff;">
-                        Management
-                    </h1>
-                    <h1 style="font-size: clamp(2.4rem, 6vw, 4.2rem); font-weight: 800; margin-bottom: 1.5rem; color: #ff6b35;">
-                        Solution
-                    </h1>
-
-                    <div style="width: 60px; height: 3px; background: #ff6b35; margin: 0 auto 1.5rem auto; border-radius: 2px;"></div>
-
-                    <p style="font-size: clamp(0.85rem, 1.2vw, 1.05rem); line-height: 1.8; opacity: 0.9; max-width: 480px; margin: 0 auto; color: #e0e0e0;">
-                        Welcome to CARNATE the smarter way to manage modern workshops and automotive service businesses.
-                    </p>
-                </div>
             </div>
+
         </div>
 
-        <!-- Right Side - Login Form -->
-        <div class="col-12 col-lg-6 d-flex align-items-center justify-content-center px-3 px-md-4 px-lg-5" style="background: #ffffff; min-height: 100vh;">
-            <form class="w-100" wire:submit="login" style="max-width: 440px; padding: 20px 0;">
-                
-                <!-- Login Heading -->
-                <div class="text-center mb-4">
-                    <h2 style="color: #1a2a3a; font-weight: 700; font-size: clamp(1.5rem, 2.5vw, 2rem); margin-bottom: 0.25rem;">Login</h2>
-                    <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 0;">Welcome back! Please login to your account</p>
+
+        {{-- =================================================
+             RIGHT LOGIN SIDE
+        ================================================== --}}
+
+        <div class="form-side">
+
+            <div class="login-container">
+
+
+                {{-- =================================================
+                     MOBILE LOGO
+                ================================================== --}}
+
+                <img
+                    src="{{ asset('assets/images/logo.png') }}"
+                    class="mobile-logo"
+                    alt="Carnate"
+                >
+
+
+                {{-- =================================================
+                     LOGIN HEADER
+                ================================================== --}}
+
+                <div class="login-header">
+
+                    <h1 class="login-heading">
+                        Workshop Login
+                    </h1>
+
+                    <p class="login-subtitle">
+                        Sign in to access your workshop management dashboard.
+                    </p>
+
                 </div>
 
-                @csrf
 
-                @if ($loginType == 1)
-                <!-- Phone Input -->
-                <div class="mb-3">
-                    <label for="inputPhone" class="form-label fw-semibold mb-1" style="color: #1a2a3a; font-size: 0.9rem;">Phone</label>
-                    <input type="text" 
-                           class="form-control" 
-                           id="inputPhone" 
-                           wire:model="phone"
-                           placeholder="Enter your phone number" 
-                           autocomplete="phone" 
-                           autofocus
-                           style="padding: 11px 15px; border-radius: 8px; border: 1px solid #e0e0e0; background: #fafafa; font-size: 0.95rem;">
-                    @error('phone')
-                    <div class="text-danger small mt-1">{{ $message }}</div>
-                    @enderror
-                </div>
-                @else
-                <!-- Email Input -->
-                <div class="mb-3">
-                    <label for="inputEmailAddress" class="form-label fw-semibold mb-1" style="color: #1a2a3a; font-size: 0.9rem;">Email Address</label>
-                    <input type="email" 
-                           class="form-control" 
-                           id="inputEmailAddress" 
-                           wire:model="email"
-                           placeholder="Enter your email address" 
-                           autocomplete="email" 
-                           autofocus
-                           style="padding: 11px 15px; border-radius: 8px; border: 1px solid #e0e0e0; background: #fafafa; font-size: 0.95rem;">
-                    @error('email')
-                    <div class="text-danger small mt-1">{{ $message }}</div>
-                    @enderror
-                </div>
-                @endif
+                {{-- =================================================
+                     LOGIN FORM
+                ================================================== --}}
 
-                <!-- Password Input -->
-                <div class="mb-3">
-                    <label for="inputChoosePassword" class="form-label fw-semibold mb-1" style="color: #1a2a3a; font-size: 0.9rem;">Enter Password</label>
-                    <div class="input-group" id="show_hide_password">
-                        <input type="password" 
-                               class="form-control border-end-0" 
-                               id="inputChoosePassword"
-                               wire:model="password" 
-                               placeholder="Enter your password" 
-                               autocomplete="password"
-                               style="padding: 11px 15px; border-radius: 8px 0 0 8px; border: 1px solid #e0e0e0; background: #fafafa; font-size: 0.95rem;">
-                        <a href="javascript:void(0);" 
-                           class="input-group-text bg-transparent" 
-                           style="border-radius: 0 8px 8px 0; border: 1px solid #e0e0e0; border-left: none; background: #fafafa; padding: 11px 15px;"
-                           onclick="togglePassword()">
-                            <i class='bx bx-hide' id="password-icon" style="color: #999; font-size: 1.2rem;"></i>
+                <form
+                    wire:submit="login"
+                >
+
+                    @csrf
+
+
+                    {{-- =================================================
+                         EMAIL / PHONE
+                    ================================================== --}}
+
+                    @if ($loginType == 1)
+
+                        {{-- PHONE LOGIN --}}
+
+                        <div class="form-group">
+
+                            <label
+                                for="inputPhone"
+                                class="form-label"
+                            >
+                                Phone
+                                <span class="required">*</span>
+                            </label>
+
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="inputPhone"
+                                wire:model="phone"
+                                placeholder="Enter your phone number"
+                                autocomplete="phone"
+                                autofocus
+                            >
+
+
+                            @error('phone')
+
+                                <span class="field-error">
+                                    {{ $message }}
+                                </span>
+
+                            @enderror
+
+                        </div>
+
+                    @else
+
+                        {{-- EMAIL LOGIN --}}
+
+                        <div class="form-group">
+
+                            <label
+                                for="inputEmailAddress"
+                                class="form-label"
+                            >
+                                Email Address
+                                <span class="required">*</span>
+                            </label>
+
+
+                            <input
+                                type="email"
+                                class="form-control"
+                                id="inputEmailAddress"
+                                wire:model="email"
+                                placeholder="Enter your email address"
+                                autocomplete="email"
+                                autofocus
+                            >
+
+
+                            @error('email')
+
+                                <span class="field-error">
+                                    {{ $message }}
+                                </span>
+
+                            @enderror
+
+                        </div>
+
+                    @endif
+
+
+                    {{-- =================================================
+                         PASSWORD
+                    ================================================== --}}
+
+                    <div class="form-group">
+
+                        <label
+                            for="inputChoosePassword"
+                            class="form-label"
+                        >
+                            Password
+                            <span class="required">*</span>
+                        </label>
+
+
+                        <div class="password-wrapper">
+
+                            <input
+                                type="password"
+                                class="form-control"
+                                id="inputChoosePassword"
+                                wire:model="password"
+                                placeholder="Enter your password"
+                                autocomplete="current-password"
+                            >
+
+
+                            <button
+                                type="button"
+                                class="password-toggle"
+                                onclick="togglePassword()"
+                                aria-label="Show or hide password"
+                            >
+
+                                <i
+                                    class="bx bx-hide"
+                                    id="password-icon"
+                                ></i>
+
+                            </button>
+
+                        </div>
+
+
+                        @error('password')
+
+                            <span class="field-error">
+                                {{ $message }}
+                            </span>
+
+                        @enderror
+
+                    </div>
+
+
+                    {{-- =================================================
+                         REMEMBER ME & FORGOT PASSWORD
+                    ================================================== --}}
+
+                    <div class="remember-row">
+
+                        <div class="d-flex align-items-center">
+
+                            <input
+                                class="form-check-input"
+                                type="checkbox"
+                                id="remember"
+                                wire:model="remember"
+                            >
+
+                            <label
+                                class="form-check-label"
+                                for="remember"
+                            >
+                                Remember Me
+                            </label>
+
+                        </div>
+
+                        <a href="{{ route('unified.password.request') }}" class="forgot-link">
+                            Forgot Password?
                         </a>
+
                     </div>
-                    @error('password')
-                    <div class="text-danger small mt-1">{{ $message }}</div>
-                    @enderror
-                </div>
 
-                <!-- Remember Me & Forgot Password -->
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div class="form-check">
-                        <input class="form-check-input" 
-                               type="checkbox" 
-                               id="remember" 
-                               wire:model="remember" 
-                               style="border-color: #ff6b35; cursor: pointer;">
-                        <label class="form-check-label small" for="remember" style="color: #666; cursor: pointer;">Remember Me</label>
-                    </div>
-                    <a href="{{ route('unified.password.request') }}" 
-                       class="text-decoration-none small" 
-                       style="color: #ff6b35; font-weight: 500;">
-                        Forgot Password?
-                    </a>
-                </div>
 
-                <!-- Session Error Message -->
-                @if (session()->has('error'))
-                <div class="alert alert-danger small mb-3" style="border-radius: 8px; padding: 10px 15px;">
-                    {{ session('error') }}
-                </div>
-                @endif
+                    {{-- =================================================
+                         SESSION ERROR
+                    ================================================== --}}
 
-                <!-- Login Button -->
-                <div class="d-grid mb-3">
-                    <button type="submit" 
-                            class="btn py-2" 
-                            style="background: #ff6b35; border: none; color: white; font-weight: 600; border-radius: 8px; font-size: 1rem; transition: all 0.3s ease;"
-                            onmouseover="this.style.background='#e55a2b'" 
-                            onmouseout="this.style.background='#ff6b35'"
-                            wire:loading.attr="disabled">
-                        <span wire:loading.remove wire:target.except="login_type">
-                            <i class="bx bxs-lock-open me-1"></i> Log In
+                    @if (session()->has('error'))
+
+                        <div class="session-error">
+                            {{ session('error') }}
+                        </div>
+
+                    @endif
+
+
+                    {{-- =================================================
+                         LOGIN BUTTON
+                    ================================================== --}}
+
+                    <button
+                        type="submit"
+                        class="login-btn"
+                        wire:loading.attr="disabled"
+                    >
+
+                        <span
+                            wire:loading.remove
+                            wire:target.except="login_type"
+                        >
+
+                            <i class="bx bxs-lock-open"></i>
+
+                            Log in
+
                         </span>
-                        <span wire:loading wire:target.except="login_type">
-                            <i class="spinner-border spinner-border-sm me-1" role="status"></i> Loading...
+
+
+                        <span
+                            wire:loading
+                            wire:target.except="login_type"
+                        >
+
+                            <i
+                                class="spinner-border spinner-border-sm"
+                                role="status"
+                            ></i>
+
+                            Loading...
+
                         </span>
+
                     </button>
-                </div>
 
-                <!-- OR Divider -->
-                <div class="text-center my-3 position-relative">
-                    <hr style="border-top: 1px solid #e0e0e0;">
-                    <span class="text-muted small px-3" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #ffffff; font-size: 0.85rem;">OR</span>
-                </div>
 
-                <!-- Switch Login Type Button -->
-                <div class="d-grid">
-                    <button type="button" 
-                            class="btn py-2" 
-                            style="background: #2c3e50; border: none; color: white; font-weight: 500; border-radius: 8px; font-size: 0.95rem; transition: all 0.3s ease;"
-                            onmouseover="this.style.background='#1a2a3a'" 
-                            onmouseout="this.style.background='#2c3e50'"
-                            wire:click="login_type({{ $loginType == 1 ? 0 : 1 }})" 
-                            wire:loading.attr="disabled">
-                        <span wire:loading.remove wire:target="login_type">
+                    {{-- =================================================
+                         DIVIDER
+                    ================================================== --}}
+
+                    <div class="login-divider">
+
+                        <span>
+                            OR
+                        </span>
+
+                    </div>
+
+
+                    {{-- =================================================
+                         SWITCH LOGIN TYPE
+                    ================================================== --}}
+
+                    <button
+                        type="button"
+                        class="switch-login-btn"
+                        wire:click="login_type({{ $loginType == 1 ? 0 : 1 }})"
+                        wire:loading.attr="disabled"
+                    >
+
+                        <span
+                            wire:loading.remove
+                            wire:target="login_type"
+                        >
+
                             @if ($loginType == 1)
-                            <i class="bx bxs-envelope me-1"></i> Log in with Email
-                            @else
-                            <i class="bx bxs-phone me-1"></i> Log in with Phone
-                            @endif
-                        </span>
-                        <span wire:loading.inline wire:target="login_type">
-                            <i class="spinner-border spinner-border-sm me-1" role="status"></i> Loading...
-                        </span>
-                    </button>
-                </div>
 
-            </form>
+                                <i class="bx bxs-envelope"></i>
+
+                                Log in with Email
+
+                            @else
+
+                                <i class="bx bxs-phone"></i>
+
+                                Log in with Phone
+
+                            @endif
+
+                        </span>
+
+
+                        <span
+                            wire:loading.inline
+                            wire:target="login_type"
+                        >
+
+                            <i
+                                class="spinner-border spinner-border-sm"
+                                role="status"
+                            ></i>
+
+                            Loading...
+
+                        </span>
+
+                    </button>
+
+                </form>
+
+            </div>
+
         </div>
+
     </div>
+
 </div>
 
-@section('footerscript')
-<script>
-    function togglePassword() {
-        const passwordInput = document.getElementById("inputChoosePassword");
-        const passwordIcon = document.getElementById("password-icon");
 
-        if (passwordInput.type === "password") {
-            passwordInput.type = "text";
-            passwordIcon.classList.remove("bx-hide");
-            passwordIcon.classList.add("bx-show");
-        } else {
-            passwordInput.type = "password";
-            passwordIcon.classList.remove("bx-show");
-            passwordIcon.classList.add("bx-hide");
+@section('footerscript')
+
+<script>
+
+    function togglePassword() {
+
+        const passwordInput =
+            document.getElementById(
+                "inputChoosePassword"
+            );
+
+        const passwordIcon =
+            document.getElementById(
+                "password-icon"
+            );
+
+
+        if (!passwordInput || !passwordIcon) {
+            return;
         }
+
+
+        if (
+            passwordInput.type === "password"
+        ) {
+
+            passwordInput.type = "text";
+
+            passwordIcon.classList.remove(
+                "bx-hide"
+            );
+
+            passwordIcon.classList.add(
+                "bx-show"
+            );
+
+        } else {
+
+            passwordInput.type = "password";
+
+            passwordIcon.classList.remove(
+                "bx-show"
+            );
+
+            passwordIcon.classList.add(
+                "bx-hide"
+            );
+
+        }
+
     }
+
 </script>
+
 @endsection

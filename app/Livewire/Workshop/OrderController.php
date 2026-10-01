@@ -49,10 +49,11 @@ class OrderController extends Component
         $orders= '';
         $items= '';
         if ($this->showOrderItem) {
-            
-            $orders = Order::with([ 'orderItem' ])->whereId($this->orderId)->where('workshop_id', $user->is_user == 0 ? $this->user_id : $user->parent_id)->where('payment_status',0)->where('is_confim', 1)->first();
+            $orders = Order::with(['orderItem.SpareParts.Image'])
+                ->where('id', $this->orderId)
+                ->first();
         } else {
-            $items = Order::with('orderItem')->where('workshop_id', $user->is_user == 0 ? $this->user_id : $user->parent_id)->where('payment_status',0)->where('is_confim', 1);
+            $items = Order::with(['orderItem.SpareParts'])->where('workshop_id', $user->is_user == 0 ? $this->user_id : $user->parent_id)->where('payment_status',0)->where('is_confim', 1);
                 if($this->searchfilter){
                     $items = $items->where('id',$this->searchfilter);
                 }

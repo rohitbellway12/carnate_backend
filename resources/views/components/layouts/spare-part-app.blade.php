@@ -39,6 +39,48 @@
     <link href="{{ asset('assets/plugins/select2/css/select2-bootstrap4.css') }}" rel="stylesheet" />
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Spare-parts uses the same red/slate accent system as its refreshed UI. */
+        .pace .pace-progress {
+            background: #e53935 !important;
+        }
+
+        .pace .pace-progress-inner {
+            box-shadow: 0 0 10px #e53935, 0 0 5px #e53935 !important;
+        }
+
+        .pace .pace-activity {
+            border-top-color: #e53935 !important;
+            border-left-color: #e53935 !important;
+        }
+
+        .pagination .page-link {
+            color: #64748b;
+            border-color: #e2e8f0;
+            background: #ffffff;
+            box-shadow: none;
+        }
+
+        .pagination .page-link:hover,
+        .pagination .page-link:focus {
+            color: #e53935;
+            border-color: #fecaca;
+            background: #fff5f5;
+            box-shadow: 0 0 0 .2rem rgba(229, 57, 53, .1);
+        }
+
+        .pagination .page-item.active .page-link {
+            color: #ffffff;
+            border-color: #e53935;
+            background: #e53935;
+        }
+
+        .pagination .page-item.disabled .page-link {
+            color: #94a3b8;
+            border-color: #e2e8f0;
+            background: #f8fafc;
+        }
+    </style>
     @yield('style')
     <!-- Scripts -->
     @livewireStyles
@@ -72,7 +114,7 @@
                                 <form method="POST" action="{{ route('sparepart.update-order-check') }}"
                                     onsubmit="closepopup()">
                                     @csrf
-                                    <button type="submit" class="btn btn-primary">OK</button>
+                                    <button type="submit" class="btn btn-danger px-4" style="background-color: #e53935; border-color: #e53935; font-weight: 600;">OK</button>
                                 </form>
                             </div>
                         </div>
@@ -143,7 +185,7 @@
 
             isFetching = true;
 
-            fetch(`/sparepart/get-notifications`, {
+            fetch(`/portal/sparepart/get-notifications`, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
@@ -219,7 +261,7 @@
         }
 
         function markHeaderNotifAsReadSp(id) {
-            const url = `/sparepart/notifications/${id}/read`;
+            const url = `/portal/sparepart/notifications/${id}/read`;
             fetch(url, {
                     method: 'POST',
                     headers: {
@@ -264,7 +306,8 @@
                                 <i class="fa-solid fa-bell bell-icon" style="font-size: 35px; color: #ffcc00;"></i>
                                 <h5 class="mt-3">${escapeHtml(notification.title)}</h5>
                                 <p>${escapeHtml(notification.message)}</p>
-                                <button type="button" class="btn btn-primary" onclick="handleNotificationModalActionSp(${JSON.stringify(orderId)})">
+                                                                <button type="button" class="btn btn-danger px-4" style="background-color: #e53935; border-color: #e53935; font-weight: 600;" onclick="handleNotificationModalActionSp(${JSON.stringify(orderId)})">
+
                                     ${orderId ? 'View Order' : 'OK'}
                                 </button>
                             </div>
@@ -302,7 +345,7 @@
             if (modal) modal.hide();
 
             if (orderId) {
-                window.location.href = `/sparepart/order`;
+                window.location.href = `/portal/sparepart/order`;
             }
         }
 

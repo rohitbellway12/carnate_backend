@@ -164,7 +164,7 @@ class JobCardAddController extends Component
             $this->customerVoicesData = $this->customerVoicesData->whereNotIn('customer_voice', $this->customerVoices);
         }
 
-        $this->customerVoicesData = $this->customerVoicesData->groupBy('customer_voice')->orderBy('id', 'desc')->get();
+        $this->customerVoicesData = $this->customerVoicesData->groupBy('customer_voice')->orderByRaw('MAX(id) DESC')->get();
     }
 
     private function fetchWorkNoteVoicesData()
@@ -176,7 +176,7 @@ class JobCardAddController extends Component
             $this->worknotVoicesData = $this->worknotVoicesData->whereNotIn('customer_voice', $this->workVoices);
         }
 
-        $this->worknotVoicesData = $this->worknotVoicesData->groupBy('customer_voice')->orderBy('id', 'desc')->get();
+        $this->worknotVoicesData = $this->worknotVoicesData->groupBy('customer_voice')->orderByRaw('MAX(id) DESC')->get();
     }
 
     private function fetchAccessoryData()
@@ -188,7 +188,7 @@ class JobCardAddController extends Component
             $this->accessoryData = $this->accessoryData->whereNotIn('customer_voice', $this->accessoriesVoices);
         }
 
-        $this->accessoryData = $this->accessoryData->groupBy('customer_voice')->orderBy('id', 'desc')->get();
+        $this->accessoryData = $this->accessoryData->groupBy('customer_voice')->orderByRaw('MAX(id) DESC')->get();
     }
 
     public function render()
@@ -895,7 +895,7 @@ class JobCardAddController extends Component
         if (!empty($this->customerVoices)) {
             $this->customerVoicesData = $this->customerVoicesData->whereNotIn('customer_voice', $this->customerVoices);
         }
-        $this->customerVoicesData = $this->customerVoicesData->groupBy('customer_voice')->orderBy('id', 'desc')->get();
+        $this->customerVoicesData = $this->customerVoicesData->groupBy('customer_voice')->orderByRaw('MAX(id) DESC')->get();
 
 
     }
@@ -909,7 +909,7 @@ class JobCardAddController extends Component
         if (!empty($this->accessoriesVoices)) {
             $this->accessoryData = $this->accessoryData->whereNotIn('customer_voice', $this->accessoriesVoices);
         }
-        $this->accessoryData = $this->accessoryData->groupBy('customer_voice')->orderBy('id', 'desc')->get();
+        $this->accessoryData = $this->accessoryData->groupBy('customer_voice')->orderByRaw('MAX(id) DESC')->get();
     }
 
     public function updatedSearchWorkNotes($customerVoice)
@@ -921,7 +921,7 @@ class JobCardAddController extends Component
             $this->worknotVoicesData = $this->worknotVoicesData->whereNotIn('customer_voice', $this->workVoices);
         }
 
-        $this->worknotVoicesData = $this->worknotVoicesData->groupBy('customer_voice')->orderBy('id', 'desc')->get();
+        $this->worknotVoicesData = $this->worknotVoicesData->groupBy('customer_voice')->orderByRaw('MAX(id) DESC')->get();
     }
 
 
