@@ -274,7 +274,7 @@
                                         @if ($totalPayabaleAmount > 0)
                                             <button href="javascript:void(0);" class="btn btn-primary "
                                                 @if (!$visible) disabled @endif
-                                                wire:click="createOrder('{{ $orderId }}','{{ $totalPayabaleAmount }}')">
+                                                wire:click="createOrder('{{ $order->id ?? $orderItemId }}','{{ $totalPayabaleAmount }}')">
                                                 Pay Now (₹{{ $totalPayabaleAmount }})
                                             </button>
                                         @endif
@@ -283,7 +283,7 @@
                                         @if ($visible)
                                             Checked All <br>
                                             <input class="form-check-input" type="checkbox"
-                                                wire:click="toggleCheckboxAll($event.target.checked,'{{ $orderId }}')">
+                                                wire:click="toggleCheckboxAll($event.target.checked,'{{ $order->id ?? $orderItemId }}')">
                                         @endif
                                     </th>
                                 </tr>
@@ -295,9 +295,9 @@
                     </div>
                 </div>
             </div>
-            @if ($is_confim == 0)
+            @if (($order->is_confim ?? 0) == 0)
                 <div class="card-footer">
-                    <a href="javascript:void(0);" wire:click="confirmOrder({{ $orderId }})"
+                    <a href="javascript:void(0);" wire:click="confirmOrder({{ $order->id ?? $orderItemId }})"
                         class="btn btn-primary "> Confirm </a>
                 </div>
             @endif

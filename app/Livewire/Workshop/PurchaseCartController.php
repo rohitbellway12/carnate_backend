@@ -396,18 +396,34 @@ class PurchaseCartController extends Component
     }
 
     #[On('delete')]
-    public function delete()
+    public function delete($id = null)
     {
-        $orderItem =  OrderItem::with('order')->find($this->deleteItemId);
-        $order = Order::where('id', $orderItem->order_id)->first();
-        $order->total_quantity -= $orderItem->quantity;
-        // $order->orderItem -= $orderItem->price;    
-        $order->total_amount -= $orderItem->price;    
-        $order->save();
-        OrderItem::destroy($this->deleteItemId);
-        $this->order_items = $this->order_items->reject(function ($item) {
-            return $item->id == $this->deleteItemId;
-        });
+        $itemId = $id ?: $this->deleteItemId;
+        if (empty($itemId)) {
+            return;
+        }
+
+        $orderItem = OrderItem::with('order')->find($itemId);
+        if (!$orderItem) {
+            $this->reset('deleteItemId');
+            return;
+        }
+
+        $order = Order::find($orderItem->order_id);
+        if ($order) {
+            $order->total_quantity = max(0, (int)$order->total_quantity - (int)$orderItem->quantity);
+            $order->total_amount = max(0, (float)$order->total_amount - (float)$orderItem->price);
+            $order->save();
+        }
+
+        OrderItem::destroy($itemId);
+
+        if ($this->order_items) {
+            $this->order_items = $this->order_items->reject(function ($item) use ($itemId) {
+                return $item->id == $itemId;
+            });
+        }
+
         $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Item has been removed successfully!']);
         $this->reset('deleteItemId');
     }
