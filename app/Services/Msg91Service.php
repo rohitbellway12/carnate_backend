@@ -174,6 +174,71 @@ class Msg91Service
         $pendingAmount = (string)($jobcard->balance_amount ?: 0);
         $currentDate = now()->format('d-m-Y');
 
+        // Workshop contact phone for ##num1##
+        $workshopPhone = '9009775909';
+        $workshop = $jobcard->workshop ?? (\App\Models\WorkShopVendor::find($jobcard->user_id ?? 0));
+        if ($workshop) {
+            $wsNum = $workshop->mobile_no ?: ($workshop->branch_number ?: $workshop->landline_no);
+            if (!empty($wsNum)) {
+                $clean = preg_replace('/\D/', '', $wsNum);
+                if (strlen($clean) === 12 && str_starts_with($clean, '91')) {
+                    $clean = substr($clean, 2);
+                }
+                if (!empty($clean)) {
+                    $workshopPhone = $clean;
+                }
+            }
+        }
+
+        // Specific DLT variable mappings based on MSG91 approved templates
+        $eventVars = [];
+        if ($event === 'create') {
+            // "Dear ##alp1##, Your job card ##alp2## for the vehicle ##alp3## has been created successfully. Thank you for choosing ##alp4##."
+            $eventVars = [
+                'alp1' => $customerName,
+                'alp2' => $jobcardNumber,
+                'alp3' => $vehicleNumber,
+                'alp4' => $workshopName,
+                'num1' => $workshopPhone,
+            ];
+        } elseif ($event === 'service_reminder') {
+            // "Dear ##alp1##, Your vehicle ##alp2## is due for its next service. Please contact ##num1## to schedule an appointment. We look forward to serving you again. ##alp3##."
+            $eventVars = [
+                'alp1' => $customerName,
+                'alp2' => $vehicleNumber,
+                'num1' => $workshopPhone,
+                'alp3' => $workshopName,
+                'alp4' => $workshopName,
+            ];
+        } elseif ($event === 'process') {
+            // "Dear ##alp1##, Your vehicle ##alp2## inspection is complete. View your job card ##alp3##..."
+            $eventVars = [
+                'alp1' => $customerName,
+                'alp2' => $vehicleNumber,
+                'alp3' => $jobcardNumber,
+                'alp4' => $workshopName,
+                'num1' => $workshopPhone,
+            ];
+        } elseif ($event === 'confirm') {
+            // "Dear ##alp1##, Thank you for the confirmation. Repairs for your vehicle ##alp2##..."
+            $eventVars = [
+                'alp1' => $customerName,
+                'alp2' => $vehicleNumber,
+                'alp3' => $jobcardNumber,
+                'alp4' => $workshopName,
+                'num1' => $workshopPhone,
+            ];
+        } elseif ($event === 'close') {
+            // "Dear ##alp1##, The Job card for your vehicle ##alp2## is now successfully closed..."
+            $eventVars = [
+                'alp1' => $customerName,
+                'alp2' => $vehicleNumber,
+                'alp3' => $jobcardNumber,
+                'alp4' => $workshopName,
+                'num1' => $workshopPhone,
+            ];
+        }
+
         // Populate multiple aliases for variables so whatever key MSG91 template uses, it matches!
         $variables = array_merge([
             'name' => $customerName,
@@ -187,13 +252,14 @@ class Msg91Service
             'amount' => $finalAmount,
             'balance' => $pendingAmount,
             'date' => $currentDate,
+            'phone' => $workshopPhone,
             // Generic positional fallback variables
             'var1' => $customerName,
             'var2' => $jobcardNumber,
             'var3' => $vehicleNumber,
             'var4' => $workshopName,
             'var5' => $finalAmount,
-        ], $extraVariables);
+        ], $eventVars, $extraVariables);
 
         return $this->sendFlowSms($mobile, $templateId, $variables);
     }
