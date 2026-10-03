@@ -728,7 +728,7 @@
 
                             <td>
                                 <span class="st-index">
-                                    {{ $loop->iteration + ($staff->currentPage() - 1) * $staff->perPage() }}
+                                    {{ $staff->total() - ($loop->index + ($staff->currentPage() - 1) * $staff->perPage()) }}
                                 </span>
                             </td>
 

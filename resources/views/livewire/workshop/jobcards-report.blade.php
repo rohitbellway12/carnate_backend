@@ -164,7 +164,7 @@
                     <tbody>
                         @forelse($jobcards as $j)
                             <tr>
-                                <td>{{ $loop->iteration + ($jobcards->currentPage()-1)*$jobcards->perPage() }}</td>
+                                <td>{{ $jobcards->total() - ($loop->index + ($jobcards->currentPage()-1)*$jobcards->perPage()) }}</td>
                                 <td>{{ $j->jobcard_number }}</td>
                                 <td>{{ $j->customer_name }}</td>
                                 <td>{{ $j->vehical }} {{ $j->vehical_number ? '('.$j->vehical_number.')' : '' }}</td>

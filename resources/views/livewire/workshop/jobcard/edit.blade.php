@@ -1,120 +1,912 @@
-<div>
+<div class="carnate-jobcard-edit">
     <style>
-        #spare-table th,
-        #spare-table .add-spare-btn,
-        .green-variant {
-            background-color: #2E7D32 !important;
-            color: white !important;
+        /* =========================================================
+           CARNATE JOB CARD EDIT — MODERN REDESIGN
+           UI Redesign Only — All Livewire functionality & IDs preserved
+        ========================================================= */
+
+        .carnate-jobcard-edit {
+            --je-bg: #f7f8fa;
+            --je-white: #ffffff;
+            --je-text: #111827;
+            --je-muted: #64748b;
+            --je-light: #94a3b8;
+            --je-border: #e2e8f0;
+
+            --je-red: #e53935;
+            --je-red-soft: #fff5f5;
+
+            --je-green: #16a34a;
+            --je-green-soft: #f0fdf4;
+
+            --je-blue: #2563eb;
+            --je-blue-soft: #eff6ff;
+
+            --je-orange: #ea580c;
+            --je-orange-soft: #fff7ed;
+
+            --je-purple: #7c3aed;
+            --je-purple-soft: #f5f3ff;
+
+            --je-gray: #f8fafc;
+            --je-gray-border: #edf2f7;
+
+            width: 100%;
+            color: var(--je-text);
         }
 
-        #lubes-table th,
-        #lubes-table .add-spare-btn,
-        .blue-variant,
-        .blue-variant i.fa {
-            background-color: #1976D2 !important;
-            color: white !important;
+        .carnate-jobcard-edit *,
+        .carnate-jobcard-edit *::before,
+        .carnate-jobcard-edit *::after {
+            box-sizing: border-box;
         }
 
-        #tools-table th,
-        #tools-table .add-spare-btn,
-        .orange-variant,
-        .orange-variant i.fa {
-            background-color: #D84315 !important;
-            color: white !important;
+        /* ---------------- Common Card ---------------- */
+        .carnate-jobcard-edit .card {
+            background: var(--je-white) !important;
+            border: 1px solid var(--je-border) !important;
+            border-radius: 16px !important;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, .035) !important;
+            overflow: hidden;
+            margin-bottom: 20px;
         }
 
-        .btn-outline-secondary {
-            color: #333333;
+        .carnate-jobcard-edit .card-body {
+            padding: 22px !important;
         }
 
-        .grey-variant,
-        .grey-variant i.fa {
-            background-color: #424242 !important;
-            color: white !important;
+        .carnate-jobcard-edit hr {
+            border-color: var(--je-border) !important;
+            opacity: 1;
+            margin: 16px 0;
         }
 
-        #accessory-table th,
-        #accessory-table .add-spare-btn,
-        .purple-variant,
-        .purple-variant i.fa {
-            background-color: #D84315 !important;
-            color: white !important;
+        /* ---------------- Page Header / Navigation ---------------- */
+        .carnate-jobcard-edit .page-title nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
         }
 
-        .green-text {
-            color: #2E7D32 !important;
+        .carnate-jobcard-edit .back-arrow {
+            width: 36px;
+            height: 36px;
+            padding: 8px;
+            border-radius: 10px;
+            background: #f1f5f9;
+            object-fit: contain;
+            transition: all .2s ease;
         }
 
-        .blue-text {
-            color: #1976D2 !important;
+        .carnate-jobcard-edit .back-arrow:hover {
+            background: var(--je-red-soft);
         }
 
-        .orange-text {
-            color: #D84315 !important;
+        .carnate-jobcard-edit .breadcrumb-title {
+            font-size: 19px !important;
+            font-weight: 750 !important;
+            color: var(--je-text) !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .grey-text {
-            color: #424242 !important;
+        .carnate-jobcard-edit .breadcrumb-title .badge {
+            padding: 6px 14px !important;
+            font-size: 12px !important;
+            font-weight: 700 !important;
+            border-radius: 20px !important;
+            letter-spacing: .2px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: capitalize;
         }
 
-        .purple-text {
-            color: #D84315 !important;
+        .carnate-jobcard-edit .breadcrumb-title .badge.bg-danger {
+            background: #fef2f2 !important;
+            color: #ef4444 !important;
+            border: 1px solid #fee2e2;
         }
 
-        #labour-table th,
-        #labour-table .add-spare-btn,
-        .bg-yellow-orange {
-            background: #A52A2A !important;
-            color: #fff !important;
+        .carnate-jobcard-edit .breadcrumb-title .badge.bg-primary {
+            background: #eff6ff !important;
+            color: #2563eb !important;
+            border: 1px solid #dbeafe;
         }
 
-        .table-view table th {
-            text-wrap: nowrap !important;
+        .carnate-jobcard-edit .breadcrumb-title .badge.bg-success {
+            background: #f0fdf4 !important;
+            color: #16a34a !important;
+            border: 1px solid #dcfce7;
         }
 
-        th {
-            font-weight: 300;
+        .carnate-jobcard-edit .breadcrumb-title .badge.bg-info {
+            background: #ecfeff !important;
+            color: #0891b2 !important;
+            border: 1px solid #cffafe;
         }
 
-        .m-0 {
-            font-weight: 500;
+        .carnate-jobcard-edit .breadcrumb-title .badge.bg-warning {
+            background: #fff7ed !important;
+            color: #ea580c !important;
+            border: 1px solid #ffedd5;
         }
 
-        /* Select2 Dropdown Highlight - Brand Red */
-        .select2-dropdown {
-            border: 1px solid #e2e8f0 !important;
+        /* Top Right Metadata Inputs (Job-Card No, Shared Serial, Date) */
+        .carnate-jobcard-edit .ulprofile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .carnate-jobcard-edit .ulprofile .input-group {
+            background: #f8fafc;
+            border: 1px solid var(--je-border);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            width: auto !important;
+            margin-left: 0 !important;
+        }
+
+        .carnate-jobcard-edit .ulprofile .input-group-text {
+            background: transparent !important;
+            border: 0 !important;
+            color: var(--je-muted) !important;
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase;
+            letter-spacing: .3px;
+            padding: 8px 12px !important;
+        }
+
+        .carnate-jobcard-edit .ulprofile .form-control {
+            background: transparent !important;
+            border: 0 !important;
+            color: var(--je-text) !important;
+            font-size: 13px !important;
+            font-weight: 700 !important;
+            padding: 8px 12px !important;
+            min-height: unset !important;
+            width: auto;
+        }
+
+        /* ---------------- Customer Detail Table ---------------- */
+        .carnate-jobcard-edit .info-table {
+            width: 100%;
+            margin: 0;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .carnate-jobcard-edit .info-table td {
+            padding: 9px 12px !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+            font-size: 13px;
+            color: #334155;
+            vertical-align: middle;
+        }
+
+        .carnate-jobcard-edit .info-table td b {
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .3px;
+        }
+
+        /* ---------------- Job-Card Details & Actions ---------------- */
+        .carnate-jobcard-edit .btn-info {
+            background: #eff6ff !important;
+            border: 1px solid #bfdbfe !important;
+            color: #2563eb !important;
+            border-radius: 8px !important;
+            font-size: 12px !important;
+            font-weight: 650 !important;
+            padding: 5px 12px !important;
+            transition: all .2s ease;
+        }
+
+        .carnate-jobcard-edit .btn-info:hover {
+            background: #2563eb !important;
+            color: #ffffff !important;
+        }
+
+        .carnate-jobcard-edit .form-floating > .form-control,
+        .carnate-jobcard-edit .form-floating > .form-select {
+            border: 1px solid var(--je-border) !important;
             border-radius: 10px !important;
-            box-shadow: 0 10px 25px rgba(15, 23, 42, .12) !important;
-            overflow: hidden !important;
+            height: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--je-text);
         }
 
+        .carnate-jobcard-edit .form-floating > label {
+            font-size: 12px;
+            color: var(--je-muted);
+        }
+
+        .carnate-jobcard-edit .form-range {
+            height: 8px;
+            border-radius: 5px;
+        }
+
+        .carnate-jobcard-edit .d-flex.justify-content-center a.position-relative {
+            text-decoration: none;
+            padding: 10px 14px !important;
+            border-radius: 12px;
+            transition: all .2s ease;
+        }
+
+        .carnate-jobcard-edit .d-flex.justify-content-center a.position-relative:hover {
+            background: #f8fafc;
+            transform: translateY(-2px);
+        }
+
+        .carnate-jobcard-edit .d-flex.justify-content-center a.position-relative img {
+            border-radius: 10px;
+            object-fit: contain;
+        }
+
+        .carnate-jobcard-edit .d-flex.justify-content-center a.position-relative p.my-2 {
+            font-size: 12px !important;
+            font-weight: 650 !important;
+            color: var(--je-text) !important;
+            margin: 8px 0 0 !important;
+        }
+
+        .carnate-jobcard-edit .list-count {
+            background: var(--je-red) !important;
+            color: #fff !important;
+            font-size: 10px !important;
+            font-weight: 750 !important;
+            width: 22px !important;
+            height: 22px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            top: 6px !important;
+            right: 14px !important;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 8px rgba(229, 57, 53, .35);
+        }
+
+        /* ---------------- Category Counters / Tabs ---------------- */
+        #counters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 18px !important;
+        }
+
+        #counters > [class*="col-"] {
+            flex: 1 1 0;
+            min-width: 175px;
+            max-width: 100%;
+            padding: 0 !important;
+        }
+
+        .jc-counter-card {
+            border-radius: 14px !important;
+            border: 2px solid var(--je-border) !important;
+            background: #ffffff !important;
+            cursor: pointer !important;
+            overflow: visible !important;
+            margin-bottom: 0 !important;
+            position: relative !important;
+            user-select: none;
+            transition: transform .18s cubic-bezier(.16, 1, .3, 1), box-shadow .18s ease, border-color .18s ease !important;
+        }
+
+        .jc-counter-card:hover {
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, .09) !important;
+            border-color: #94a3b8 !important;
+        }
+
+        .jc-counter-card:active {
+            transform: scale(0.98) !important;
+        }
+
+        /* Active Badge on top-right of active tab */
+        .jc-counter-card.is-active-tab {
+            transform: translateY(-4px) !important;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, .13) !important;
+        }
+
+        .jc-counter-card.is-active-tab::after {
+            content: "● ACTIVE";
+            position: absolute;
+            top: -10px;
+            right: 12px;
+            font-size: 9px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 10px;
+            color: #ffffff;
+            letter-spacing: .4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+            z-index: 10;
+        }
+
+        /* Labour Card - Active */
+        #counter-tab-1.is-active-tab {
+            border-color: #ea580c !important;
+            box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.2), 0 12px 28px rgba(234, 88, 12, 0.12) !important;
+        }
+        #counter-tab-1.is-active-tab::after {
+            background: #ea580c;
+        }
+
+        /* Spare Card - Active */
+        #counter-tab-2.is-active-tab {
+            border-color: #16a34a !important;
+            box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2), 0 12px 28px rgba(22, 163, 74, 0.12) !important;
+        }
+        #counter-tab-2.is-active-tab::after {
+            background: #16a34a;
+        }
+
+        /* Lubes Card - Active */
+        #counter-tab-3.is-active-tab {
+            border-color: #2563eb !important;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2), 0 12px 28px rgba(37, 99, 235, 0.12) !important;
+        }
+        #counter-tab-3.is-active-tab::after {
+            background: #2563eb;
+        }
+
+        /* Accessory Card - Active */
+        #counter-tab-5.is-active-tab {
+            border-color: #9333ea !important;
+            box-shadow: 0 0 0 2px rgba(147, 51, 234, 0.2), 0 12px 28px rgba(147, 51, 234, 0.12) !important;
+        }
+        #counter-tab-5.is-active-tab::after {
+            background: #9333ea;
+        }
+
+        /* Category Header Links & Blocks */
+        #counters .card a,
+        #counters .card .jc-counter-header {
+            text-decoration: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 11px 14px !important;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background .2s ease;
+        }
+
+        #counters .card a p,
+        #counters .card .jc-counter-header p {
+            margin: 0;
+            font-size: 13px;
+            font-weight: 750;
+        }
+
+        #counters .card a small,
+        #counters .card .jc-counter-header small {
+            font-size: 11px;
+            opacity: .85;
+        }
+
+        /* Labour Card */
+        #labour-table-counter a.bg-yellow-orange,
+        #labour-table-counter .jc-counter-header.bg-yellow-orange {
+            background: #fff7ed !important;
+            color: #c2410c !important;
+            border-bottom-color: #ffedd5 !important;
+        }
+        #labour-table-counter a.bg-yellow-orange b,
+        #labour-table-counter a.bg-yellow-orange p,
+        #labour-table-counter a.bg-yellow-orange span,
+        #labour-table-counter .jc-counter-header.bg-yellow-orange b,
+        #labour-table-counter .jc-counter-header.bg-yellow-orange p,
+        #labour-table-counter .jc-counter-header.bg-yellow-orange span {
+            color: #c2410c !important;
+        }
+        #labour-table-counter .bg-yellow-orange.rounded {
+            background: #ffedd5 !important;
+            color: #ea580c !important;
+        }
+        #labour-table-counter .bg-yellow-orange.rounded i {
+            color: #ea580c !important;
+        }
+
+        /* Spare Card */
+        #spare-part-table-counter a.green-variant,
+        #spare-part-table-counter .jc-counter-header.green-variant {
+            background: #f0fdf4 !important;
+            color: #15803d !important;
+            border-bottom-color: #dcfce7 !important;
+        }
+        #spare-part-table-counter a.green-variant b,
+        #spare-part-table-counter a.green-variant p,
+        #spare-part-table-counter a.green-variant span,
+        #spare-part-table-counter .jc-counter-header.green-variant b,
+        #spare-part-table-counter .jc-counter-header.green-variant p,
+        #spare-part-table-counter .jc-counter-header.green-variant span {
+            color: #15803d !important;
+        }
+        #spare-part-table-counter .green-variant.rounded {
+            background: #dcfce7 !important;
+            color: #16a34a !important;
+        }
+        #spare-part-table-counter .green-variant.rounded i {
+            color: #16a34a !important;
+        }
+
+        /* Lubes Card */
+        #lubes-table-counter a.blue-variant,
+        #lubes-table-counter .jc-counter-header.blue-variant {
+            background: #eff6ff !important;
+            color: #1d4ed8 !important;
+            border-bottom-color: #dbeafe !important;
+        }
+        #lubes-table-counter a.blue-variant b,
+        #lubes-table-counter a.blue-variant p,
+        #lubes-table-counter a.blue-variant span,
+        #lubes-table-counter .jc-counter-header.blue-variant b,
+        #lubes-table-counter .jc-counter-header.blue-variant p,
+        #lubes-table-counter .jc-counter-header.blue-variant span {
+            color: #1d4ed8 !important;
+        }
+        #lubes-table-counter .blue-variant.rounded {
+            background: #dbeafe !important;
+            color: #2563eb !important;
+        }
+        #lubes-table-counter .blue-variant.rounded i {
+            color: #2563eb !important;
+        }
+
+        /* Accessory Card */
+        #accessory-table-counter a.orange-variant,
+        #accessory-table-counter a.purple-variant,
+        #accessory-table-counter .jc-counter-header.orange-variant,
+        #accessory-table-counter .jc-counter-header.purple-variant {
+            background: #faf5ff !important;
+            color: #7e22ce !important;
+            border-bottom-color: #f3e8ff !important;
+        }
+        #accessory-table-counter a.orange-variant b,
+        #accessory-table-counter a.orange-variant p,
+        #accessory-table-counter a.orange-variant span,
+        #accessory-table-counter a.purple-variant b,
+        #accessory-table-counter a.purple-variant p,
+        #accessory-table-counter a.purple-variant span,
+        #accessory-table-counter .jc-counter-header.orange-variant b,
+        #accessory-table-counter .jc-counter-header.orange-variant p,
+        #accessory-table-counter .jc-counter-header.orange-variant span,
+        #accessory-table-counter .jc-counter-header.purple-variant b,
+        #accessory-table-counter .jc-counter-header.purple-variant p,
+        #accessory-table-counter .jc-counter-header.purple-variant span {
+            color: #7e22ce !important;
+        }
+        #accessory-table-counter .orange-variant.rounded,
+        #accessory-table-counter .purple-variant.rounded {
+            background: #f3e8ff !important;
+            color: #9333ea !important;
+        }
+        #accessory-table-counter .orange-variant.rounded i,
+        #accessory-table-counter .purple-variant.rounded i {
+            color: #9333ea !important;
+        }
+
+        /* Total Card */
+        #total-counter a.grey-variant,
+        #total-counter .jc-counter-header.grey-variant {
+            background: #f8fafc !important;
+            color: #0f172a !important;
+            border-bottom-color: #e2e8f0 !important;
+        }
+        #total-counter a.grey-variant b,
+        #total-counter a.grey-variant p,
+        #total-counter a.grey-variant span,
+        #total-counter .jc-counter-header.grey-variant b,
+        #total-counter .jc-counter-header.grey-variant p,
+        #total-counter .jc-counter-header.grey-variant span {
+            color: #0f172a !important;
+        }
+        #total-counter .grey-variant.rounded {
+            background: #e2e8f0 !important;
+            color: #334155 !important;
+        }
+        #total-counter .grey-variant.rounded i {
+            color: #334155 !important;
+        }
+
+        .jc-total-card {
+            cursor: default !important;
+        }
+        .jc-total-card:hover {
+            transform: none !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02) !important;
+            border-color: var(--je-border) !important;
+        }
+
+        #counters .card-body > .d-flex.justify-content-between {
+            padding: 9px 14px !important;
+            background: #ffffff;
+        }
+
+        #counters .final-total-count {
+            font-weight: 750;
+            color: var(--je-text);
+        }
+
+        /* ---------------- Item Tables (Labour, Spare, Lubes, Accessory) ---------------- */
+        .carnate-jobcard-edit .table-view table {
+            width: 100%;
+            margin-bottom: 0;
+            border-collapse: separate !important;
+            border-spacing: 0;
+            border: 1px solid var(--je-border) !important;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, .03);
+        }
+
+        .carnate-jobcard-edit .table-view table thead,
+        .carnate-jobcard-edit .table-view table thead tr {
+            background: #f8fafc !important;
+        }
+
+        .carnate-jobcard-edit .table-view table thead th,
+        .carnate-jobcard-edit #labour-table thead th,
+        .carnate-jobcard-edit #spare-part-table thead th,
+        .carnate-jobcard-edit #lubes-table thead th,
+        .carnate-jobcard-edit #accessory-table thead th {
+            background: #f8fafc !important;
+            color: #64748b !important;
+            border: 0 !important;
+            border-bottom: 1px solid var(--je-border) !important;
+            padding: 12px 14px !important;
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: .35px;
+            white-space: nowrap;
+            text-shadow: none !important;
+        }
+
+        .carnate-jobcard-edit .table-view table tbody td {
+            padding: 10px 12px !important;
+            border: 0 !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+            vertical-align: middle;
+            background: #ffffff;
+        }
+
+        .carnate-jobcard-edit .table-view table tbody tr:hover td {
+            background: #fafbfc;
+        }
+
+        .carnate-jobcard-edit .table-view table tbody tr:last-child td {
+            border-bottom: 0 !important;
+        }
+
+        .carnate-jobcard-edit .table-view table tfoot td {
+            background: #fafbfc;
+            padding: 14px 16px !important;
+            border-top: 1px solid var(--je-border) !important;
+        }
+
+        .carnate-jobcard-edit .table-view .form-control,
+        .carnate-jobcard-edit .table-view .form-select {
+            min-height: 38px;
+            border: 1px solid var(--je-border);
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--je-text);
+            box-shadow: none;
+        }
+
+        .carnate-jobcard-edit .table-view .form-control:focus,
+        .carnate-jobcard-edit .table-view .form-select:focus {
+            border-color: rgba(229, 57, 53, .5);
+            box-shadow: 0 0 0 3px rgba(229, 57, 53, .08);
+        }
+
+        .carnate-jobcard-edit .table-view .form-control[readonly],
+        .carnate-jobcard-edit .table-view .form-control.bg-light {
+            background: #f8fafc !important;
+            color: #475569;
+            font-weight: 600;
+        }
+
+        /* Modern Remove Button */
+        .carnate-jobcard-edit .table-view .btn-danger {
+            min-height: 32px;
+            padding: 0 12px;
+            border: 1px solid rgba(229, 57, 53, .18) !important;
+            border-radius: 8px !important;
+            background: var(--je-red-soft) !important;
+            color: var(--je-red) !important;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .2px;
+            transition: all .2s ease;
+        }
+
+        .carnate-jobcard-edit .table-view .btn-danger:hover {
+            background: var(--je-red) !important;
+            color: #ffffff !important;
+            border-color: var(--je-red) !important;
+        }
+
+        /* Modern Add & Action Buttons in tfoot */
+        .carnate-jobcard-edit .add-spare-btn {
+            border-radius: 9px !important;
+            min-height: 40px;
+            font-size: 13px !important;
+            font-weight: 650 !important;
+            transition: all .2s ease;
+        }
+
+        .carnate-jobcard-edit .btn-outline-secondary.add-spare-btn {
+            background: var(--je-red) !important;
+            border: 1px solid var(--je-red) !important;
+            color: #ffffff !important;
+        }
+
+        .carnate-jobcard-edit .btn-outline-secondary.add-spare-btn:hover {
+            background: #d9322f !important;
+            border-color: #d9322f !important;
+        }
+
+        .carnate-jobcard-edit .add-spare-btn[wire\:click*="addSparePartRows"] {
+            background: var(--je-green) !important;
+            border: 1px solid var(--je-green) !important;
+            color: #ffffff !important;
+            box-shadow: 0 3px 10px rgba(22, 163, 74, .2);
+        }
+
+        .carnate-jobcard-edit .add-spare-btn[wire\:click*="addSparePartRows"]:hover {
+            background: #15803d !important;
+            border-color: #15803d !important;
+        }
+
+        /* ---------------- Bottom Cards (Job-Card Details, Billing Details) ---------------- */
+        .carnate-jobcard-edit .card h5 {
+            font-size: 15px;
+            font-weight: 750;
+            color: var(--je-text);
+            margin-bottom: 16px;
+        }
+
+        .carnate-jobcard-edit .form-label {
+            margin-bottom: 6px;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 650;
+        }
+
+        .carnate-jobcard-edit .form-control {
+            border: 1px solid var(--je-border);
+            border-radius: 9px;
+            min-height: 40px;
+            font-size: 13px;
+        }
+
+        .carnate-jobcard-edit .form-control.bg-secondary.text-white {
+            background: #f8fafc !important;
+            color: #0f172a !important;
+            border: 1px solid var(--je-border) !important;
+            font-size: 13px !important;
+            font-weight: 700 !important;
+        }
+
+        .carnate-jobcard-edit #payable-amount,
+        .carnate-jobcard-edit #final-amount {
+            background: #f0fdf4 !important;
+            color: #15803d !important;
+            border: 1px solid #bbf7d0 !important;
+            font-size: 14px !important;
+            font-weight: 800 !important;
+        }
+
+        .carnate-jobcard-edit #pending-amount,
+        .carnate-jobcard-edit #pending-amount-else {
+            background: #fef2f2 !important;
+            color: #dc2626 !important;
+            border: 1px solid #fecaca !important;
+            font-size: 14px !important;
+            font-weight: 800 !important;
+        }
+
+        /* ---------------- Footer Action Toolbar ---------------- */
+        .carnate-jobcard-edit ~ .footer,
+        .footer.d-flex.align-items-center {
+            background: var(--je-white);
+            border: 1px solid var(--je-border);
+            border-radius: 16px;
+            padding: 14px 22px !important;
+            margin: 20px 0 30px;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, .05);
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .footer .btn-outline-secondary {
+            border-radius: 10px !important;
+            border: 1px solid var(--je-border) !important;
+            background: #f8fafc !important;
+            color: #475569 !important;
+            width: 42px;
+            height: 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .2s ease;
+        }
+
+        .footer .btn-outline-secondary:hover {
+            background: #f1f5f9 !important;
+            color: var(--je-text) !important;
+            border-color: #cbd5e1 !important;
+        }
+
+        .footer .btn-primary {
+            background: var(--je-red) !important;
+            border: 1px solid var(--je-red) !important;
+            border-radius: 10px !important;
+            padding: 9px 20px !important;
+            font-weight: 650 !important;
+            box-shadow: 0 4px 14px rgba(229, 57, 53, .22);
+            transition: all .2s ease;
+        }
+
+        .footer .btn-primary:hover {
+            background: #d9322f !important;
+            border-color: #d9322f !important;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(229, 57, 53, .3);
+        }
+
+        /* ---------------- Bulletproof Select2 Dropdown Styling ---------------- */
+        .select2-dropdown {
+            background-color: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 10px !important;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16) !important;
+            overflow: hidden !important;
+            z-index: 999999 !important;
+        }
+
+        .select2-dropdown .select2-search--dropdown {
+            background-color: #f8fafc !important;
+            padding: 8px 10px !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+        }
+
+        .select2-dropdown .select2-search--dropdown .select2-search__field {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 7px !important;
+            padding: 6px 12px !important;
+            font-size: 13px !important;
+            width: 100% !important;
+            outline: none !important;
+        }
+
+        .select2-dropdown .select2-search--dropdown .select2-search__field:focus {
+            border-color: #e53935 !important;
+            box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.12) !important;
+        }
+
+        .select2-results {
+            background-color: #ffffff !important;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .select2-results__options {
+            background-color: #ffffff !important;
+            list-style: none !important;
+            padding: 4px 0 !important;
+            margin: 0 !important;
+        }
+
+        /* Default unhighlighted option: dark text on white */
+        .select2-container .select2-results__option,
+        .select2-container--default .select2-results__option,
+        .select2-container--bootstrap4 .select2-results__option,
+        li.select2-results__option {
+            background-color: #ffffff !important;
+            color: #1e293b !important;
+            padding: 9px 14px !important;
+            font-size: 13px !important;
+            font-weight: 550 !important;
+            cursor: pointer !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+            display: block !important;
+            line-height: 1.4 !important;
+        }
+
+        .select2-results__option small {
+            color: #64748b !important;
+            font-weight: 400 !important;
+        }
+
+        .select2-results__option small.text-danger {
+            color: #e53935 !important;
+            font-weight: 600 !important;
+        }
+
+        /* Hovered / highlighted option */
         .select2-container--default .select2-results__option--highlighted[aria-selected],
         .select2-container--default .select2-results__option--highlighted,
-        .select2-container--default .select2-results__option[aria-selected="true"],
         .select2-container--bootstrap4 .select2-results__option--highlighted,
         .select2-container--bootstrap4 .select2-results__option--highlighted.select2-results__option[aria-selected="true"],
-        .select2-container--bootstrap4 .select2-dropdown .select2-results__option[aria-selected="true"],
-        .select2-results__option--highlighted,
-        .select2-results__option[aria-selected="true"] {
+        .select2-results__option--highlighted {
             background-color: #e53935 !important;
             color: #ffffff !important;
         }
 
-        .select2-container--default .select2-results__option,
-        .select2-container--bootstrap4 .select2-results__option {
-            padding: 9px 13px !important;
+        .select2-container--default .select2-results__option--highlighted small,
+        .select2-results__option--highlighted small,
+        .select2-results__option--highlighted small.text-danger {
+            color: #ffffff !important;
+            opacity: 0.95;
+        }
+
+        /* Selected option when not hovered */
+        .select2-container--default .select2-results__option[aria-selected="true"]:not(.select2-results__option--highlighted),
+        .select2-container--bootstrap4 .select2-results__option[aria-selected="true"]:not(.select2-results__option--highlighted),
+        .select2-container--bootstrap4 .select2-dropdown .select2-results__option[aria-selected="true"]:not(.select2-results__option--highlighted),
+        li.select2-results__option[aria-selected="true"]:not(.select2-results__option--highlighted) {
+            background-color: #fee2e2 !important;
+            color: #b91c1c !important;
+            font-weight: 700 !important;
+        }
+
+        .select2-container--default .select2-results__option[aria-selected="true"]:not(.select2-results__option--highlighted) small {
+            color: #991b1b !important;
+        }
+
+        /* Disabled options (out of stock) */
+        .select2-container--default .select2-results__option[aria-disabled="true"],
+        .select2-container--bootstrap4 .select2-results__option[aria-disabled="true"],
+        li.select2-results__option[aria-disabled="true"] {
+            background-color: #f8fafc !important;
+            color: #94a3b8 !important;
+            cursor: not-allowed !important;
+            opacity: 0.65 !important;
+        }
+
+        /* Input field container itself */
+        .select2-container .select2-selection--single {
+            min-height: 40px !important;
+            height: 40px !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 9px !important;
+            background-color: #ffffff !important;
+        }
+
+        .select2-container .select2-selection--single .select2-selection__rendered {
+            color: #0f172a !important;
             font-size: 13px !important;
-            font-weight: 500 !important;
-            color: #334155;
-            transition: background-color .15s ease, color .15s ease;
+            font-weight: 600 !important;
+            line-height: 38px !important;
+            padding-left: 12px !important;
+        }
+
+        .select2-container .select2-selection--single .select2-selection__arrow {
+            height: 38px !important;
         }
 
         .select2-container--default.select2-container--focus .select2-selection--single,
         .select2-container--default.select2-container--open .select2-selection--single,
         .select2-container--bootstrap4.select2-container--focus .select2-selection--single,
         .select2-container--bootstrap4.select2-container--open .select2-selection--single {
-            border-color: rgba(229, 57, 53, .65) !important;
-            box-shadow: 0 0 0 3px rgba(229, 57, 53, .1) !important;
+            border-color: #e53935 !important;
+            box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.12) !important;
         }
     </style>
 
@@ -1454,12 +2246,11 @@
                 <div class="col-6">
                     <div class="card h-100">
                         <div class="card-body">
-                            <div class="text-center m-2">
-                                <h6>
-                                    <b>Customer Detail</b>
+                            <div class="d-flex align-items-center mb-3">
+                                <h6 class="m-0 text-dark fw-bold" style="font-size: 15px;">
+                                    <i class="fa fa-user me-2 text-danger"></i> Customer Detail
                                 </h6>
                             </div>
-                            <hr>
                             <label for="customer-dropdown" class="form-label d-none">Customer Name</label>
                             <div class="input-group mb-3 d-none">
                                 <select id="customer_name" wire:model="customer_name" class="form-select select2"
@@ -1571,11 +2362,10 @@
             <div class="@if ($user->hasPermissionTo('customer-detail-Jobcard')) col-6 @else col-12 @endif">
                 <div class="card h-100">
                     <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <h6 class="m-0"><b>Job-Card Details</b></h6>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="m-0 text-dark fw-bold" style="font-size: 15px;"><i class="fa fa-wrench me-2 text-danger"></i> Job-Card Details</h6>
                             <button type="button" class="btn btn-sm btn-info">Last History</button>
                         </div>
-                        <hr>
                         <div class="row">
                             <div class="col-4">
                                 <div class="form-floating mb-3">
@@ -1674,11 +2464,15 @@
                         <!-- Top Cards -->
                         <div class="row mt-4" id="counters">
                             <div class="col-2">
-                                <div class="card">
+                                <div class="card jc-counter-card {{ $showTable == 1 ? 'is-active-tab' : '' }}"
+                                    id="counter-tab-1"
+                                    role="button"
+                                    tabindex="0"
+                                    wire:click="toggleTable(1)"
+                                    onclick="switchJobCardTable(1)"
+                                    title="Click to view Labour table">
                                     <div class="card-body p-0" id="labour-table-counter">
-                                        <a href="javascript:void(0)"
-                                            class="d-flex justify-content-between bg-yellow-orange px-1 py-2 rounded-top text-white"
-                                            wire:click="toggleTable(1)">
+                                        <div class="d-flex justify-content-between bg-yellow-orange px-2 py-2 rounded-top jc-counter-header">
                                             <p class="m-0"><b>Labour(<span
                                                         class="tr-count">{{ count($extraCharges) }}</span>)</b></p>
                                             <p class="text-end m-0">
@@ -1688,27 +2482,30 @@
                                                 <small class="d-block ">₹<span
                                                         class="discount-count">{{ array_sum(array_column($extraCharges, 'discount')) }}</span></small>
                                             </p>
-                                        </a>
+                                        </div>
 
-                                        <div class="d-flex justify-content-between align-items-center p-1 ps-0 ">
+                                        <div class="d-flex justify-content-between align-items-center p-2">
                                             <div class="fs-5 bg-yellow-orange rounded mx-1 px-2"><i
                                                     class="fa-solid fa-user text-white"></i></div>
                                             <div class="text-end">
-                                                <p class="m-0 ">Total: ₹<span
+                                                <p class="m-0 fw-semibold">Total: ₹<span
                                                         class="final-total-count">{{ array_sum(array_column($extraCharges, 'charge')) }}</span>
                                                 </p>
-
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-2">
-                                <div class="card">
+                                <div class="card jc-counter-card {{ $showTable == 2 ? 'is-active-tab' : '' }}"
+                                    id="counter-tab-2"
+                                    role="button"
+                                    tabindex="0"
+                                    wire:click="toggleTable(2)"
+                                    onclick="switchJobCardTable(2)"
+                                    title="Click to view Spare Parts table">
                                     <div class="card-body p-0" id="spare-part-table-counter">
-                                        <a href="javascript:void(0)"
-                                            class="d-flex justify-content-between green-variant px-1 py-2 rounded-top text-white"
-                                            wire:click="toggleTable(2)">
+                                        <div class="d-flex justify-content-between green-variant px-2 py-2 rounded-top jc-counter-header">
                                             <p class="m-0"><b>Spare(<span
                                                         class="tr-count">{{ count($spareParts) }}</span>)</b></p>
                                             <p class="text-end m-0">
@@ -1717,12 +2514,12 @@
                                                 <small class="d-block ">₹<span
                                                         class="discount-count">{{ array_sum(array_column($spareParts, 'discount')) }}</span></small>
                                             </p>
-                                        </a>
-                                        <div class="d-flex justify-content-between align-items-center p-1 ps-0 ">
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center p-2">
                                             <div class="fs-5 green-variant rounded mx-1 px-2"><i
                                                     class="fa-solid fa-cogs text-white"></i></div>
                                             <div class="text-end">
-                                                <p class="m-0 ">Total: ₹<span
+                                                <p class="m-0 fw-semibold">Total: ₹<span
                                                         class="final-total-count">{{ array_sum(array_column($spareParts, 'final_amount')) }}</span>
                                                 </p>
                                             </div>
@@ -1731,11 +2528,15 @@
                                 </div>
                             </div>
                             <div class="col-2">
-                                <div class="card">
+                                <div class="card jc-counter-card {{ $showTable == 3 ? 'is-active-tab' : '' }}"
+                                    id="counter-tab-3"
+                                    role="button"
+                                    tabindex="0"
+                                    wire:click="toggleTable(3)"
+                                    onclick="switchJobCardTable(3)"
+                                    title="Click to view Lubes table">
                                     <div class="card-body p-0" id="lubes-table-counter">
-                                        <a href="javascript:void(0)"
-                                            class="d-flex justify-content-between blue-variant px-1 py-2 rounded-top text-white"
-                                            wire:click="toggleTable(3)">
+                                        <div class="d-flex justify-content-between blue-variant px-2 py-2 rounded-top jc-counter-header">
                                             <p class="m-0"><b>Lubes(<span
                                                         class="tr-count">{{ count($lubes) }}</span>)</b></p>
                                             <p class="text-end m-0">
@@ -1744,12 +2545,12 @@
                                                 <small class="d-block ">₹<span
                                                         class="discount-count">{{ array_sum(array_column($lubes, 'discount')) }}</span></small>
                                             </p>
-                                        </a>
-                                        <div class="d-flex justify-content-between align-items-center p-1 ps-0 ">
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center p-2">
                                             <div class="fs-5 blue-variant rounded mx-1 px-2"><i
                                                     class="fa-solid fa-oil-can text-white"></i></div>
                                             <div class="text-end">
-                                                <p class="m-0 ">Total: ₹<span
+                                                <p class="m-0 fw-semibold">Total: ₹<span
                                                         class="final-total-count">{{ array_sum(array_column($lubes, 'final_amount')) }}</span>
                                                 </p>
                                             </div>
@@ -1759,11 +2560,15 @@
                             </div>
 
                             <div class="col-2">
-                                <div class="card">
+                                <div class="card jc-counter-card {{ $showTable == 5 ? 'is-active-tab' : '' }}"
+                                    id="counter-tab-5"
+                                    role="button"
+                                    tabindex="0"
+                                    wire:click="toggleTable(5)"
+                                    onclick="switchJobCardTable(5)"
+                                    title="Click to view Accessory table">
                                     <div class="card-body p-0" id="accessory-table-counter">
-                                        <a href="javascript:void(0)"
-                                            class="d-flex justify-content-between orange-variant px-1 py-2 rounded-top text-white"
-                                            wire:click="toggleTable(5)">
+                                        <div class="d-flex justify-content-between orange-variant px-2 py-2 rounded-top jc-counter-header">
                                             <p class="m-0"><b>Accessory(<span
                                                         class="tr-count">{{ count($accessoriess) }}</span>)</b>
                                             </p>
@@ -1773,12 +2578,12 @@
                                                 <small class="d-block ">₹<span
                                                         class="discount-count">{{ array_sum(array_column($accessoriess, 'discount')) }}</span></small>
                                             </p>
-                                        </a>
-                                        <div class="d-flex justify-content-between align-items-center p-1 ps-0 ">
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center p-2">
                                             <div class="fs-5 orange-variant rounded mx-1 px-2"><i
                                                     class="fa-solid fa-toolbox text-white"></i></div>
                                             <div class="text-end">
-                                                <p class="m-0 ">Total: ₹<span
+                                                <p class="m-0 fw-semibold">Total: ₹<span
                                                         class="final-total-count">{{ array_sum(array_column($accessoriess, 'final_amount')) }}</span>
                                                 </p>
                                             </div>
@@ -1787,10 +2592,9 @@
                                 </div>
                             </div>
                             <div class="col-2">
-                                <div class="card">
+                                <div class="card jc-counter-card jc-total-card" id="total-counter-card" title="Overall Total Summary">
                                     <div class="card-body p-0" id="total-counter">
-                                        <a href="javascript:void(0)"
-                                            class="d-flex justify-content-between grey-variant px-1 py-2 rounded-top text-white">
+                                        <div class="d-flex justify-content-between grey-variant px-2 py-2 rounded-top jc-counter-header">
                                             <p class="m-0"><b>Total(<span
                                                         class="tr-count">{{ count($spareParts) + count($lubes) + count($accessoriess) + count($extraCharges) }}</span>)</b>
                                             </p>
@@ -1801,12 +2605,12 @@
                                                         {{ array_sum(array_column($spareParts, 'discount')) + array_sum(array_column($lubes, 'discount')) + array_sum(array_column($accessoriess, 'discount')) + array_sum(array_column($extraCharges, 'discount')) }}
                                                     </span></small>
                                             </p>
-                                        </a>
-                                        <div class="d-flex justify-content-between align-items-center p-1 ps-0 ">
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center p-2">
                                             <div class="fs-5 grey-variant rounded mx-1 px-2"><i
                                                     class="fa-solid fa-calculator text-white"></i></div>
                                             <div class="text-end">
-                                                <p class="m-0 ">Total: ₹<span
+                                                <p class="m-0 fw-semibold">Total: ₹<span
                                                         class="final-total-count">{{ $final_amount }}</span></p>
                                             </div>
                                         </div>
@@ -2688,22 +3492,19 @@
     {{-- manku --}}
     <div class="footer d-flex align-items-center p-3">
 
-        <a href="javascript:void(0);" class="btn btn-outline-secondary mx-1" wire:click="printPdf"
-            style="font-weight: 300 !important; background-color:#ADB4BF ">
-            <i class="fa fa-print" style="font-size: small;"></i>
+        <a href="javascript:void(0);" class="btn btn-outline-secondary mx-1" wire:click="printPdf" title="Print PDF">
+            <i class="fa fa-print"></i>
         </a>
-        <a href="javascript:void(0);" class="btn btn-outline-secondary mx-1" wire:click="downloadPdf"
-            style="font-weight: 300 !important; background-color:#ADB4BF">
+        <a href="javascript:void(0);" class="btn btn-outline-secondary mx-1" wire:click="downloadPdf" title="Download PDF">
             <i class="fas fa-file-pdf" aria-hidden="true"></i>
         </a>
 
         @if (isset($customer_data->email) && !empty($customer_data->email))
             @if ($jobcardData->step != 0)
                 <a href="javascript:void(0);" class="btn btn-outline-secondary mx-1"
-                    wire:click="sendInvoiceMail({{ $jobcardData->id }})"
-                    style="font-weight: 300 !important; background-color:#ADB4BF">
+                    wire:click="sendInvoiceMail({{ $jobcardData->id }})" title="Send Mail">
                     <i class="fa fa-envelope " wire:loading.remove=""
-                        wire:target="sendInvoiceMail({{ $jobcardData->id }})" style="font-size: small;"></i>
+                        wire:target="sendInvoiceMail({{ $jobcardData->id }})"></i>
                     <span wire:loading="" wire:target="sendInvoiceMail({{ $jobcardData->id }})">
                         <i class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></i>
                     </span>
@@ -2761,25 +3562,17 @@
                 $whatsappLink = "https://web.whatsapp.com/send?phone=$phone&text=" . rawurlencode($message);
             @endphp
 
-            <a href="{{ $whatsappLink }}" class="btn btn-outline-secondary mx-1"
-                style="font-weight: 300 !important; background-color:#fff" target="_blank">
-                <img src="{{ asset('img/whatsapp.png') }}" alt="WhatsApp" height="20px" width="20px">
+            <a href="{{ $whatsappLink }}" class="btn btn-outline-secondary mx-1" title="Share on WhatsApp" target="_blank">
+                <img src="{{ asset('img/whatsapp.png') }}" alt="WhatsApp" height="18px" width="18px">
             </a>
         @endif
 
-
-
-
-
-
-
-
         <!-- SMS Alert Toggle -->
         <div class="col-auto">
-            <div class="form-check form-switch ms-4">
-                <input wire:model="smsAlert" class="form-check-input fs-6" type="checkbox" role="switch"
-                    id="sms-alert">
-                <label class="form-check-label fs-5" for="sms-alert">SMS Alert</label>
+            <div class="form-check form-switch ms-3 d-flex align-items-center gap-2">
+                <input wire:model="smsAlert" class="form-check-input" type="checkbox" role="switch"
+                    id="sms-alert" style="cursor: pointer;">
+                <label class="form-check-label mb-0" for="sms-alert" style="font-size: 13px; font-weight: 600; color: #475569; cursor: pointer;">SMS Alert</label>
             </div>
         </div>
 
@@ -3533,12 +4326,41 @@
             });
         }
 
+        window.switchJobCardTable = function(tableId) {
+            // 1. Instantly update active class on counter cards
+            document.querySelectorAll('.jc-counter-card').forEach(function(card) {
+                card.classList.remove('is-active-tab');
+            });
+            var activeTab = document.getElementById('counter-tab-' + tableId);
+            if (activeTab) {
+                activeTab.classList.add('is-active-tab');
+            }
+
+            // 2. Map tableId to target div id
+            var tableMap = {
+                1: 'tools-div',
+                2: 'spare-table',
+                3: 'lubes-table',
+                5: 'accessory-table'
+            };
+
+            // 3. Instantly switch tables in DOM (0ms response)
+            Object.keys(tableMap).forEach(function(id) {
+                var el = document.getElementById(tableMap[id]);
+                if (el) {
+                    el.style.display = (parseInt(id) === parseInt(tableId)) ? 'block' : 'none';
+                }
+            });
+        };
+
         document.addEventListener("DOMContentLoaded", function() {
             toggleMechanicDropdowns();
 
-            Livewire.hook('message.processed', () => {
-                toggleMechanicDropdowns();
-            });
+            if (typeof Livewire !== 'undefined') {
+                Livewire.hook('message.processed', () => {
+                    toggleMechanicDropdowns();
+                });
+            }
         });
     </script>
 @endsection

@@ -288,21 +288,21 @@
 
         .carnate-jobcard-report .jobcardtable thead,
         .carnate-jobcard-report .jobcardtable thead tr {
-            background: {{ $headerBg }} !important;
+            background: #f8fafc !important;
         }
 
         .carnate-jobcard-report .jobcardtable thead th {
-            background: transparent !important;
-            color: #ffffff !important;
+            background: #f8fafc !important;
+            color: #64748b !important;
             border: 0 !important;
-            border-bottom: 1px solid rgba(255,255,255,.2) !important;
-            padding: 13px 12px !important;
+            border-bottom: 1px solid var(--cj-border) !important;
+            padding: 13px 14px !important;
             font-size: 11px !important;
-            font-weight: 750 !important;
-            letter-spacing: .04em;
+            font-weight: 700 !important;
+            letter-spacing: .35px;
             text-transform: uppercase;
             white-space: nowrap;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.18) !important;
+            text-shadow: none !important;
             vertical-align: middle;
         }
 
@@ -781,8 +781,8 @@
                     <div class="cj-table-wrap">
                         <table class="table jobcardtable">
 
-                            <thead style="background: {{ $headerBg }} !important;">
-                                <tr style="background: {{ $headerBg }} !important;">
+                            <thead>
+                                <tr>
                                     <th>S.No.</th>
                                     <th>Entry Date</th>
                                     <th>Job-Card Number</th>

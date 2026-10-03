@@ -500,12 +500,39 @@ if (Auth::guard('sparepart')->check()) {
 
 
 /*
- * Keep the existing dropdown behavior.
+ * Dropdown opens on CLICK (.is-open), NOT on :hover.
  */
 
-.sidebar-wrapper.customsidebar .dropdown:hover .dropdown-content {
+.sidebar-wrapper.customsidebar .dropdown.is-open > .dropdown-content {
+    display: block !important;
+}
 
-    display: block;
+.sidebar-wrapper.customsidebar .dropdown.is-open > a .dropdown-right-icon,
+.sidebar-wrapper.customsidebar .dropdown.is-open > a .fa-chevron-right {
+    transform: rotate(90deg) !important;
+    color: #e53935 !important;
+}
+
+.sidebar-wrapper.customsidebar .dropdown.active > a,
+.sidebar-wrapper.customsidebar .dropdown.is-open > a {
+    color: #e53935 !important;
+    background: #fff5f5 !important;
+    font-weight: 600 !important;
+}
+
+.sidebar-wrapper.customsidebar .dropdown.active > a .parent-icon,
+.sidebar-wrapper.customsidebar .dropdown.is-open > a .parent-icon {
+    color: #e53935 !important;
+}
+
+.sidebar-wrapper.customsidebar .dropdown-content > a.active {
+    color: #e53935 !important;
+    background: #fff5f5 !important;
+    font-weight: 600 !important;
+}
+
+.sidebar-wrapper.customsidebar .dropdown-content > a.active::before {
+    background: #e53935 !important;
 }
 
 
@@ -1204,39 +1231,11 @@ if (Auth::guard('sparepart')->check()) {
             </li>
 
 
-            {{-- Accessory --}}
-
-            @if (@$sparePart->hasPermissionTo('accessory-show'))
-
-                <li>
-
-                    <a href="{{ route('sparepart.accessory') }}">
-
-                        <div class="parent-icon">
-
-                            <i class="fa-solid fa-toolbox"></i>
-
-                        </div>
-
-
-                        <div class="menu-title">
-
-                            Accessory
-
-                        </div>
-
-                    </a>
-
-                </li>
-
-            @endif
-
-
             {{-- Parts --}}
 
             @if (@$sparePart->hasPermissionTo('part-show'))
 
-                <li>
+                <li class="{{ request()->routeIs('sparepart.parts*') ? 'mm-active active' : '' }}">
 
                     <a href="{{ route('sparepart.parts') }}">
 
@@ -1250,6 +1249,34 @@ if (Auth::guard('sparepart')->check()) {
                         <div class="menu-title">
 
                             Parts
+
+                        </div>
+
+                    </a>
+
+                </li>
+
+            @endif
+
+
+            {{-- Accessory --}}
+
+            @if (@$sparePart->hasPermissionTo('accessory-show'))
+
+                <li class="{{ request()->routeIs('sparepart.accessory*') ? 'mm-active active' : '' }}">
+
+                    <a href="{{ route('sparepart.accessory') }}">
+
+                        <div class="parent-icon">
+
+                            <i class="fa-solid fa-toolbox"></i>
+
+                        </div>
+
+
+                        <div class="menu-title">
+
+                            Accessory
 
                         </div>
 
@@ -1318,11 +1345,15 @@ if (Auth::guard('sparepart')->check()) {
 
             {{-- Inventory Dropdown --}}
 
+            @php
+                $isInvActive = request()->routeIs('sparepart.suppliers*') || request()->routeIs('sparepart.purchaseorder*') || request()->routeIs('sparepart.stock.list*');
+            @endphp
+
             <li>
 
-                <div class="dropdown w-100">
+                <div class="dropdown w-100 {{ $isInvActive ? 'is-open active' : '' }}">
 
-                    <a href="#">
+                    <a href="javascript:void(0)">
 
                         <div class="parent-icon">
 
@@ -1345,21 +1376,21 @@ if (Auth::guard('sparepart')->check()) {
 
                     <div class="dropdown-content">
 
-                        <a href="{{ route('sparepart.suppliers') }}">
+                        <a href="{{ route('sparepart.suppliers') }}" class="{{ request()->routeIs('sparepart.suppliers*') ? 'active' : '' }}">
 
                             Suppliers
 
                         </a>
 
 
-                        <a href="{{ route('sparepart.purchaseorder') }}">
+                        <a href="{{ route('sparepart.purchaseorder') }}" class="{{ request()->routeIs('sparepart.purchaseorder*') ? 'active' : '' }}">
 
                             Purchase Order
 
                         </a>
 
 
-                        <a href="{{ route('sparepart.stock.list') }}">
+                        <a href="{{ route('sparepart.stock.list') }}" class="{{ request()->routeIs('sparepart.stock.list*') ? 'active' : '' }}">
 
                             Stock List
 
@@ -1388,11 +1419,15 @@ if (Auth::guard('sparepart')->check()) {
 
             @if (@$sparePart->hasPermissionTo('order-show'))
 
+                @php
+                    $isOrderActive = request()->routeIs('sparepart.order*') || request()->routeIs('sparepart.paid-order*');
+                @endphp
+
                 <li>
 
-                    <div class="dropdown w-100">
+                    <div class="dropdown w-100 {{ $isOrderActive ? 'is-open active' : '' }}">
 
-                        <a href="#">
+                        <a href="javascript:void(0)">
 
                             <div class="parent-icon">
 
@@ -1415,14 +1450,14 @@ if (Auth::guard('sparepart')->check()) {
 
                         <div class="dropdown-content">
 
-                            <a href="{{ route('sparepart.order') }}">
+                            <a href="{{ route('sparepart.order') }}" class="{{ request()->routeIs('sparepart.order*') ? 'active' : '' }}">
 
                                 Order
 
                             </a>
 
 
-                            <a href="{{ route('sparepart.paid-order') }}">
+                            <a href="{{ route('sparepart.paid-order') }}" class="{{ request()->routeIs('sparepart.paid-order*') ? 'active' : '' }}">
 
                                 Paid Order
 
@@ -1453,11 +1488,15 @@ if (Auth::guard('sparepart')->check()) {
 
             @if (@$sparePart->hasPermissionTo('expenses-show'))
 
+                @php
+                    $isExpenseActive = request()->routeIs('sparepart.expenses*') || request()->routeIs('sparepart.expense.*');
+                @endphp
+
                 <li>
 
-                    <div class="dropdown w-100">
+                    <div class="dropdown w-100 {{ $isExpenseActive ? 'is-open active' : '' }}">
 
-                        <a href="#">
+                        <a href="javascript:void(0)">
 
                             <div class="parent-icon">
 
@@ -1480,21 +1519,21 @@ if (Auth::guard('sparepart')->check()) {
 
                         <div class="dropdown-content">
 
-                            <a href="{{ route('sparepart.expenses') }}">
+                            <a href="{{ route('sparepart.expenses') }}" class="{{ request()->routeIs('sparepart.expenses*') ? 'active' : '' }}">
 
                                 Expenses
 
                             </a>
 
 
-                            <a href="{{ route('sparepart.expense.category') }}">
+                            <a href="{{ route('sparepart.expense.category') }}" class="{{ request()->routeIs('sparepart.expense.category*') ? 'active' : '' }}">
 
                                 Expense Category
 
                             </a>
 
 
-                            <a href="{{ route('sparepart.expense.supplier') }}">
+                            <a href="{{ route('sparepart.expense.supplier') }}" class="{{ request()->routeIs('sparepart.expense.supplier*') ? 'active' : '' }}">
 
                                 Expense Supplier
 
@@ -1637,22 +1676,22 @@ if (Auth::guard('sparepart')->check()) {
 
                     <div class="dropdown-content">
 
-                        @if (@$sparePart->hasPermissionTo('accessory-show'))
+                        @if (@$sparePart->hasPermissionTo('part-show'))
 
-                            <a href="{{ route('sparepart.accessory') }}">
+                            <a href="{{ route('sparepart.parts') }}">
 
-                                Accessory
+                                Parts
 
                             </a>
 
                         @endif
 
 
-                        @if (@$sparePart->hasPermissionTo('part-show'))
+                        @if (@$sparePart->hasPermissionTo('accessory-show'))
 
-                            <a href="{{ route('sparepart.parts') }}">
+                            <a href="{{ route('sparepart.accessory') }}">
 
-                                Parts
+                                Accessory
 
                             </a>
 
@@ -1797,11 +1836,15 @@ if (Auth::guard('sparepart')->check()) {
                 </li>
 
 
+                @php
+                    $isReportsActive = request()->routeIs('sparepart.report.*');
+                @endphp
+
                 <li>
 
-                    <div class="dropdown w-100">
+                    <div class="dropdown w-100 {{ $isReportsActive ? 'is-open active' : '' }}">
 
-                        <a href="#">
+                        <a href="javascript:void(0)">
 
                             <div class="parent-icon">
 
@@ -1824,49 +1867,49 @@ if (Auth::guard('sparepart')->check()) {
 
                         <div class="dropdown-content">
 
-                            <a href="{{ route('sparepart.report.orders') }}">
+                            <a href="{{ route('sparepart.report.orders') }}" class="{{ request()->routeIs('sparepart.report.orders*') ? 'active' : '' }}">
 
                                 Orders Report
 
                             </a>
 
 
-                            <a href="{{ route('sparepart.report.countersale') }}">
+                            <a href="{{ route('sparepart.report.countersale') }}" class="{{ request()->routeIs('sparepart.report.countersale*') ? 'active' : '' }}">
 
                                 Counter Sales Report
 
                             </a>
 
 
-                            <a href="{{ route('sparepart.report.payments') }}">
+                            <a href="{{ route('sparepart.report.payments') }}" class="{{ request()->routeIs('sparepart.report.payments*') ? 'active' : '' }}">
 
                                 Payments Report
 
                             </a>
 
 
-                            <a href="{{ route('sparepart.report.stock') }}">
+                            <a href="{{ route('sparepart.report.stock') }}" class="{{ request()->routeIs('sparepart.report.stock*') ? 'active' : '' }}">
 
                                 Stock Report
 
                             </a>
 
 
-                            <a href="{{ route('sparepart.report.commission') }}">
+                            <a href="{{ route('sparepart.report.commission') }}" class="{{ request()->routeIs('sparepart.report.commission*') ? 'active' : '' }}">
 
                                 Commission Report
 
                             </a>
 
 
-                            <a href="{{ route('sparepart.report.salary') }}">
+                            <a href="{{ route('sparepart.report.salary') }}" class="{{ request()->routeIs('sparepart.report.salary*') ? 'active' : '' }}">
 
                                 Salary Report
 
                             </a>
 
 
-                            <a href="{{ route('sparepart.report.expenses') }}">
+                            <a href="{{ route('sparepart.report.expenses') }}" class="{{ request()->routeIs('sparepart.report.expenses*') ? 'active' : '' }}">
 
                                 Expenses Report
 
@@ -2102,18 +2145,54 @@ if (Auth::guard('sparepart')->check()) {
     }
 
 
+    function initCarnateSidebarDropdowns() {
+        // Toggle submenus on CLICK only (no hover)
+        document.querySelectorAll('.sidebar-wrapper.customsidebar .dropdown > a').forEach(function (toggleLink) {
+            if (toggleLink.dataset.dropdownInit) return;
+            toggleLink.dataset.dropdownInit = 'true';
+
+            toggleLink.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var parentDropdown = this.closest('.dropdown');
+                if (parentDropdown) {
+                    var willOpen = !parentDropdown.classList.contains('is-open');
+                    parentDropdown.classList.toggle('is-open', willOpen);
+                }
+            });
+        });
+
+        // Ensure active dropdowns remain open and visually highlighted based on current URL
+        var currentUrl = window.location.href.split(/[?#]/)[0];
+        document.querySelectorAll('.sidebar-wrapper.customsidebar .dropdown-content a').forEach(function (subLink) {
+            var linkUrl = (subLink.href || '').split(/[?#]/)[0];
+            if (linkUrl && currentUrl === linkUrl) {
+                subLink.classList.add('active');
+                var parentDropdown = subLink.closest('.dropdown');
+                if (parentDropdown) {
+                    parentDropdown.classList.add('is-open', 'active');
+                }
+            }
+        });
+    }
+
+
     if (
         document.readyState === 'loading'
     ) {
 
         document.addEventListener(
             'DOMContentLoaded',
-            initCarnateSidebarScroll
+            function () {
+                initCarnateSidebarScroll();
+                initCarnateSidebarDropdowns();
+            }
         );
 
     } else {
 
         initCarnateSidebarScroll();
+        initCarnateSidebarDropdowns();
 
     }
 
@@ -2123,7 +2202,10 @@ if (Auth::guard('sparepart')->check()) {
         function () {
 
             setTimeout(
-                initCarnateSidebarScroll,
+                function () {
+                    initCarnateSidebarScroll();
+                    initCarnateSidebarDropdowns();
+                },
                 300
             );
 

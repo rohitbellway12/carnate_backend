@@ -185,7 +185,7 @@
 
             isFetching = true;
 
-            fetch(`/portal/sparepart/get-notifications`, {
+            fetch(`/sparepart/get-notifications`, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
@@ -261,7 +261,7 @@
         }
 
         function markHeaderNotifAsReadSp(id) {
-            const url = `/portal/sparepart/notifications/${id}/read`;
+            const url = `/sparepart/notifications/${id}/read`;
             fetch(url, {
                     method: 'POST',
                     headers: {
@@ -345,7 +345,7 @@
             if (modal) modal.hide();
 
             if (orderId) {
-                window.location.href = `/portal/sparepart/order`;
+                window.location.href = `/sparepart/order`;
             }
         }
 
@@ -533,16 +533,7 @@
             });
         @endif
 
-        $(document).ready(function() {
-            $(".dropdown > a").click(function(e) {
-                e.preventDefault();
-                $(this).next(".dropdown-content").slideToggle()
-                    .parent().siblings().find(".dropdown-content").slideUp();
-                $(this).find(".dropdown-right-icon").toggleClass("fa-chevron-right fa-chevron-down")
-                    .closest(".dropdown").siblings().find(".dropdown-right-icon").removeClass(
-                        "fa-chevron-down").addClass("fa-chevron-right");
-            });
-        });
+
     </script>
 
     <!-- Hidden audio element for notification sounds -->

@@ -111,6 +111,58 @@
             color: var(--cl-text) !important;
         }
 
+        /* Labour Type Filter Tabs */
+        .carnate-labour-page .cl-labour-tabs {
+            display: inline-flex;
+            align-items: center;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 12px;
+            gap: 4px;
+            border: 1px solid var(--cl-border);
+        }
+        .carnate-labour-page .cl-tab-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 0;
+            background: transparent;
+            color: var(--cl-muted);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: all .2s ease;
+        }
+        .carnate-labour-page .cl-tab-btn:hover {
+            color: var(--cl-text);
+            background: rgba(255, 255, 255, 0.6);
+        }
+        .carnate-labour-page .cl-tab-btn.active {
+            background: #ffffff;
+            color: var(--cl-red);
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+            font-weight: 700;
+        }
+        .carnate-labour-page .cl-tab-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            background: #e2e8f0;
+            color: #475569;
+        }
+        .carnate-labour-page .cl-tab-btn.active .cl-tab-count {
+            background: var(--cl-red-soft);
+            color: var(--cl-red);
+        }
+
         /* Cards */
         .carnate-labour-page .cl-card {
             background: var(--cl-card);
@@ -732,9 +784,37 @@
         </div>
     </div>
 
-    {{-- Filters --}}
+    {{-- Filters & Tabs --}}
     <div class="cl-card">
         <div class="cl-card-body">
+
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+                <div class="cl-labour-tabs">
+                    <button type="button"
+                        wire:click="setLabourType('')"
+                        class="cl-tab-btn {{ $selectedLabourType === '' ? 'active' : '' }}">
+                        <i class="bx bx-grid-alt"></i>
+                        All
+                        <span class="cl-tab-count">{{ $totalCount ?? 0 }}</span>
+                    </button>
+
+                    <button type="button"
+                        wire:click="setLabourType('inhouse')"
+                        class="cl-tab-btn {{ $selectedLabourType === 'inhouse' ? 'active' : '' }}">
+                        <i class="bx bx-home-alt"></i>
+                        In-house
+                        <span class="cl-tab-count">{{ $inhouseCount ?? 0 }}</span>
+                    </button>
+
+                    <button type="button"
+                        wire:click="setLabourType('outsource')"
+                        class="cl-tab-btn {{ $selectedLabourType === 'outsource' ? 'active' : '' }}">
+                        <i class="bx bx-share-alt"></i>
+                        Outsource
+                        <span class="cl-tab-count">{{ $outsourceCount ?? 0 }}</span>
+                    </button>
+                </div>
+            </div>
 
             <div class="cl-filter-row">
 

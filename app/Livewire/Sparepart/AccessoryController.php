@@ -45,20 +45,16 @@ class AccessoryController extends Component
     public $online_price = 0, $offline_price = 0;
     protected $rules = [
         'name' => 'required',
-        'price' => 'required|numeric|min:1',
-        'amount' => 'required|numeric|min:0',
-        'customerPrice' => 'required|numeric|min:1',
-        'reflectedPrice' => 'required|numeric|min:1',
+        'purchase_amount' => 'required|numeric|min:1',
         'selling_amount' => 'required|numeric|min:1',
         'unit' => 'required|integer',
-        'stock' => 'required|integer|min:1',
+        'category' => 'required|integer',
+        'stock' => 'required|integer|min:0',
         'brand' => 'nullable|string',
         // 'suitable_for' => 'nullable|string',
         'discount' => 'nullable|numeric|min:0',
         'description' => 'nullable|string',
-        'category' => 'required|integer',
-        // 'category' => 'nullable|integer',
-        'purchase_amount' => 'required|integer',
+        // 'image_id' => 'nullable|string',
     ];
 
     public function mount()
@@ -167,7 +163,7 @@ class AccessoryController extends Component
         $this->validate();
 
         // Automatically populate suitable_for with all available vehicles
-        if (empty($this->suitable_for)) {
+        if (!$this->forAllVehicles && empty($this->suitable_for)) {
             if (!empty($this->api_compatible_vehicles)) {
                 // If API vehicles are available, use their IDs
                 $this->suitable_for = collect($this->api_compatible_vehicles)->pluck('vehicleId')->toArray();
@@ -177,7 +173,7 @@ class AccessoryController extends Component
             }
         }
 
-        if (empty($this->suitable_for)) {
+        if (!$this->forAllVehicles && empty($this->suitable_for)) {
             $this->addError('suitable_for', "No compatible vehicles found");
             return;
         }
@@ -487,7 +483,7 @@ class AccessoryController extends Component
         $this->validate();
 
         // Automatically populate suitable_for with all available vehicles if empty
-        if (empty($this->suitable_for)) {
+        if (!$this->forAllVehicles && empty($this->suitable_for)) {
             if (!empty($this->api_compatible_vehicles)) {
                 // If API vehicles are available, use their IDs
                 $this->suitable_for = collect($this->api_compatible_vehicles)->pluck('vehicleId')->toArray();
@@ -497,8 +493,7 @@ class AccessoryController extends Component
             }
         }
 
-
-        if (empty($this->suitable_for)) {
+        if (!$this->forAllVehicles && empty($this->suitable_for)) {
             $this->addError('suitable_for', "No compatible vehicles found");
             return;
         }
@@ -747,7 +742,6 @@ class AccessoryController extends Component
         $this->name = $this->accessory_label;
 
         $this->dispatch('swal:toast', ['message' => 'Accessory Label added successfully!']);
-        $this->resetForm();
         $this->accessory_label = '';
         $this->showAccessoryModel = false;
     }

@@ -21,6 +21,16 @@
             --carnate-bg: #f7f8fa;
             --carnate-white: #ffffff;
 
+            --c-bg: #f7f8fa;
+            --c-white: #ffffff;
+            --c-text: #111827;
+            --c-muted: #64748b;
+            --c-border: #e2e8f0;
+            --c-red: #e53935;
+            --c-red-dark: #cf302d;
+            --c-red-soft: #fff5f5;
+            --c-icon: #f1f5f9;
+
             color: var(--carnate-text);
         }
 
@@ -778,791 +788,591 @@
         }
 
 
-        /* =========================================================
-           MODAL BACKDROP
-        ========================================================= */
+        /* =====================================================
+           MODAL
+        ====================================================== */
 
-        .carnate-accessory-page .carnate-modal {
-            position: fixed !important;
-
-            inset: 0 !important;
-
-            z-index: 1080 !important;
-
-            display: none;
-
-            align-items: center;
-
-            justify-content: center;
-
-            padding: 20px;
-
-            background: rgba(15, 23, 42, 0.55) !important;
-
-            opacity: 1 !important;
-
-            overflow-y: auto;
-
-            backdrop-filter: blur(3px);
-
-            -webkit-backdrop-filter: blur(3px);
-        }
-
-
-        .carnate-accessory-page .carnate-modal.show {
-            display: flex !important;
-        }
-
-
-        /* =========================================================
-           MODAL DIALOG
-        ========================================================= */
-
-        .carnate-accessory-page .carnate-modal .modal-dialog {
-            width: 100%;
-
-            max-width: 900px;
-
-            margin: auto;
-
-            transform: none !important;
-        }
-
-
-        .carnate-accessory-page .carnate-modal.modal-md .modal-dialog {
-            max-width: 520px;
-        }
-
-
-        .carnate-accessory-page .carnate-modal .modal-content {
-            max-height: calc(100vh - 40px);
-
-            display: flex;
-
-            flex-direction: column;
-
-            border: 1px solid rgba(226, 232, 240, .9);
-
-            border-radius: 16px;
-
-            background: #ffffff;
-
-            box-shadow:
-                0 25px 70px rgba(15, 23, 42, 0.18);
-
+        .carnate-modal {
+            border: 0 !important;
+            border-radius: 14px !important;
             overflow: hidden;
+            box-shadow: 0 25px 70px rgba(15, 23, 42, .22);
         }
 
-
-        /* =========================================================
-           MODAL HEADER
-        ========================================================= */
-
-        .carnate-accessory-page .carnate-modal .modal-header {
-            flex: 0 0 auto;
-
-            min-height: 68px;
-
+        .carnate-modal-header {
+            padding: 17px 20px;
+            background: #fff;
+            border-bottom: 1px solid var(--c-border);
             display: flex;
-
             align-items: center;
-
             justify-content: space-between;
-
-            padding: 17px 22px;
-
-            border-bottom: 1px solid var(--carnate-border-light);
-
-            background: #ffffff;
+            gap: 15px;
         }
 
-
-        .carnate-accessory-page .modal-title-wrapper {
+        .carnate-modal-title {
             display: flex;
-
             align-items: center;
-
             gap: 11px;
         }
 
-
-        .carnate-accessory-page .modal-title-icon {
-            width: 36px;
-
-            height: 36px;
-
+        .carnate-modal-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--c-red-soft);
+            color: var(--c-red);
             display: flex;
-
             align-items: center;
-
             justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
 
-            border-radius: 9px;
+        .carnate-modal-title h4 {
+            margin: 0 0 2px;
+            color: var(--c-text);
+            font-size: 16px;
+            font-weight: 750;
+        }
 
-            background: var(--carnate-red-soft);
+        .carnate-modal-title p {
+            margin: 0;
+            color: var(--c-muted);
+            font-size: 11px;
+        }
 
-            color: var(--carnate-red);
+        .carnate-close {
+            width: 34px;
+            height: 34px;
+            border: 1px solid var(--c-border);
+            border-radius: 8px;
+            background: #fff;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+        }
 
+        .carnate-close:hover {
+            background: var(--c-red-soft);
+            color: var(--c-red);
+            border-color: rgba(229, 57, 53, .2);
+        }
+
+        .carnate-modal-body {
+            padding: 21px 20px;
+            background: #fff;
+            max-height: calc(100vh - 190px);
+            overflow-y: auto;
+        }
+
+        .carnate-modal-footer {
+            padding: 13px 20px;
+            background: #fafbfc;
+            border-top: 1px solid var(--c-border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+
+        /* =====================================================
+           FORM FIELDS
+        ====================================================== */
+
+        .carnate-field {
+            margin-bottom: 2px;
+        }
+
+        .carnate-field > label {
+            display: block;
+            margin-bottom: 7px;
+            color: #334155;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .carnate-field > label span:not(.carnate-auto-label) {
+            color: var(--c-red);
+        }
+
+        .carnate-input-wrap {
+            min-height: 43px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 11px;
+            background: #fff;
+            border: 1px solid var(--c-border);
+            border-radius: 8px;
+            transition: .18s ease;
+        }
+
+        .carnate-input-wrap:focus-within {
+            border-color: rgba(229, 57, 53, .4);
+            box-shadow: 0 0 0 3px rgba(229, 57, 53, .06);
+        }
+
+        .carnate-input-wrap > i {
+            color: #94a3b8;
+            font-size: 17px;
+            flex-shrink: 0;
+        }
+
+        .carnate-input-wrap input,
+        .carnate-input-wrap select {
+            width: 100%;
+            min-width: 0;
+            border: 0 !important;
+            outline: 0 !important;
+            box-shadow: none !important;
+            background: transparent;
+            color: var(--c-text);
+            font-size: 13px;
+        }
+
+        .carnate-input-wrap select {
+            padding-left: 0;
+        }
+
+        .carnate-input-wrap input::placeholder {
+            color: #94a3b8;
+        }
+
+        .carnate-readonly {
+            background: #f8fafc;
+        }
+
+        .carnate-currency {
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .carnate-input-suffix {
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .carnate-auto-label {
+            display: inline-block;
+            margin-left: 5px;
+            padding: 2px 5px;
+            border-radius: 4px;
+            background: #f1f5f9;
+            color: #64748b !important;
+            font-size: 8px;
+            font-weight: 750;
+            vertical-align: middle;
+        }
+
+        .carnate-error {
+            display: block;
+            margin-top: 5px;
+            color: #dc2626;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .carnate-loading-text {
+            margin-top: 5px;
+            color: #64748b;
+            font-size: 10px;
+        }
+
+
+        /* =====================================================
+           NAME FIELD
+        ====================================================== */
+
+        .carnate-name-row {
+            display: flex;
+            gap: 7px;
+        }
+
+        .carnate-select-wrap {
+            flex: 1;
+            min-width: 0;
+            height: 43px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 11px;
+            border: 1px solid var(--c-border);
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .carnate-select-wrap > i {
+            color: #94a3b8;
             font-size: 17px;
         }
 
-
-        .carnate-accessory-page .carnate-modal .modal-title {
-            margin: 0;
-
-            color: var(--carnate-heading);
-
-            font-size: 16px;
-
-            font-weight: 700;
-        }
-
-
-        .carnate-accessory-page .modal-close {
-            width: 34px;
-
-            height: 34px;
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            padding: 0;
-
-            border: 0;
-
-            border-radius: 8px;
-
-            background: #f8fafc;
-
-            color: #64748b;
-
-            font-size: 18px;
-
-            transition: all .2s ease;
-        }
-
-
-        .carnate-accessory-page .modal-close:hover {
-            background: #fef2f2;
-
-            color: var(--carnate-red);
-        }
-
-
-        /* =========================================================
-           MODAL BODY
-        ========================================================= */
-
-        .carnate-accessory-page .carnate-modal .modal-body {
-            flex: 1 1 auto;
-
-            padding: 22px;
-
-            overflow-y: auto;
-
-            overflow-x: hidden;
-
-            scrollbar-width: thin;
-
-            scrollbar-color: #cbd5e1 transparent;
-        }
-
-
-        .carnate-accessory-page .carnate-modal .modal-body::-webkit-scrollbar {
-            width: 6px;
-        }
-
-
-        .carnate-accessory-page .carnate-modal .modal-body::-webkit-scrollbar-track {
+        .carnate-select-wrap select {
+            width: 100%;
+            border: 0 !important;
+            outline: 0 !important;
+            box-shadow: none !important;
+            font-size: 13px;
             background: transparent;
         }
 
-
-        .carnate-accessory-page .carnate-modal .modal-body::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-
-            border-radius: 10px;
-        }
-
-
-        /* =========================================================
-           FORM SECTION
-        ========================================================= */
-
-        .carnate-accessory-page .form-section {
-            margin-bottom: 22px;
-
-            padding-bottom: 18px;
-
-            border-bottom: 1px solid var(--carnate-border-light);
-        }
-
-
-        .carnate-accessory-page .form-section:last-child {
-            margin-bottom: 0;
-
-            padding-bottom: 0;
-
-            border-bottom: 0;
-        }
-
-
-        .carnate-accessory-page .form-section-title {
-            margin: 0 0 15px;
-
-            color: #334155;
-
-            font-size: 13px;
-
-            font-weight: 700;
-        }
-
-
-        .carnate-accessory-page .form-label {
-            display: block;
-
-            margin-bottom: 7px;
-
-            color: #475569;
-
-            font-size: 12px;
-
-            font-weight: 600;
-        }
-
-
-        .carnate-accessory-page .form-label .required {
-            color: var(--carnate-red);
-
-            margin-left: 2px;
-        }
-
-
-        /* =========================================================
-           MODAL FORM CONTROLS
-        ========================================================= */
-
-        .carnate-accessory-page .modal-body .form-control,
-        .carnate-accessory-page .modal-body .form-select {
-            min-height: 43px;
-
-            border: 1px solid #dbe2ea;
-
-            border-radius: 8px;
-
-            background: #ffffff;
-
-            color: #1e293b;
-
-            font-size: 13px;
-
-            box-shadow: none;
-
-            transition:
-                border-color .2s ease,
-                box-shadow .2s ease;
-        }
-
-
-        .carnate-accessory-page .modal-body textarea.form-control {
-            min-height: 95px;
-
-            padding-top: 11px;
-
-            resize: vertical;
-        }
-
-
-        .carnate-accessory-page .modal-body .form-control::placeholder {
-            color: #a1aab7;
-        }
-
-
-        .carnate-accessory-page .modal-body .form-control:hover,
-        .carnate-accessory-page .modal-body .form-select:hover {
-            border-color: #cbd5e1;
-        }
-
-
-        .carnate-accessory-page .modal-body .form-control:focus,
-        .carnate-accessory-page .modal-body .form-select:focus {
-            border-color: var(--carnate-red);
-
-            box-shadow:
-                0 0 0 3px rgba(229, 57, 53, 0.07);
-
-            outline: none;
-        }
-
-
-        .carnate-accessory-page .modal-body .form-control.bg-light {
-            background: #f8fafc !important;
-
-            color: #64748b;
-        }
-
-
-        /* =========================================================
-           NAME + ADD LABEL
-        ========================================================= */
-
-        .carnate-accessory-page .name-select-row {
-            display: flex;
-
-            gap: 8px;
-        }
-
-
-        .carnate-accessory-page .name-select-row .select-area {
-            flex: 1;
-        }
-
-
-        .carnate-accessory-page .add-label-btn {
+        .carnate-add-small {
             width: 43px;
-
             height: 43px;
-
-            display: inline-flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            padding: 0;
-
-            border: 1px solid var(--carnate-red);
-
+            border: 1px solid var(--c-border);
             border-radius: 8px;
-
-            background: var(--carnate-red);
-
-            color: #ffffff;
-
-            font-size: 18px;
-
-            transition: all .2s ease;
-        }
-
-
-        .carnate-accessory-page .add-label-btn:hover {
-            background: var(--carnate-red-dark);
-
-            border-color: var(--carnate-red-dark);
-        }
-
-
-        /* =========================================================
-           INPUT GROUP
-        ========================================================= */
-
-        .carnate-accessory-page .custom-input-group {
+            background: #fff;
+            color: var(--c-red);
             display: flex;
-        }
-
-
-        .carnate-accessory-page .custom-input-group .form-control {
-            border-radius: 8px 0 0 8px;
-        }
-
-
-        .carnate-accessory-page .custom-input-group .input-group-text {
-            min-width: 43px;
-
-            display: flex;
-
             align-items: center;
-
             justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            transition: .16s ease;
+            flex-shrink: 0;
+        }
 
-            border: 1px solid #dbe2ea;
-
-            border-left: 0;
-
-            border-radius: 0 8px 8px 0;
-
-            background: #f8fafc;
-
-            color: #64748b;
-
-            font-size: 12px;
-
-            font-weight: 600;
+        .carnate-add-small:hover {
+            background: var(--c-red-soft);
+            border-color: rgba(229, 57, 53, .25);
         }
 
 
-        .carnate-accessory-page .discount-group {
+        /* =====================================================
+           DISCOUNT
+        ====================================================== */
+
+        .carnate-discount-wrap {
+            height: 43px;
             display: flex;
-
-            gap: 0;
-        }
-
-
-        .carnate-accessory-page .discount-group .form-control {
-            border-radius: 8px 0 0 8px;
-        }
-
-
-        .carnate-accessory-page .discount-type {
-            width: 70px;
-
-            border-left: 0 !important;
-
-            border-radius: 0 8px 8px 0 !important;
-        }
-
-
-        /* =========================================================
-           IMAGE UPLOAD
-        ========================================================= */
-
-        .carnate-accessory-page .image-upload-row {
-            display: flex;
-
-            align-items: center;
-
-            gap: 18px;
-        }
-
-
-        .carnate-accessory-page .image-upload-input {
-            flex: 1;
-        }
-
-
-        .carnate-accessory-page .image-preview {
-            width: 76px;
-
-            height: 76px;
-
-            padding: 5px;
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            border: 1px solid var(--carnate-border);
-
-            border-radius: 10px;
-
-            background: #f8fafc;
-
+            border: 1px solid var(--c-border);
+            border-radius: 8px;
             overflow: hidden;
+            background: #fff;
         }
 
-
-        .carnate-accessory-page .image-preview img {
-            width: 100%;
-
-            height: 100%;
-
-            object-fit: contain;
-
-            border-radius: 6px;
+        .carnate-discount-wrap:focus-within {
+            border-color: rgba(229, 57, 53, .4);
+            box-shadow: 0 0 0 3px rgba(229, 57, 53, .06);
         }
 
-
-        /* =========================================================
-           CHECKBOX
-        ========================================================= */
-
-        .carnate-accessory-page .custom-check {
-            display: flex;
-
-            align-items: center;
-
-            gap: 9px;
-
-            padding: 11px 13px;
-
-            border: 1px solid var(--carnate-border);
-
-            border-radius: 9px;
-
-            background: #ffffff;
+        .carnate-discount-wrap input {
+            flex: 1;
+            min-width: 0;
+            border: 0 !important;
+            outline: 0 !important;
+            box-shadow: none !important;
+            padding: 0 11px;
+            font-size: 13px;
         }
 
-
-        .carnate-accessory-page .custom-check .form-check-input {
-            width: 18px;
-
-            height: 18px;
-
-            margin: 0;
-
-            border: 1px solid #cbd5e1;
-
-            border-radius: 5px;
-
-            box-shadow: none;
-
-            cursor: pointer;
-        }
-
-
-        .carnate-accessory-page .custom-check .form-check-input:checked {
-            background-color: var(--carnate-red);
-
-            border-color: var(--carnate-red);
-        }
-
-
-        .carnate-accessory-page .custom-check .form-check-label {
-            margin: 0;
-
-            color: #475569;
-
-            font-size: 12px;
-
-            font-weight: 600;
-
-            cursor: pointer;
-        }
-
-
-        /* =========================================================
-           VEHICLE SELECTOR
-        ========================================================= */
-
-        .carnate-accessory-page .vehicle-selector-wrapper {
-            padding: 15px;
-
-            border: 1px solid var(--carnate-border);
-
-            border-radius: 10px;
-
-            background: #fafbfc;
-        }
-
-
-        .carnate-accessory-page .vehicle-section-label {
-            display: block;
-
-            margin-bottom: 8px;
-
-            color: #64748b;
-
-            font-size: 11px;
-
-            font-weight: 700;
-
-            letter-spacing: .3px;
-        }
-
-
-        .carnate-accessory-page .selected-vehicles {
-            display: flex;
-
-            flex-wrap: wrap;
-
-            gap: 7px;
-
-            margin-top: 10px;
-        }
-
-
-        .carnate-accessory-page .vehicle-badge {
-            display: inline-flex;
-
-            align-items: center;
-
-            gap: 7px;
-
-            padding: 7px 9px;
-
-            border: 1px solid #fecaca;
-
-            border-radius: 7px;
-
-            background: var(--carnate-red-soft);
-
-            color: #991b1b;
-
-            font-size: 11px;
-
-            font-weight: 500;
-        }
-
-
-        .carnate-accessory-page .vehicle-remove {
-            width: 18px;
-
-            height: 18px;
-
-            padding: 0;
-
-            display: inline-flex;
-
-            align-items: center;
-
-            justify-content: center;
-
+        .carnate-discount-wrap select {
+            width: 65px;
             border: 0;
+            border-left: 1px solid var(--c-border);
+            outline: 0;
+            background: #f8fafc;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 700;
+        }
 
-            border-radius: 5px;
 
-            background: rgba(229, 57, 53, .10);
+        /* =====================================================
+           IMAGE
+        ====================================================== */
 
-            color: var(--carnate-red);
+        .carnate-image-section {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 100px;
+            gap: 15px;
+            align-items: end;
+            padding: 14px;
+            background: #f8fafc;
+            border: 1px solid #edf1f5;
+            border-radius: 10px;
+        }
 
-            font-size: 11px;
+        .carnate-image-upload label {
+            display: block;
+            margin-bottom: 7px;
+            color: #334155;
+            font-size: 12px;
+            font-weight: 700;
+        }
 
+        .carnate-image-upload .form-control {
+            border: 1px solid var(--c-border);
+            border-radius: 8px;
+            font-size: 12px;
+            background: #fff;
+        }
+
+        .carnate-image-preview {
+            width: 90px;
+            height: 90px;
+            border: 1px solid var(--c-border);
+            border-radius: 10px;
+            background: #fff;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .carnate-image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .carnate-no-image {
+            color: #cbd5e1;
+            font-size: 30px;
+        }
+
+
+        /* =====================================================
+           ALL VEHICLES
+        ====================================================== */
+
+        .carnate-all-vehicles {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 13px;
+            background: #f8fafc;
+            border: 1px solid var(--c-border);
+            border-radius: 9px;
+        }
+
+        .carnate-all-vehicles .form-check-input {
+            margin: 0;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--c-red);
+        }
+
+        .carnate-all-vehicles label {
+            display: block;
+            margin: 0 0 2px;
+            color: #334155;
+            font-size: 12px;
+            font-weight: 700;
             cursor: pointer;
         }
 
-
-        .carnate-accessory-page .vehicle-remove:hover {
-            background: var(--carnate-red);
-
-            color: #ffffff;
+        .carnate-all-vehicles p {
+            margin: 0;
+            color: var(--c-muted);
+            font-size: 10px;
         }
 
 
-        .carnate-accessory-page .no-vehicles {
-            color: #94a3b8;
+        /* =====================================================
+           VEHICLE SECTION
+        ====================================================== */
 
-            font-size: 11px;
+        .carnate-vehicle-section {
+            padding: 15px;
+            background: #fafbfc;
+            border: 1px solid var(--c-border);
+            border-radius: 10px;
         }
 
-
-        /* =========================================================
-           ERROR
-        ========================================================= */
-
-        .carnate-accessory-page .field-error {
-            display: block;
-
-            margin-top: 5px;
-
-            color: #dc2626;
-
-            font-size: 11px;
-
-            line-height: 1.4;
-        }
-
-
-        /* =========================================================
-           LOADING
-        ========================================================= */
-
-        .carnate-accessory-page .fetch-loader {
-            display: inline-flex;
-
-            align-items: center;
-
-            gap: 6px;
-
-            margin-top: 6px;
-
-            color: var(--carnate-muted);
-
-            font-size: 11px;
-        }
-
-
-        .carnate-accessory-page .spinner-border {
-            width: 14px;
-
-            height: 14px;
-
-            border-width: 2px;
-        }
-
-
-        /* =========================================================
-           MODAL FOOTER
-        ========================================================= */
-
-        .carnate-accessory-page .carnate-modal .modal-footer {
-            flex: 0 0 auto;
-
+        .carnate-section-title {
             display: flex;
-
             align-items: center;
-
-            justify-content: flex-end;
-
-            gap: 8px;
-
-            padding: 15px 22px;
-
-            border-top: 1px solid var(--carnate-border-light);
-
-            background: #ffffff;
+            gap: 9px;
+            margin-bottom: 13px;
         }
 
-
-        .carnate-accessory-page .cancel-btn {
-            min-height: 40px;
-
-            padding: 0 15px;
-
-            border: 1px solid var(--carnate-border);
-
+        .carnate-section-icon {
+            width: 34px;
+            height: 34px;
             border-radius: 8px;
-
-            background: #ffffff;
-
+            background: var(--c-icon);
             color: #64748b;
-
-            font-size: 12px;
-
-            font-weight: 600;
-
-            transition: all .2s ease;
-        }
-
-
-        .carnate-accessory-page .cancel-btn:hover {
-            background: #f8fafc;
-
-            border-color: #cbd5e1;
-
-            color: #334155;
-        }
-
-
-        .carnate-accessory-page .submit-btn {
-            min-height: 40px;
-
-            min-width: 100px;
-
-            display: inline-flex;
-
+            display: flex;
             align-items: center;
-
             justify-content: center;
+            font-size: 17px;
+        }
 
-            gap: 7px;
-
-            padding: 0 17px;
-
-            border: 1px solid var(--carnate-red);
-
-            border-radius: 8px;
-
-            background: var(--carnate-red);
-
-            color: #ffffff;
-
+        .carnate-section-title h6 {
+            margin: 0 0 2px;
+            color: #334155;
             font-size: 12px;
+            font-weight: 750;
+        }
 
-            font-weight: 600;
+        .carnate-section-title p {
+            margin: 0;
+            color: var(--c-muted);
+            font-size: 10px;
+        }
 
-            transition: all .2s ease;
+        .carnate-vehicle-selector {
+            background: #fff;
+            border-radius: 8px;
         }
 
 
-        .carnate-accessory-page .submit-btn:hover {
-            background: var(--carnate-red-dark);
+        /* =====================================================
+           MULTI SELECT
+        ====================================================== */
 
-            border-color: var(--carnate-red-dark);
+        .carnate-multi-select {
+            min-height: 43px;
+        }
+
+
+        /* =====================================================
+           SELECTED VEHICLES
+        ====================================================== */
+
+        .carnate-selected-section {
+            padding: 14px;
+            background: #f8fafc;
+            border: 1px solid #edf1f5;
+            border-radius: 9px;
+        }
+
+        .carnate-selected-title {
+            margin-bottom: 10px;
+            color: #334155;
+            font-size: 12px;
+            font-weight: 750;
+        }
+
+        .carnate-selected-title span {
+            display: inline-flex;
+            min-width: 20px;
+            height: 20px;
+            align-items: center;
+            justify-content: center;
+            margin-left: 4px;
+            padding: 0 5px;
+            border-radius: 10px;
+            background: #e2e8f0;
+            color: #475569;
+            font-size: 10px;
+        }
+
+        .carnate-selected-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+        }
+
+        .carnate-no-selection {
+            color: #94a3b8;
+            font-size: 11px;
+        }
+
+        .carnate-vehicle-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            max-width: 100%;
+            padding: 7px 9px;
+            border: 1px solid var(--c-border);
+            border-radius: 7px;
+            background: #fff;
+            color: #475569;
+            font-size: 10px;
+        }
+
+        .carnate-vehicle-badge > span {
+            word-break: break-word;
+        }
+
+        .carnate-vehicle-badge button {
+            width: 20px;
+            height: 20px;
+            padding: 0;
+            border: 0;
+            border-radius: 5px;
+            background: #f1f5f9;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .carnate-vehicle-badge button:hover {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+
+        /* =====================================================
+           TEXTAREA
+        ====================================================== */
+
+        .carnate-textarea {
+            width: 100%;
+            min-height: 90px;
+            padding: 11px 12px;
+            border: 1px solid var(--c-border);
+            border-radius: 8px;
+            resize: vertical;
+            outline: 0;
+            color: var(--c-text);
+            font-size: 13px;
+            transition: .18s ease;
+        }
+
+        .carnate-textarea:focus {
+            border-color: rgba(229, 57, 53, .4);
+            box-shadow: 0 0 0 3px rgba(229, 57, 53, .06);
+        }
+
+        .carnate-textarea::placeholder {
+            color: #94a3b8;
+        }
+
+        .carnate-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 9px 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid transparent;
+            text-decoration: none;
+            transition: .16s ease;
+        }
+
+        .carnate-btn-primary {
+            background: var(--c-red);
+            color: #fff;
+        }
+
+        .carnate-btn-primary:hover {
+            background: var(--c-red-dark);
+            color: #fff;
+        }
+
+        .carnate-btn-light {
+            background: #fff;
+            border-color: var(--c-border);
+            color: #475569;
+        }
+
+        .carnate-btn-light:hover {
+            background: #f8fafc;
+            color: #1e293b;
         }
 
 
@@ -1596,30 +1406,12 @@
             }
 
 
-            .carnate-accessory-page .carnate-modal {
-                padding: 10px;
+            .carnate-modal {
+                margin: 10px;
             }
 
-
-            .carnate-accessory-page .carnate-modal .modal-content {
-                max-height: calc(100vh - 20px);
-
-                border-radius: 13px;
-            }
-
-
-            .carnate-accessory-page .carnate-modal .modal-body {
-                padding: 17px;
-            }
-
-
-            .carnate-accessory-page .carnate-modal .modal-header {
-                padding: 14px 17px;
-            }
-
-
-            .carnate-accessory-page .carnate-modal .modal-footer {
-                padding: 13px 17px;
+            .carnate-modal-body {
+                max-height: calc(100vh - 170px);
             }
 
 
@@ -1711,49 +1503,45 @@
          ADD / EDIT ACCESSORY MODAL
     ========================================================= --}}
 
-    <div
-        class="carnate-modal @if ($showModal) show @endif"
+    {{-- =========================================================
+        CREATE / EDIT ACCESSORY MODAL
+    ========================================================== --}}
+    <div class="modal @if ($showModal) show @endif"
         tabindex="-1"
-        aria-hidden="{{ $showModal ? 'false' : 'true' }}"
-    >
+        style="opacity:1; background-color:#0606068c; display:@if ($showModal) block @endif">
 
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
 
-            <div class="modal-content">
+            <div class="modal-content carnate-modal">
 
                 <form wire:submit.prevent="{{ $isEdit ? 'update' : 'store' }}">
 
+                    {{-- Modal Header --}}
+                    <div class="carnate-modal-header">
 
-                    {{-- =================================================
-                         MODAL HEADER
-                    ================================================== --}}
+                        <div class="carnate-modal-title">
 
-                    <div class="modal-header">
-
-                        <div class="modal-title-wrapper">
-
-                            <div class="modal-title-icon">
-
-                                <i class="bx bx-package"></i>
-
+                            <div class="carnate-modal-icon">
+                                <i class="bx {{ $isEdit ? 'bx-edit' : 'bx-plus' }}"></i>
                             </div>
 
-                            <h4 class="modal-title">
+                            <div>
+                                <h4>
+                                    {{ $isEdit ? 'Edit Accessory' : 'Create Accessory' }}
+                                </h4>
 
-                                {{ $isEdit ? 'Edit Accessory' : 'Create Accessory' }}
-
-                            </h4>
+                                <p>
+                                    {{ $isEdit ? 'Update accessory information' : 'Add a new accessory to inventory' }}
+                                </p>
+                            </div>
 
                         </div>
 
-
-                        <button
-                            type="button"
-                            class="modal-close"
+                        <button type="button"
+                            class="carnate-close"
                             wire:click="$set('showModal', false)"
                             data-bs-dismiss="modal"
-                            aria-label="Close"
-                        >
+                            aria-label="Close">
 
                             <i class="bx bx-x"></i>
 
@@ -1762,51 +1550,35 @@
                     </div>
 
 
-                    {{-- =================================================
-                         MODAL BODY
-                    ================================================== --}}
-
-                    <div class="modal-body">
+                    {{-- Modal Body --}}
+                    <div class="carnate-modal-body">
 
                         @csrf
 
-
-                        {{-- =================================================
-                             BASIC INFORMATION
-                        ================================================== --}}
-
-                        <div class="form-section">
-
-                            <h5 class="form-section-title">
-                                Basic Information
-                            </h5>
+                        <div class="row g-3">
 
 
-                            <div class="row g-3">
+                            {{-- =================================================
+                                NAME
+                            ================================================== --}}
+                            <div class="col-md-6">
 
+                                <div class="carnate-field">
 
-                                {{-- Name --}}
-
-                                <div class="col-md-6">
-
-                                    <label class="form-label">
-
+                                    <label>
                                         Name
-
-                                        <span class="required">*</span>
-
+                                        <span>*</span>
                                     </label>
 
+                                    <div class="carnate-name-row">
 
-                                    <div class="name-select-row">
+                                        <div class="carnate-select-wrap">
 
-                                        <div class="select-area">
+                                            <i class="bx bx-purchase-tag"></i>
 
-                                            <select
-                                                class="form-select"
+                                            <select class="form-select"
                                                 wire:model="name"
-                                                id="name"
-                                            >
+                                                id="name">
 
                                                 <option value="">
                                                     Select a Name or Add New One
@@ -1815,9 +1587,7 @@
                                                 @foreach ($sparePartLabels as $sparePartLabel)
 
                                                     <option value="{{ $sparePartLabel->title }}">
-
                                                         {{ $sparePartLabel->title }}
-
                                                     </option>
 
                                                 @endforeach
@@ -1826,369 +1596,378 @@
 
                                         </div>
 
-
-                                        <button
-                                            type="button"
-                                            class="add-label-btn"
+                                        <button type="button"
+                                            class="carnate-add-small"
                                             wire:click="addAccessoryLabel"
-                                            title="Add accessory label"
-                                        >
+                                            title="Add Accessory Label">
 
-                                            +
+                                            <i class="bx bx-plus"></i>
 
                                         </button>
 
                                     </div>
 
-
                                     @error('name')
-
-                                        <span class="field-error">
+                                        <span class="carnate-error">
                                             {{ $message }}
                                         </span>
-
-                                    @enderror
-
-                                </div>
-
-
-                                {{-- Supplier --}}
-
-                                <div class="col-md-6">
-
-                                    <label class="form-label">
-                                        Supplier
-                                    </label>
-
-
-                                    <select
-                                        class="form-select searchable-select"
-                                        data-placeholder="Select Supplier"
-                                        wire:model="supplier_id"
-                                    >
-
-                                        <option value="">
-                                            Select Supplier
-                                        </option>
-
-                                        @foreach ($suppliers as $supplier)
-
-                                            <option value="{{ $supplier->id }}">
-
-                                                {{ $supplier->owner_first_name }}
-
-                                            </option>
-
-                                        @endforeach
-
-                                    </select>
-
-                                </div>
-
-
-                                {{-- Brand --}}
-
-                                <div class="col-md-6">
-
-                                    <label class="form-label">
-                                        Brand
-                                    </label>
-
-
-                                    <input
-                                        type="text"
-                                        wire:model="brand"
-                                        class="form-control"
-                                        placeholder="Enter Brand"
-                                    >
-
-
-                                    @error('brand')
-
-                                        <span class="field-error">
-                                            {{ $message }}
-                                        </span>
-
-                                    @enderror
-
-                                </div>
-
-
-                                {{-- Part Number --}}
-
-                                <div class="col-md-6">
-
-                                    <label class="form-label">
-                                        Part Number
-                                    </label>
-
-
-                                    <input
-                                        type="text"
-                                        wire:model="part_number"
-                                        class="form-control"
-                                        placeholder="Enter Part Number"
-                                    >
-
-
-                                    <div
-                                        wire:loading
-                                        wire:target="part_number"
-                                        class="fetch-loader"
-                                    >
-
-                                        <span
-                                            class="spinner-border spinner-border-sm"
-                                            role="status"
-                                            aria-hidden="true"
-                                        ></span>
-
-                                        Fetching details...
-
-                                    </div>
-
-
-                                    @error('part_number')
-
-                                        <span class="field-error">
-                                            {{ $message }}
-                                        </span>
-
                                     @enderror
 
                                 </div>
 
                             </div>
 
-                        </div>
 
+                            {{-- =================================================
+                                SUPPLIER
+                            ================================================== --}}
+                            <div class="col-md-6">
 
-                        {{-- =================================================
-                             PRICING
-                        ================================================== --}}
+                                <div class="carnate-field">
 
-                        <div class="form-section">
-
-                            <h5 class="form-section-title">
-                                Pricing & Tax
-                            </h5>
-
-
-                            <div class="row g-3">
-
-
-                                {{-- Purchase Price --}}
-
-                                <div class="col-md-6">
-
-                                    <label class="form-label">
-
-                                        Purchase Price
-
-                                        <span class="required">*</span>
-
+                                    <label>
+                                        Supplier
+                                        <span>*</span>
                                     </label>
 
+                                    <div class="carnate-input-wrap">
 
-                                    <input
-                                        type="number"
-                                        wire:model.live="purchase_amount"
-                                        id="purchase_amount"
-                                        class="form-control"
-                                        placeholder="Enter Purchase Price"
-                                    >
+                                        <i class="bx bx-user"></i>
 
+                                        <select class="form-select searchable-select"
+                                            data-placeholder="Select Supplier"
+                                            wire:model="supplier_id">
+
+                                            <option value="">
+                                                Select Supplier
+                                            </option>
+
+                                            @foreach ($suppliers as $supplier)
+
+                                                <option value="{{ $supplier->id }}">
+                                                    {{ $supplier->owner_first_name }}
+                                                </option>
+
+                                            @endforeach
+
+                                        </select>
+
+                                    </div>
+
+                                    @error('supplier_id')
+                                        <span class="carnate-error">
+                                            {{ $message }}
+                                        </span>
+                                    @enderror
+
+                                </div>
+
+                            </div>
+
+
+                            {{-- =================================================
+                                BRAND
+                            ================================================== --}}
+                            <div class="col-md-6">
+
+                                <div class="carnate-field">
+
+                                    <label>
+                                        Brand
+                                    </label>
+
+                                    <div class="carnate-input-wrap">
+
+                                        <i class="bx bx-purchase-tag-alt"></i>
+
+                                        <input type="text"
+                                            wire:model="brand"
+                                            placeholder="Enter Brand">
+
+                                    </div>
+
+                                    @error('brand')
+                                        <span class="carnate-error">
+                                            {{ $message }}
+                                        </span>
+                                    @enderror
+
+                                </div>
+
+                            </div>
+
+
+                            {{-- =================================================
+                                PART NUMBER
+                            ================================================== --}}
+                            <div class="col-md-6">
+
+                                <div class="carnate-field">
+
+                                    <label>
+                                        Part Number
+                                    </label>
+
+                                    <div class="carnate-input-wrap">
+
+                                        <i class="bx bx-barcode"></i>
+
+                                        <input type="text"
+                                            wire:model="part_number"
+                                            placeholder="Enter Part Number">
+
+                                    </div>
+
+                                    <div wire:loading wire:target="part_number"
+                                        class="carnate-loading-text">
+
+                                        <span class="spinner-border spinner-border-sm"></span>
+                                        Fetching details...
+
+                                    </div>
+
+                                    @error('part_number')
+                                        <span class="carnate-error">
+                                            {{ $message }}
+                                        </span>
+                                    @enderror
+
+                                </div>
+
+                            </div>
+
+
+                            {{-- =================================================
+                                PURCHASE PRICE
+                            ================================================== --}}
+                            <div class="col-md-6">
+
+                                <div class="carnate-field">
+
+                                    <label>
+                                        Purchase Price
+                                        <span>*</span>
+                                    </label>
+
+                                    <div class="carnate-input-wrap">
+
+                                        <span class="carnate-currency">
+                                            ₹
+                                        </span>
+
+                                        <input type="number"
+                                            wire:model.live="purchase_amount"
+                                            placeholder="Enter Purchase Price">
+
+                                    </div>
 
                                     @error('purchase_amount')
-
-                                        <span class="field-error">
+                                        <span class="carnate-error">
                                             {{ $message }}
                                         </span>
-
                                     @enderror
 
                                 </div>
 
+                            </div>
 
-                                {{-- Selling Price --}}
 
-                                <div class="col-md-6">
+                            {{-- =================================================
+                                SELLING PRICE
+                            ================================================== --}}
+                            <div class="col-md-6">
 
-                                    <label class="form-label">
+                                <div class="carnate-field">
 
+                                    <label>
                                         Selling Price
-
-                                        <span class="required">*</span>
-
+                                        <span>*</span>
                                     </label>
 
+                                    <div class="carnate-input-wrap">
 
-                                    <input
-                                        type="number"
-                                        wire:model.live="selling_amount"
-                                        id="selling_amount"
-                                        class="form-control"
-                                        placeholder="Enter Selling Price"
-                                    >
+                                        <span class="carnate-currency">
+                                            ₹
+                                        </span>
 
+                                        <input type="number"
+                                            wire:model.live="selling_amount"
+                                            placeholder="Enter Selling Price">
+
+                                    </div>
 
                                     @error('selling_amount')
-
-                                        <span class="field-error">
+                                        <span class="carnate-error">
                                             {{ $message }}
                                         </span>
-
                                     @enderror
 
                                 </div>
 
+                            </div>
 
-                                {{-- Online Price --}}
 
-                                <div class="col-md-6">
+                            {{-- =================================================
+                                ONLINE PRICE
+                            ================================================== --}}
+                            <div class="col-md-6">
 
-                                    <label class="form-label">
-                                        Online Price (Auto)
+                                <div class="carnate-field">
+
+                                    <label>
+                                        Online Price
+                                        <span class="carnate-auto-label">AUTO</span>
                                     </label>
 
+                                    <div class="carnate-input-wrap carnate-readonly">
 
-                                    <input
-                                        type="text"
-                                        wire:model="online_price"
-                                        class="form-control bg-light"
-                                        readonly
-                                    >
+                                        <span class="carnate-currency">
+                                            ₹
+                                        </span>
+
+                                        <input type="text"
+                                            wire:model="online_price"
+                                            readonly>
+
+                                    </div>
 
                                 </div>
 
+                            </div>
 
-                                {{-- Offline Price --}}
 
-                                <div class="col-md-6">
+                            {{-- =================================================
+                                OFFLINE PRICE
+                            ================================================== --}}
+                            <div class="col-md-6">
 
-                                    <label class="form-label">
-                                        Offline Price (Auto)
+                                <div class="carnate-field">
+
+                                    <label>
+                                        Offline Price
+                                        <span class="carnate-auto-label">AUTO</span>
                                     </label>
 
+                                    <div class="carnate-input-wrap carnate-readonly">
 
-                                    <input
-                                        type="text"
-                                        wire:model="offline_price"
-                                        class="form-control bg-light"
-                                        readonly
-                                    >
+                                        <span class="carnate-currency">
+                                            ₹
+                                        </span>
+
+                                        <input type="text"
+                                            wire:model="offline_price"
+                                            readonly>
+
+                                    </div>
 
                                 </div>
 
+                            </div>
 
-                                {{-- Tax Type --}}
 
-                                <div class="col-md-6">
+                            {{-- =================================================
+                                TAX TYPE
+                            ================================================== --}}
+                            <div class="col-md-6">
 
-                                    <label class="form-label">
+                                <div class="carnate-field">
+
+                                    <label>
                                         Tax Type
                                     </label>
 
+                                    <div class="carnate-input-wrap">
 
-                                    <select
-                                        id="tax_type"
-                                        class="form-select"
-                                        wire:model.live="tax_type"
-                                    >
+                                        <i class="bx bx-receipt"></i>
 
-                                        <option value="">
-                                            Select Tax Type
-                                        </option>
+                                        <select id="tax_type"
+                                            class="form-select"
+                                            wire:model.live="tax_type">
 
-                                        <option value="include">
-                                            Include All Taxes
-                                        </option>
+                                            <option value="">
+                                                Select Tax Type
+                                            </option>
 
-                                        <option value="exclude">
-                                            Exclude All Taxes
-                                        </option>
+                                            <option value="include">
+                                                Include All Taxes
+                                            </option>
 
-                                    </select>
+                                            <option value="exclude">
+                                                Exclude All Taxes
+                                            </option>
 
+                                        </select>
+
+                                    </div>
 
                                     @error('tax_type')
-
-                                        <span class="field-error">
+                                        <span class="carnate-error">
                                             {{ $message }}
                                         </span>
-
                                     @enderror
 
                                 </div>
 
+                            </div>
 
-                                {{-- Tax Percentage --}}
 
-                                @if ($tax_type == 'include' || $tax_type == 'exclude')
+                            {{-- =================================================
+                                TAX PERCENTAGE
+                            ================================================== --}}
+                            @if ($tax_type == 'include' || $tax_type == 'exclude')
 
-                                    <div class="col-md-6">
+                                <div class="col-md-6">
 
-                                        <label class="form-label">
+                                    <div class="carnate-field">
 
+                                        <label>
                                             {{ $tax_type == 'include' ? 'Include Tax Percentage' : 'Exclude Tax Percentage' }}
-
                                         </label>
 
+                                        <div class="carnate-input-wrap">
 
-                                        <div class="custom-input-group">
-
-                                            <input
-                                                type="number"
+                                            <input type="number"
                                                 wire:model.live="tax_percentage"
-                                                class="form-control"
-                                                placeholder="Enter Percentage"
-                                                id="tax_percentage"
-                                            >
+                                                placeholder="Enter Percentage">
 
-                                            <span class="input-group-text">
+                                            <span class="carnate-input-suffix">
                                                 %
                                             </span>
 
                                         </div>
 
-
                                         @error('tax_percentage')
-
-                                            <span class="field-error">
+                                            <span class="carnate-error">
                                                 {{ $message }}
                                             </span>
-
                                         @enderror
 
                                     </div>
 
-                                @endif
+                                </div>
+
+                            @endif
 
 
-                                {{-- Online Discount --}}
+                            {{-- =================================================
+                                DISCOUNT
+                            ================================================== --}}
+                            <div class="col-md-6">
 
-                                <div class="col-md-6">
+                                <div class="carnate-field">
 
-                                    <label class="form-label">
+                                    <label>
                                         Online Discount
                                     </label>
 
+                                    <div class="carnate-discount-wrap">
 
-                                    <div class="discount-group">
-
-                                        <input
-                                            type="number"
+                                        <input type="number"
                                             wire:model.live="discount"
-                                            class="form-control"
-                                            placeholder="Enter Discount"
-                                        >
+                                            placeholder="Enter Discount">
 
-
-                                        <select
-                                            id="discount_type"
-                                            class="form-select discount-type"
-                                            wire:model.live="discount_type"
-                                        >
+                                        <select id="discount_type"
+                                            wire:model.live="discount_type">
 
                                             <option value="1">
                                                 ₹
@@ -2202,365 +1981,269 @@
 
                                     </div>
 
-
                                     @error('discount')
-
-                                        <span class="field-error">
+                                        <span class="carnate-error">
                                             {{ $message }}
                                         </span>
-
                                     @enderror
 
-
                                     @error('discount_type')
-
-                                        <span class="field-error">
+                                        <span class="carnate-error">
                                             {{ $message }}
                                         </span>
-
                                     @enderror
 
                                 </div>
 
                             </div>
 
-                        </div>
 
+                            {{-- =================================================
+                                UNIT
+                            ================================================== --}}
+                            <div class="col-md-6">
 
-                        {{-- =================================================
-                             INVENTORY
-                        ================================================== --}}
+                                <div class="carnate-field">
 
-                        <div class="form-section">
-
-                            <h5 class="form-section-title">
-                                Inventory Details
-                            </h5>
-
-
-                            <div class="row g-3">
-
-
-                                {{-- Unit --}}
-
-                                <div class="col-md-6">
-
-                                    <label class="form-label">
-
+                                    <label>
                                         Unit
-
-                                        <span class="required">*</span>
-
+                                        <span>*</span>
                                     </label>
 
+                                    <div class="carnate-input-wrap">
 
-                                    <select
-                                        id="unit"
-                                        class="form-select"
-                                        wire:model="unit"
-                                    >
+                                        <i class="bx bx-ruler"></i>
 
-                                        <option value="">
-                                            Select Unit
-                                        </option>
+                                        <select class="form-select"
+                                            wire:model="unit">
 
-                                        @foreach ($units as $unit)
-
-                                            <option value="{{ $unit->id }}">
-
-                                                {{ $unit->title }}
-
+                                            <option value="">
+                                                Select Unit
                                             </option>
 
-                                        @endforeach
+                                            @foreach ($units as $unit)
 
-                                    </select>
+                                                <option value="{{ $unit->id }}">
+                                                    {{ $unit->title }}
+                                                </option>
 
+                                            @endforeach
+
+                                        </select>
+
+                                    </div>
 
                                     @error('unit')
-
-                                        <span class="field-error">
+                                        <span class="carnate-error">
                                             {{ $message }}
                                         </span>
-
                                     @enderror
 
                                 </div>
 
+                            </div>
 
-                                {{-- Stock --}}
 
-                                <div class="col-md-6">
+                            {{-- =================================================
+                                STOCK
+                            ================================================== --}}
+                            <div class="col-md-6">
 
-                                    <label class="form-label">
+                                <div class="carnate-field">
 
+                                    <label>
                                         Stock
-
-                                        <span class="required">*</span>
-
+                                        <span>*</span>
                                     </label>
 
+                                    <div class="carnate-input-wrap">
 
-                                    <input
-                                        type="number"
-                                        wire:model="stock"
-                                        class="form-control"
-                                        id="stock"
-                                        placeholder="Enter Stock"
-                                    >
+                                        <i class="bx bx-package"></i>
 
+                                        <input type="number"
+                                            wire:model="stock"
+                                            placeholder="Enter Stock">
+
+                                    </div>
 
                                     @error('stock')
-
-                                        <span class="field-error">
+                                        <span class="carnate-error">
                                             {{ $message }}
                                         </span>
-
                                     @enderror
 
                                 </div>
 
+                            </div>
 
-                                {{-- Rack --}}
 
-                                <div class="col-md-6">
+                            {{-- =================================================
+                                RACK NUMBER
+                            ================================================== --}}
+                            <div class="col-md-6">
 
-                                    <label class="form-label">
+                                <div class="carnate-field">
+
+                                    <label>
                                         Rack No.
                                     </label>
 
+                                    <div class="carnate-input-wrap">
 
-                                    <input
-                                        type="text"
-                                        wire:model="rack_no"
-                                        class="form-control"
-                                        id="rack_no"
-                                        placeholder="Enter Rack No."
-                                    >
+                                        <i class="bx bx-grid-alt"></i>
 
+                                        <input type="text"
+                                            wire:model="rack_no"
+                                            placeholder="Enter Rack Number">
+
+                                    </div>
 
                                     @error('rack_no')
-
-                                        <span class="field-error">
+                                        <span class="carnate-error">
                                             {{ $message }}
                                         </span>
-
-                                    @enderror
-
-                                </div>
-
-
-                                {{-- Category --}}
-
-                                <div class="col-md-6">
-
-                                    <label class="form-label">
-
-                                        Category
-
-                                        <span class="required">*</span>
-
-                                    </label>
-
-
-                                    <select
-                                        class="form-select searchable-select"
-                                        data-placeholder="Select Category"
-                                        wire:model="category"
-                                        id="category"
-                                    >
-
-                                        <option value="">
-                                            Select Category
-                                        </option>
-
-                                        @foreach ($categories as $category)
-
-                                            <option value="{{ $category['categoryId'] }}">
-
-                                                {{ $category['categoryName'] }}
-
-                                            </option>
-
-                                        @endforeach
-
-                                    </select>
-
-
-                                    @error('category')
-
-                                        <span class="field-error">
-                                            {{ $message }}
-                                        </span>
-
                                     @enderror
 
                                 </div>
 
                             </div>
 
-                        </div>
 
+                            {{-- =================================================
+                                CATEGORY
+                            ================================================== --}}
+                            <div class="col-md-6">
 
-                        {{-- =================================================
-                             IMAGE
-                        ================================================== --}}
+                                <div class="carnate-field">
 
-                        <div class="form-section">
-
-                            <h5 class="form-section-title">
-                                Product Image
-                            </h5>
-
-
-                            <div class="image-upload-row">
-
-
-                                <div class="image-upload-input">
-
-                                    <label class="form-label">
-                                        Image
+                                    <label>
+                                        Category
+                                        <span>*</span>
                                     </label>
 
+                                    <div class="carnate-input-wrap">
 
-                                    <input
-                                        type="file"
-                                        class="form-control"
-                                        wire:model="image"
-                                    >
+                                        <i class="bx bx-category"></i>
+
+                                        <select class="form-select searchable-select"
+                                            data-placeholder="Select Category"
+                                            wire:model="category"
+                                            id="category">
+
+                                            <option value="">
+                                                Select Category
+                                            </option>
+
+                                            @foreach ($categories as $cat)
+
+                                                <option value="{{ $cat['categoryId'] }}">
+                                                    {{ $cat['categoryName'] }}
+                                                </option>
+
+                                            @endforeach
+
+                                        </select>
+
+                                    </div>
+
+                                    @error('category')
+                                        <span class="carnate-error">
+                                            {{ $message }}
+                                        </span>
+                                    @enderror
 
                                 </div>
 
+                            </div>
 
-                                <div>
 
-                                    @if ($part_image_url)
+                            {{-- =================================================
+                                IMAGE
+                            ================================================== --}}
+                            <div class="col-md-12">
 
-                                        <div class="image-preview">
+                                <div class="carnate-image-section">
 
-                                            <img
-                                                src="{{ $part_image_url }}"
-                                                alt="Accessory image"
-                                            >
+                                    <div class="carnate-image-upload">
 
-                                        </div>
+                                        <label>
+                                            Product Image
+                                        </label>
 
-                                    @elseif (!empty($imageName))
+                                        <input type="file"
+                                            class="form-control"
+                                            wire:model="image">
 
-                                        <div class="image-preview">
+                                        @error('image')
+                                            <span class="carnate-error">
+                                                {{ $message }}
+                                            </span>
+                                        @enderror
 
-                                            <img
-                                                src="{{ asset($imageName) }}"
-                                                alt="Accessory image"
-                                            >
+                                    </div>
 
-                                        </div>
 
-                                    @else
+                                    <div class="carnate-image-preview">
 
-                                        @if ($isEdit)
+                                        @if ($part_image_url)
 
-                                            <div class="image-preview">
+                                            <img src="{{ $part_image_url }}"
+                                                alt="accessory image">
 
-                                                <img
-                                                    src="{{ asset($imageImage) }}"
-                                                    alt="Accessory image"
-                                                >
+                                        @elseif (!empty($imageName))
 
-                                            </div>
+                                            <img src="{{ asset($imageName) }}"
+                                                alt="accessory image">
+
+                                        @else
+
+                                            @if ($isEdit && !empty($imageImage))
+
+                                                <img src="{{ asset($imageImage) }}"
+                                                    alt="accessory image">
+
+                                            @else
+
+                                                <div class="carnate-no-image">
+                                                    <i class="bx bx-image"></i>
+                                                </div>
+
+                                            @endif
 
                                         @endif
 
-                                    @endif
+                                    </div>
 
                                 </div>
 
                             </div>
 
 
-                            @error('image')
+                            {{-- =================================================
+                                FOR ALL VEHICLES
+                            ================================================== --}}
+                            <div class="col-md-12">
 
-                                <span class="field-error">
-                                    {{ $message }}
-                                </span>
+                                <div class="carnate-all-vehicles">
 
-                            @enderror
+                                    <input class="form-check-input"
+                                        type="checkbox"
+                                        wire:model.live="forAllVehicles"
+                                        id="forAllVehicles">
 
-                        </div>
+                                    <div>
 
+                                        <label for="forAllVehicles">
+                                            For All Vehicles
+                                        </label>
 
-                        {{-- =================================================
-                             DESCRIPTION
-                        ================================================== --}}
+                                        <p>
+                                            Make this accessory compatible with every vehicle.
+                                        </p>
 
-                        <div class="form-section">
-
-                            <h5 class="form-section-title">
-                                Additional Information
-                            </h5>
-
-
-                            <div class="row g-3">
-
-
-                                <div class="col-md-12">
-
-                                    <label class="form-label">
-                                        Description
-                                    </label>
-
-
-                                    <textarea
-                                        wire:model="description"
-                                        class="form-control"
-                                        placeholder="Enter Description"
-                                    ></textarea>
-
-
-                                    @error('description')
-
-                                        <span class="field-error">
-                                            {{ $message }}
-                                        </span>
-
-                                    @enderror
+                                    </div>
 
                                 </div>
-
-                            </div>
-
-                        </div>
-
-
-                        {{-- =================================================
-                             COMPATIBLE VEHICLES
-                        ================================================== --}}
-
-                        <div class="form-section">
-
-                            <h5 class="form-section-title">
-                                Compatible Vehicles
-                            </h5>
-
-
-                            <div class="custom-check mb-3">
-
-                                <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    wire:model="forAllVehicles"
-                                    id="forAllVehicles"
-                                >
-
-
-                                <label
-                                    class="form-check-label"
-                                    for="forAllVehicles"
-                                >
-
-                                    For All Vehicles
-
-                                </label>
 
                             </div>
 
@@ -2568,19 +2251,38 @@
                             @if (!$forAllVehicles)
 
                                 {{-- =================================================
-                                     VEHICLE SELECTOR
+                                    VEHICLE SELECTOR
                                 ================================================== --}}
+                                <div class="col-md-12">
 
-                                <div class="mb-3">
+                                    <div class="carnate-vehicle-section">
 
-                                    <span class="vehicle-section-label">
-                                        Add Vehicle from Vehicle Selector
-                                    </span>
+                                        <div class="carnate-section-title">
+
+                                            <div class="carnate-section-icon">
+                                                <i class="bx bx-car"></i>
+                                            </div>
+
+                                            <div>
+
+                                                <h6>
+                                                    Compatible Vehicles
+                                                </h6>
+
+                                                <p>
+                                                    Select vehicles compatible with this accessory
+                                                </p>
+
+                                            </div>
+
+                                        </div>
 
 
-                                    <div class="vehicle-selector-wrapper">
+                                        <div class="carnate-vehicle-selector">
 
-                                        @livewire('workshop.vehicle-selector')
+                                            @livewire('workshop.vehicle-selector')
+
+                                        </div>
 
                                     </div>
 
@@ -2588,135 +2290,121 @@
 
 
                                 {{-- =================================================
-                                     EXISTING VEHICLES
+                                    EXISTING VEHICLES
                                 ================================================== --}}
+                                <div class="col-md-12">
 
-                                <div class="mb-3">
+                                    <div class="carnate-field">
 
-                                    <label class="form-label">
+                                        <label>
+                                            Or Select from Existing Saved Vehicles
+                                        </label>
 
-                                        Or Select from Existing Saved Vehicles
+                                        <div class="carnate-input-wrap carnate-multi-select">
 
-                                    </label>
+                                            <select id="suitable_for"
+                                                class="form-select searchable-select"
+                                                multiple
+                                                data-placeholder="Select vehicle"
+                                                wire:model="suitable_for">
 
+                                                @foreach ($modifications as $modification)
 
-                                    <select
-                                        id="suitable_for"
-                                        class="form-select searchable-select"
-                                        multiple
-                                        data-placeholder="Select vehicle"
-                                        wire:model="suitable_for"
-                                    >
+                                                    <option value="{{ $modification->id }}"
+                                                        @if (is_array($suitable_for) && in_array($modification->id, $suitable_for)) selected @endif>
 
-                                        @foreach ($modifications as $modification)
+                                                        @php
+                                                            $data = array_filter([
+                                                                $modification->brand_name ?? '',
+                                                                $modification->variant_name ?? '',
+                                                                $modification->year ?? '',
+                                                                $modification->title ?? '',
+                                                            ]);
+                                                        @endphp
 
-                                            <option
-                                                value="{{ $modification->id }}"
-                                                @if (is_array($suitable_for) && in_array($modification->id, $suitable_for)) selected @endif
-                                            >
+                                                        {{ implode(' ', $data) }}
 
-                                                @php
+                                                    </option>
 
-                                                    $data = array_filter([
-                                                        $modification->brand_name ?? '',
-                                                        $modification->variant_name ?? '',
-                                                        $modification->year ?? '',
-                                                        $modification->title ?? '',
-                                                    ]);
+                                                @endforeach
 
-                                                @endphp
+                                            </select>
 
-                                                {{ implode(' ', $data) }}
+                                        </div>
 
-                                            </option>
+                                        @error('suitable_for')
+                                            <span class="carnate-error">
+                                                {{ $message }}
+                                            </span>
+                                        @enderror
 
-                                        @endforeach
-
-                                    </select>
-
-
-                                    @error('suitable_for')
-
-                                        <span class="field-error">
-                                            {{ $message }}
-                                        </span>
-
-                                    @enderror
+                                    </div>
 
                                 </div>
 
 
                                 {{-- =================================================
-                                     SELECTED VEHICLES
+                                    SELECTED VEHICLES
                                 ================================================== --}}
+                                <div class="col-md-12">
 
-                                <div>
+                                    <div class="carnate-selected-section">
 
-                                    <label class="form-label">
+                                        <div class="carnate-selected-title">
 
-                                        Selected Compatible Vehicles
+                                            Selected Compatible Vehicles
 
-                                        ({{ is_array($suitable_for) ? count($suitable_for) : 0 }})
-
-                                    </label>
-
-
-                                    <div class="selected-vehicles">
-
-                                        @if (empty($suitable_for))
-
-                                            <span class="no-vehicles">
-                                                No vehicles selected yet.
+                                            <span>
+                                                {{ is_array($suitable_for) ? count($suitable_for) : 0 }}
                                             </span>
 
-                                        @else
-
-                                            @foreach ($suitable_for as $index => $modId)
-
-                                                @php
-
-                                                    $localMod = $modifications->firstWhere('id', $modId);
-
-                                                @endphp
+                                        </div>
 
 
-                                                @if ($localMod)
+                                        <div class="carnate-selected-list">
 
-                                                    <span class="vehicle-badge">
+                                            @if (empty($suitable_for))
 
-                                                        <span>
+                                                <span class="carnate-no-selection">
+                                                    No vehicles selected yet.
+                                                </span>
 
-                                                            {{ $localMod->brand_name }}
+                                            @else
 
-                                                            {{ $localMod->variant_name }}
+                                                @foreach ($suitable_for as $index => $modId)
 
-                                                            ({{ $localMod->year }})
+                                                    @php
+                                                        $localMod = $modifications->firstWhere('id', $modId);
+                                                    @endphp
 
-                                                            -
+                                                    @if ($localMod)
 
-                                                            {{ $localMod->title }}
+                                                        <span class="carnate-vehicle-badge">
+
+                                                            <span>
+                                                                {{ $localMod->brand_name }}
+                                                                {{ $localMod->variant_name }}
+                                                                ({{ $localMod->year }})
+                                                                -
+                                                                {{ $localMod->title }}
+                                                            </span>
+
+                                                            <button type="button"
+                                                                wire:click="removeCompatibleVehicle({{ $index }})">
+
+                                                                <i class="bx bx-x"></i>
+
+                                                            </button>
 
                                                         </span>
 
+                                                    @endif
 
-                                                        <button
-                                                            type="button"
-                                                            class="vehicle-remove"
-                                                            wire:click="removeCompatibleVehicle({{ $index }})"
-                                                            aria-label="Remove vehicle"
-                                                        >
+                                                @endforeach
 
-                                                            <i class="bx bx-x"></i>
+                                            @endif
 
-                                                        </button>
-
-                                                    </span>
-
-                                                @endif
-
-                                            @endforeach
-
-                                        @endif
+                                        </div>
 
                                     </div>
 
@@ -2724,46 +2412,63 @@
 
                             @endif
 
-                        </div>
 
+                            {{-- =================================================
+                                DESCRIPTION
+                            ================================================== --}}
+                            <div class="col-md-12">
+
+                                <div class="carnate-field">
+
+                                    <label>
+                                        Description
+                                    </label>
+
+                                    <textarea wire:model="description"
+                                        class="carnate-textarea"
+                                        placeholder="Enter Description"></textarea>
+
+                                    @error('description')
+                                        <span class="carnate-error">
+                                            {{ $message }}
+                                        </span>
+                                    @enderror
+
+                                </div>
+
+                            </div>
+
+                        </div>
 
                     </div>
 
 
-                    {{-- =================================================
-                         MODAL FOOTER
-                    ================================================== --}}
+                    {{-- Modal Footer --}}
+                    <div class="carnate-modal-footer">
 
-                    <div class="modal-footer">
-
-                        <button
-                            type="button"
-                            class="cancel-btn"
+                        <button type="button"
+                            class="carnate-btn carnate-btn-light"
                             wire:click="$set('showModal', false)"
-                            data-bs-dismiss="modal"
-                        >
+                            data-bs-dismiss="modal">
 
                             Cancel
 
                         </button>
 
+                        <button type="submit"
+                            class="carnate-btn carnate-btn-primary">
 
-                        <button
-                            type="submit"
-                            class="submit-btn"
-                        >
+                            <i class="bx {{ $isEdit ? 'bx-save' : 'bx-plus' }}"></i>
 
                             {{ $isEdit ? 'Update' : 'Create' }}
 
-                            <i
-                                class="spinner-border spinner-border-sm"
-                                wire:loading
-                            ></i>
+                            <span class="spinner-border spinner-border-sm"
+                                wire:loading>
+                            </span>
 
                         </button>
 
                     </div>
-
 
                 </form>
 
@@ -2775,48 +2480,38 @@
 
 
     {{-- =========================================================
-         CREATE ACCESSORY LABEL MODAL
-    ========================================================= --}}
-
-    <div
-        class="carnate-modal @if ($showAccessoryModel) show @endif"
+        CREATE ACCESSORY LABEL MODAL
+    ========================================================== --}}
+    <div class="modal @if ($showAccessoryModel) show @endif"
         tabindex="-1"
-        aria-hidden="{{ $showAccessoryModel ? 'false' : 'true' }}"
-    >
+        style="opacity:1; background-color:#0606068c; display:@if ($showAccessoryModel) block @endif">
 
-        <div class="modal-dialog modal-md">
+        <div class="modal-dialog modal-md modal-dialog-centered">
 
-            <div class="modal-content">
+            <div class="modal-content carnate-modal">
 
                 <form wire:submit.prevent="accessoryLabelStore">
 
+                    <div class="carnate-modal-header">
 
-                    {{-- Header --}}
+                        <div class="carnate-modal-title">
 
-                    <div class="modal-header">
-
-                        <div class="modal-title-wrapper">
-
-                            <div class="modal-title-icon">
-
-                                <i class="bx bx-tag"></i>
-
+                            <div class="carnate-modal-icon">
+                                <i class="bx bx-purchase-tag"></i>
                             </div>
 
-                            <h4 class="modal-title">
-                                Create Accessory
-                            </h4>
+                            <div>
+                                <h4>Create Accessory</h4>
+                                <p>Add a new accessory label</p>
+                            </div>
 
                         </div>
 
-
-                        <button
-                            type="button"
-                            class="modal-close"
+                        <button type="button"
+                            class="carnate-close"
                             wire:click="$set('showAccessoryModel', false)"
                             data-bs-dismiss="modal"
-                            aria-label="Close"
-                        >
+                            aria-label="Close">
 
                             <i class="bx bx-x"></i>
 
@@ -2825,81 +2520,58 @@
                     </div>
 
 
-                    {{-- Body --}}
-
-                    <div class="modal-body">
+                    <div class="carnate-modal-body">
 
                         @csrf
 
+                        <div class="carnate-field">
 
-                        <div class="form-section">
+                            <label>
+                                Accessory Name
+                                <span>*</span>
+                            </label>
 
-                            <div class="row g-3">
+                            <div class="carnate-input-wrap">
 
-                                <div class="col-md-12">
+                                <i class="bx bx-purchase-tag"></i>
 
-                                    <label class="form-label">
-                                        Accessory Label
-                                    </label>
-
-
-                                    <input
-                                        type="text"
-                                        wire:model="accessory_label"
-                                        class="form-control"
-                                        placeholder="Enter Accessory Label"
-                                    >
-
-
-                                    @error('accessory_label')
-
-                                        <span class="field-error">
-                                            {{ $message }}
-                                        </span>
-
-                                    @enderror
-
-                                </div>
+                                <input type="text"
+                                    wire:model="accessory_label"
+                                    placeholder="Enter Accessory Name">
 
                             </div>
+
+                            @error('accessory_label')
+                                <span class="carnate-error">
+                                    {{ $message }}
+                                </span>
+                            @enderror
 
                         </div>
 
                     </div>
 
+                    <div class="carnate-modal-footer">
 
-                    {{-- Footer --}}
-
-                    <div class="modal-footer">
-
-                        <button
-                            type="button"
-                            class="cancel-btn"
+                        <button type="button"
+                            class="carnate-btn carnate-btn-light"
                             wire:click="$set('showAccessoryModel', false)"
-                            data-bs-dismiss="modal"
-                        >
+                            data-bs-dismiss="modal">
 
                             Cancel
 
                         </button>
 
+                        <button type="submit"
+                            class="carnate-btn carnate-btn-primary">
 
-                        <button
-                            type="submit"
-                            class="submit-btn"
-                        >
+                            <i class="bx bx-plus"></i>
 
-                            {{ $isEdit ? 'Update' : 'Create' }}
-
-                            <i
-                                class="spinner-border spinner-border-sm"
-                                wire:loading
-                            ></i>
+                            Create
 
                         </button>
 
                     </div>
-
 
                 </form>
 

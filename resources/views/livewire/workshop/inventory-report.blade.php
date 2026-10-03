@@ -107,7 +107,7 @@
                     <tbody>
                         @forelse($stocks as $s)
                             <tr>
-                                <td>{{ $loop->iteration + ($stocks->currentPage()-1)*$stocks->perPage() }}</td>
+                                <td>{{ $stocks->total() - ($loop->index + ($stocks->currentPage()-1)*$stocks->perPage()) }}</td>
                                 <td>{{ $s->label->title ?? '-' }}</td>
                                 <td>{{ $s->categories->title ?? $s->category ?? '-' }}</td>
                                 <td>{{ $s->unit->title ?? '-' }}</td>

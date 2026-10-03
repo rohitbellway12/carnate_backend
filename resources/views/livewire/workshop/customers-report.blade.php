@@ -779,7 +779,7 @@
                             <tr>
                                 <td>
                                     <span class="cr-number">
-                                        {{ $loop->iteration + ($customers->currentPage() - 1) * $customers->perPage() }}
+                                        {{ $customers->total() - ($loop->index + ($customers->currentPage() - 1) * $customers->perPage()) }}
                                     </span>
                                 </td>
 

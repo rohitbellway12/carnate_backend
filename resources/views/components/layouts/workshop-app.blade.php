@@ -478,17 +478,7 @@
             });
         @endif
 
-        // ==================== DROPDOWN HANDLERS ====================
-        $(document).ready(function() {
-            $(".dropdown > a").click(function(e) {
-                e.preventDefault();
-                $(this).next(".dropdown-content").slideToggle()
-                    .parent().siblings().find(".dropdown-content").slideUp();
-                $(this).find(".dropdown-right-icon").toggleClass("fa-chevron-right fa-chevron-down")
-                    .closest(".dropdown").siblings().find(".dropdown-right-icon").removeClass(
-                        "fa-chevron-down").addClass("fa-chevron-right");
-            });
-        });
+
 
         // ==================== LIVEWIRE NAVIGATION HANDLERS ====================
         if (typeof Livewire !== 'undefined') {

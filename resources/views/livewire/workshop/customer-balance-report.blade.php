@@ -129,7 +129,7 @@
                     <tbody>
                         @forelse($customers as $c)
                             <tr>
-                                <td>{{ $loop->iteration + ($customers->currentPage()-1)*$customers->perPage() }}</td>
+                                <td>{{ $customers->total() - ($loop->index + ($customers->currentPage()-1)*$customers->perPage()) }}</td>
                                 <td>
                                     <div class="d-flex flex-column">
                                         <span class="fw-semibold text-dark">{{ $c->name }} {{ $c->lastname }}</span>

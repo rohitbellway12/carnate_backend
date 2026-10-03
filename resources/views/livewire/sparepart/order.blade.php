@@ -950,7 +950,7 @@
                         <thead>
                             <tr>
                                 <th>S.No.</th>
-                                <th>Spare Part</th>
+                                <th>Item Name</th>
                                 <th>Category</th>
                                 <th>Rack No.</th>
                                 <th>Part Number</th>
@@ -1353,7 +1353,7 @@
                             <tr>
                                 <th>S.No.</th>
                                 <th>Order No.</th>
-                                <th>Item</th>
+                                <th>Item Name</th>
                                 <th>Order Date</th>
                                 <th>Total Amount</th>
                                 <th>Item Qty</th>

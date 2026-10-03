@@ -28,6 +28,7 @@ class LabourChargeController extends Component
     public $imageName, $ImageData, $image;
 
     public $title, $labour_type,  $outsource_price, $tax_type, $tax_percentage, $price, $total_price, $labourId;
+    public $selectedLabourType = '';
 
     protected $listeners = ['delete'];
 
@@ -43,9 +44,23 @@ class LabourChargeController extends Component
         $this->workshopId = Auth::guard('workshop')->user()->id;
     }
 
+    public function setLabourType($type = '')
+    {
+        $this->selectedLabourType = $type;
+        $this->resetPage();
+    }
+
     public function render()
     {
+        $totalCount = LabourCharge::where('user_id', $this->workshopId)->count();
+        $inhouseCount = LabourCharge::where('user_id', $this->workshopId)->where('labour_type', 'inhouse')->count();
+        $outsourceCount = LabourCharge::where('user_id', $this->workshopId)->where('labour_type', 'outsource')->count();
+
         $items = LabourCharge::where('user_id', $this->workshopId);
+
+        if ($this->selectedLabourType && in_array($this->selectedLabourType, ['inhouse', 'outsource'])) {
+            $items = $items->where('labour_type', $this->selectedLabourType);
+        }
 
         if ($this->searchStaff) {
             $items = $items->where(function ($query) {
@@ -56,7 +71,7 @@ class LabourChargeController extends Component
         $items = $items->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return view('livewire.workshop.labourcharge', compact('items'));
+        return view('livewire.workshop.labourcharge', compact('items', 'totalCount', 'inhouseCount', 'outsourceCount'));
     }
 
     public function create()
@@ -237,6 +252,8 @@ class LabourChargeController extends Component
     {
         $this->searchStaff = "";
         $this->seachRole = "";
+        $this->selectedLabourType = "";
+        $this->resetPage();
     }
 
 }

@@ -759,7 +759,7 @@
                                         <tr>
 
                                             <td>
-                                                {{ $jobs->firstItem() + $index }}
+                                                {{ $jobs->total() - ($jobs->firstItem() + $index - 1) }}
                                             </td>
 
                                             <td>

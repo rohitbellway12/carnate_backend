@@ -78,3 +78,9 @@ Route::prefix('sparepart')->name('sparepart.')->group(function () {
         Route::get('report/expenses', \App\Livewire\Sparepart\ExpensesReportController::class)->name('report.expenses');
     });
 });
+
+// Fallback/alias routes for legacy /portal/sparepart requests
+Route::middleware(['auth.guard:sparepart','profileCheck'])->prefix('portal/sparepart')->group(function () {
+    Route::get('get-notifications', [HomeController::class, 'getSparePartNotifications']);
+    Route::post('notifications/{id}/read', [HomeController::class, 'markSparePartNotificationAsRead']);
+});

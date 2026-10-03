@@ -874,7 +874,7 @@
 
                             <td class="er-index">
 
-                                {{ $loop->iteration + ($items->currentPage()-1) * $items->perPage() }}
+                                {{ $items->total() - ($loop->index + ($items->currentPage()-1) * $items->perPage()) }}
 
                             </td>
 

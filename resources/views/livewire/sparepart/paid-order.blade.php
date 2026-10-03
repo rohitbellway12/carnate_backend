@@ -875,7 +875,7 @@
                         <thead>
                             <tr>
                                 <th>S.No.</th>
-                                <th>Spare Part</th>
+                                <th>Item Name</th>
                                 <th>Category</th>
                                 <th>Rack No.</th>
                                 <th>Part Number</th>
