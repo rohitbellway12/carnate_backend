@@ -1738,103 +1738,13 @@ if (Auth::guard('sparepart')->check()) {
             </li>
 
 
-            {{-- Staff --}}
-
-            @if (@$sparePart->hasPermissionTo('staff-show'))
-
-                <li>
-
-                    <a href="{{ route('sparepart.sparepartstaff') }}">
-
-                        <div class="parent-icon">
-
-                            <i class="fas fa-users-cog"></i>
-
-                        </div>
-
-
-                        <div class="menu-title">
-
-                            Staff
-
-                        </div>
-
-                    </a>
-
-                </li>
-
-            @endif
-
-
-            {{-- Role --}}
-
-            @if (@$sparePart->hasPermissionTo('roles-show'))
-
-                <li>
-
-                    <a href="{{ route('sparepart.manageadminrole') }}">
-
-                        <div class="parent-icon">
-
-                            <i class="bx bx-shield"></i>
-
-                        </div>
-
-
-                        <div class="menu-title">
-
-                            Role
-
-                        </div>
-
-                    </a>
-
-                </li>
-
-            @endif
-
-
-            {{-- Reset Password --}}
-
-            <li>
-
-                <a href="{{ route('sparepart.resetpassword') }}">
-
-                    <div class="parent-icon">
-
-                        <i class="bx bx-refresh"></i>
-
-                    </div>
-
-
-                    <div class="menu-title">
-
-                        Reset Password
-
-                    </div>
-
-                </a>
-
-            </li>
-
-
-
-            {{-- =================================================
-                REPORTS
-            ================================================== --}}
+            {{-- Reports --}}
 
             @if (
                 !$sparePart ||
                 !$sparePart->roles->count() ||
                 @$sparePart->hasPermissionTo('report-show')
             )
-
-                <li class="menu-section">
-
-                    REPORTS
-
-                </li>
-
 
                 @php
                     $isReportsActive = request()->routeIs('sparepart.report.*');
@@ -1922,6 +1832,86 @@ if (Auth::guard('sparepart')->check()) {
                 </li>
 
             @endif
+
+
+            {{-- Staff --}}
+
+            @if (@$sparePart->hasPermissionTo('staff-show'))
+
+                <li>
+
+                    <a href="{{ route('sparepart.sparepartstaff') }}">
+
+                        <div class="parent-icon">
+
+                            <i class="fas fa-users-cog"></i>
+
+                        </div>
+
+
+                        <div class="menu-title">
+
+                            Staff
+
+                        </div>
+
+                    </a>
+
+                </li>
+
+            @endif
+
+
+            {{-- Role --}}
+
+            @if (@$sparePart->hasPermissionTo('roles-show'))
+
+                <li>
+
+                    <a href="{{ route('sparepart.manageadminrole') }}">
+
+                        <div class="parent-icon">
+
+                            <i class="bx bx-shield"></i>
+
+                        </div>
+
+
+                        <div class="menu-title">
+
+                            Role
+
+                        </div>
+
+                    </a>
+
+                </li>
+
+            @endif
+
+
+            {{-- Reset Password --}}
+
+            <li>
+
+                <a href="{{ route('sparepart.resetpassword') }}">
+
+                    <div class="parent-icon">
+
+                        <i class="bx bx-refresh"></i>
+
+                    </div>
+
+
+                    <div class="menu-title">
+
+                        Reset Password
+
+                    </div>
+
+                </a>
+
+            </li>
 
 
 
