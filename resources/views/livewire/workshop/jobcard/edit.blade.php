@@ -184,11 +184,11 @@
         }
 
         .carnate-jobcard-edit .info-table td {
-            padding: 9px 12px !important;
-            border-bottom: 1px solid #f1f5f9 !important;
+            padding: 6px 8px !important;
+            border-bottom: 1px solid #e0e0e0 !important;
             font-size: 13px;
             color: #334155;
-            vertical-align: middle;
+            vertical-align: top;
         }
 
         .carnate-jobcard-edit .info-table td b {
@@ -234,6 +234,17 @@
         .carnate-jobcard-edit .form-range {
             height: 8px;
             border-radius: 5px;
+        }
+
+        .carnate-jobcard-edit .fuel-value-badge {
+            display: inline-block;
+            margin-left: 10px;
+            padding: 4px 10px;
+            background: var(--je-red-soft);
+            color: var(--je-red);
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
         }
 
         .carnate-jobcard-edit .d-flex.justify-content-center a.position-relative {
@@ -617,6 +628,79 @@
             background: #f8fafc !important;
             color: #475569;
             font-weight: 600;
+        }
+
+        /* Sticky Table Headers */
+        .carnate-jobcard-edit .table-view table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        /* Zebra Striping */
+        .carnate-jobcard-edit .table-view table tbody tr:nth-child(even) td {
+            background: #fafbfc;
+        }
+
+        .carnate-jobcard-edit .table-view table tbody tr:nth-child(even):hover td {
+            background: #f5f7fa;
+        }
+
+        /* Responsive Counter Cards */
+        #counters > [class*="col-"] {
+            flex: 1 1 0;
+            min-width: 175px;
+            max-width: 100%;
+            padding: 0 !important;
+        }
+
+        @media (max-width: 991px) {
+            #counters .col-lg-2 {
+                flex: 0 0 auto;
+                width: 50%;
+                max-width: 50%;
+            }
+        }
+
+        @media (max-width: 575px) {
+            #counters .col-lg-2 {
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+
+        /* Fuel Level Display */
+        .fuel-value-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            height: 28px;
+            padding: 4px 10px;
+            background: var(--je-blue-soft);
+            color: var(--je-blue);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-left: 10px;
+        }
+
+        /* SMS Alert inline placement */
+        .sms-alert-inline {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: #f8fafc;
+            border: 1px solid var(--je-border);
+            border-radius: 10px;
+        }
+
+        .sms-alert-inline .form-check-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #475569;
+            margin: 0;
         }
 
         /* Modern Remove Button */
@@ -2211,7 +2295,8 @@
                             </div>
 
                             <!-- Job-Card Details -->
-                            <div class="ulprofile d-flex flex-wrap">
+                            <div class="card" style="background: #f8fafc; border-radius: 12px; padding: 10px; border: 1px solid var(--je-border);">
+                                <div class="ulprofile d-flex flex-wrap">
                                 <div class="input-group" style="width: fit-content">
                                     <span class="input-group-text">Job-Card No.</span>
                                     <input type="text" form="jobcard-form" id="jobcard_number"
@@ -2266,15 +2351,6 @@
                                 </button>
                             </div>
                             @if (!empty($customer_data))
-                                <style>
-                                    .info-table td {
-                                        border-bottom: 1px solid #e0e0e0;
-                                        /* Light grey line */
-                                        padding: 6px 8px;
-                                        vertical-align: top;
-                                    }
-                                </style>
-
                                 <table class="table table-sm info-table" style="width: 100%;">
                                     <tbody>
                                         <tr>
@@ -2364,7 +2440,6 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h6 class="m-0 text-dark fw-bold" style="font-size: 15px;"><i class="fa fa-wrench me-2 text-danger"></i> Job-Card Details</h6>
-                            <button type="button" class="btn btn-sm btn-info">Last History</button>
                         </div>
                         <div class="row">
                             <div class="col-4">
@@ -2378,6 +2453,7 @@
                                 <label for="fual_level" class="form-label">Fuel Level</label>
                                 <input type="range" class="form-range" id="fual_level" wire:model="fual_level"
                                     min="0" max="100" @disabled($jobcardData->status == 3 || !$user->hasPermissionTo('Jobcard-edit'))>
+                                <span class="fuel-value-badge">{{ $fual_level }}%</span>
                             </div>
                             <div class="col-4">
                                 <div class="form-floating">
@@ -2463,7 +2539,7 @@
                     <div class="card-body ">
                         <!-- Top Cards -->
                         <div class="row mt-4" id="counters">
-                            <div class="col-2">
+                            <div class="col-lg-2 col-md-4 col-6">
                                 <div class="card jc-counter-card {{ $showTable == 1 ? 'is-active-tab' : '' }}"
                                     id="counter-tab-1"
                                     role="button"
@@ -2496,7 +2572,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-2">
+                            <div class="col-lg-2 col-md-4 col-6">
                                 <div class="card jc-counter-card {{ $showTable == 2 ? 'is-active-tab' : '' }}"
                                     id="counter-tab-2"
                                     role="button"
@@ -2527,7 +2603,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-2">
+                            <div class="col-lg-2 col-md-4 col-6">
                                 <div class="card jc-counter-card {{ $showTable == 3 ? 'is-active-tab' : '' }}"
                                     id="counter-tab-3"
                                     role="button"
@@ -2559,7 +2635,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-2">
+                            <div class="col-lg-2 col-md-4 col-6">
                                 <div class="card jc-counter-card {{ $showTable == 5 ? 'is-active-tab' : '' }}"
                                     id="counter-tab-5"
                                     role="button"
@@ -2591,7 +2667,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-2">
+                            <div class="col-lg-2 col-md-4 col-6">
                                 <div class="card jc-counter-card jc-total-card" id="total-counter-card" title="Overall Total Summary">
                                     <div class="card-body p-0" id="total-counter">
                                         <div class="d-flex justify-content-between grey-variant px-2 py-2 rounded-top jc-counter-header">
@@ -2601,9 +2677,7 @@
                                             <p class="text-end m-0">
                                                 <b class="">₹<span
                                                         class="total-count">{{ $totalAmount }}</span></b>
-                                                <small class="d-block ">₹<span class="discount-count">
-                                                        {{ array_sum(array_column($spareParts, 'discount')) + array_sum(array_column($lubes, 'discount')) + array_sum(array_column($accessoriess, 'discount')) + array_sum(array_column($extraCharges, 'discount')) }}
-                                                    </span></small>
+                                                 <small class="d-block ">₹<span class="discount-count">{{ $final_discount }}</span></small>
                                             </p>
                                         </div>
                                         <div class="d-flex justify-content-between align-items-center p-2">
@@ -2618,7 +2692,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="mt-4 table-view" id="tools-div"
+                        <div class="mt-4 table-view table-responsive" id="tools-div"
                             style="display: {{ $showTable == 1 ? 'block' : 'none' }}">
                             <table class="table table-bordered" id="labour-table">
                                 <thead>
@@ -2770,7 +2844,7 @@
                             </table>
                         </div>
 
-                        <div class="mt-4 table-view" id="spare-table"
+                        <div class="mt-4 table-view table-responsive" id="spare-table"
                             style="display: {{ $showTable == 2 ? 'block' : 'none' }}">
 
                             <table class="table table-bordered" id="spare-part-table">
@@ -2912,7 +2986,7 @@
                         </div>
 
 
-                        <div class="mt-4 table-view" id="lubes-table"
+                        <div class="mt-4  table-view table-responsive" id="lubes-table"
                             style="display: {{ $showTable == 3 ? 'block' : 'none' }}">
                             <table class="table table-bordered" id="lubes-table">
                                 <thead>
@@ -3056,7 +3130,7 @@
                             </table>
                         </div>
 
-                        <div class="mt-4  table-view" id="accessory-table"
+                        <div class="mt-4  table-view table-responsive" id="accessory-table"
                             style="display: {{ $showTable == 5 ? 'block' : 'none' }}">
                             <table class="table table-bordered" id="accessory-table">
                                 <thead>
@@ -3408,7 +3482,7 @@
                                                                     <td>{{ \Carbon\Carbon::parse($pay['created_at'])->format('d-M-Y H:i') }}</td>
                                                                     <td class="font-weight-bold">₹{{ number_format($pay['amount'], 2) }}</td>
                                                                     <td>
-                                                                        <span class="badge bg-info text-capitalize">{{ str_replace('_', ' ', $pay['payment_type']) }}</span>
+                                                                        <span class="badge bg-info text-capitalize">{{ ucwords(str_replace('_', ' ', $pay['payment_type'])) }}</span>
                                                                     </td>
                                                                     <td>{{ $pay['transaction_number'] ?? 'N/A' }}</td>
                                                                     @if($jobcardData->status != 3)
@@ -3469,7 +3543,7 @@
                                                             @enderror
                                                         </div>
                                                         <div class="col-md-3 text-end text-md-start">
-                                                            <button type="button" class="btn btn-success w-100" wire:click="addPayment">
+                                                            <button type="button" class="btn btn-primary w-100" wire:click="addPayment">
                                                                 <i class="fa fa-plus-circle me-1"></i> Add Payment
                                                             </button>
                                                         </div>
@@ -3563,7 +3637,7 @@
             @endphp
 
             <a href="{{ $whatsappLink }}" class="btn btn-outline-secondary mx-1" title="Share on WhatsApp" target="_blank">
-                <img src="{{ asset('img/whatsapp.png') }}" alt="WhatsApp" height="18px" width="18px">
+                <i class="fab fa-whatsapp text-success" style="font-size: 18px;"></i>
             </a>
         @endif
 
@@ -4254,7 +4328,7 @@
 
             // Save Merged Image and Send to Laravel
             document.getElementById('saveBtn').addEventListener('click', () => {
-                if (beta = 0) {
+                if (beta === 0) {
                     beta = 1;
                     if (!confirm("Are you sure you want to save the changes?")) return;
                 }
