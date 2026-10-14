@@ -27,6 +27,7 @@ class PartsController extends Component
     public $name, $brand, $unit, $stock, $description, $image_id, $imagePreview, $imageId, $uploadedImageId, $uniqueId, $part_number, $sp_type;
     public $partId, $sparepartId, $reflectedPrice, $showPartModel, $sparePartLabels, $part_label;
     public $articleId, $oemNumbers = [], $oem_list, $brandFilter = '';
+    public $isSearching = false;
 
     public $forAllVehicles = false;
     public $suitable_for = [];
@@ -1139,11 +1140,23 @@ class PartsController extends Component
         $this->oemNumbers = [];
         $this->apiCategoryName = '';
     }
-    public function updatedPartNumber($value)
+    public function searchPartNumber()
     {
-        $value = trim($value);
+        $value = trim($this->part_number ?? '');
+        if (empty($value)) {
+            $this->dispatch('swal:toast', [
+                'type' => 'warning',
+                'message' => 'Please enter a part number to search.',
+            ]);
+            return;
+        }
+
         if (strlen($value) < 3) {
             $this->resetApiData();
+            $this->dispatch('swal:toast', [
+                'type' => 'warning',
+                'message' => 'Part number must be at least 3 characters.',
+            ]);
             return;
         }
 

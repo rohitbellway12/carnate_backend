@@ -856,8 +856,8 @@
                             <th>S.No.</th>
                             <th>Title</th>
                             <th>Labour Type</th>
-                            <th>Selling Price</th>
                             <th>Outsource Price</th>
+                            <th>Selling Price</th>
                             <th>Tax</th>
                             <th>Tax Type</th>
                             <th>Total</th>
@@ -892,13 +892,13 @@
 
                                 <td>
                                     <span class="cl-price">
-                                        {{ $item->price }}
+                                        {{ $item->outsource_price ?? '-' }}
                                     </span>
                                 </td>
 
                                 <td>
                                     <span class="cl-price">
-                                        {{ $item->outsource_price ?? '-' }}
+                                        {{ $item->price }}
                                     </span>
                                 </td>
 

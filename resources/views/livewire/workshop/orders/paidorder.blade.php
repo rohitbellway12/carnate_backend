@@ -1467,7 +1467,7 @@
 
                                 <th>S.No.</th>
 
-                                <th>Item Name</th>
+                                <th>Order Item Name</th>
 
                                 <th>Category</th>
 

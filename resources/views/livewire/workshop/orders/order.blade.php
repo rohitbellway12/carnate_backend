@@ -737,7 +737,7 @@
 
                                 <tr>
                                     <th>S.No.</th>
-                                    <th>Item Name</th>
+                                    <th>Order Item Name</th>
                                     <th>Category</th>
                                     <th>Quantity</th>
                                     <th>Price</th>
@@ -1207,7 +1207,7 @@
 
                                 <tr>
                                     <th>Order No.</th>
-                                    <th>Item Name</th>
+                                    <th>Order Item Name</th>
                                     <th>Order Date</th>
                                     <th>Amount</th>
                                     <th>Total Items</th>

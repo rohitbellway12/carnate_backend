@@ -595,21 +595,28 @@
                 <div class="form-section-header">
                     <div class="icon-wrap"><i class='bx bx-barcode'></i></div>
                     <span class="fw-bold" style="color:var(--brand);">Part Identification</span>
-                    <span class="text-muted small ms-1">— enter part number to auto-fetch details</span>
+                    <span class="text-muted small ms-1">— enter part number and click search to fetch details</span>
                 </div>
                 <div class="form-section-body">
                     <div class="row g-3 align-items-start">
                         <div class="col-md-4">
-                            <label class="form-label">Part Number <span class="text-muted fw-normal">(Trigger)</span></label>
+                            <label class="form-label">Part Number</label>
                             <div class="input-group">
-                                <input type="text" wire:model.live.debounce.500ms="part_number"
+                                <input type="text" wire:model="part_number"
+                                    wire:keydown.enter.prevent="searchPartNumber"
                                     class="form-control fw-bold"
                                     {{ $isView ? 'disabled' : '' }}
-                                    placeholder="e.g. 46029BW" maxlength="20">
-                                <span class="input-group-text" style="background:var(--brand);color:#fff;border-color:var(--brand);border-radius:0 10px 10px 0 !important;">
-                                    <span wire:loading wire:target="part_number"><i class='bx bx-loader-alt bx-spin'></i></span>
-                                    <i class='bx bx-search' wire:loading.remove wire:target="part_number"></i>
-                                </span>
+                                    placeholder="e.g. 46029BW" maxlength="30">
+                                <button type="button" class="btn btn-primary"
+                                    wire:click="searchPartNumber"
+                                    wire:loading.attr="disabled"
+                                    wire:target="searchPartNumber"
+                                    {{ $isView ? 'disabled' : '' }}
+                                    title="Click to search"
+                                    style="background:var(--brand);color:#fff;border-color:var(--brand);border-radius:0 10px 10px 0 !important;cursor:pointer;padding:0.375rem 0.85rem;">
+                                    <span wire:loading wire:target="searchPartNumber"><i class='bx bx-loader-alt bx-spin'></i></span>
+                                    <i class='bx bx-search' wire:loading.remove wire:target="searchPartNumber"></i>
+                                </button>
                             </div>
                             @error('part_number') <span class="text-danger small">{{ $message }}</span> @enderror
                         </div>

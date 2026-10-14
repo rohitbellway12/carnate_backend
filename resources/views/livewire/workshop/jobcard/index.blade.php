@@ -359,12 +359,6 @@
             font-weight: 750;
         }
 
-        .carnate-jobcard-report .jobcardtable td:nth-child(7) {
-            white-space: normal;
-            min-width: 250px;
-            max-width: 320px;
-        }
-
         /* Preserve status row meaning, but use much softer colors */
         .carnate-jobcard-report .jobcard-row-status-0 td {
             background: #fefce8;

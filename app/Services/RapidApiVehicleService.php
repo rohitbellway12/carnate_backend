@@ -65,20 +65,34 @@ class RapidApiVehicleService
         
         return Cache::remember($cacheKey, self::CACHE_DURATION, function () use ($manufacturerId) {
             try {
-                $url = 'https://' . self::API_HOST . '/models/list/type-id/' . self::TYPE_ID 
-                     . '/manufacturer-id/' . $manufacturerId 
-                     . '/lang-id/' . self::LANG_ID 
-                     . '/country-filter-id/' . self::COUNTRY_FILTER_ID;
+                $allModels = [];
+                $page = 1;
+                $totalPages = 1;
 
-                $response = Http::withHeaders($this->getHeaders())->get($url);
+                do {
+                    $url = 'https://' . self::API_HOST . '/models/list/type-id/' . self::TYPE_ID 
+                         . '/manufacturer-id/' . $manufacturerId 
+                         . '/lang-id/' . self::LANG_ID 
+                         . '/country-filter-id/' . self::COUNTRY_FILTER_ID
+                         . '?page=' . $page;
 
-                if ($response->successful()) {
-                    $data = $response->json();
-                    \Log::info('Models API Response:', ['manufacturer_id' => $manufacturerId, 'count' => count($data['models'] ?? [])]);
-                    return $data['models'] ?? $data['data'] ?? [];
-                }
-                \Log::error('Models API Failed:', ['status' => $response->status(), 'body' => $response->body()]);
-                return [];
+                    $response = Http::withHeaders($this->getHeaders())->get($url);
+
+                    if ($response->successful()) {
+                        $data = $response->json();
+                        $models = $data['models'] ?? $data['data'] ?? [];
+                        $allModels = array_merge($allModels, $models);
+
+                        $totalPages = $data['totalPages'] ?? 1;
+                        $page++;
+                    } else {
+                        \Log::error('Models API Failed:', ['status' => $response->status(), 'page' => $page, 'body' => $response->body()]);
+                        break;
+                    }
+                } while ($page <= $totalPages);
+
+                \Log::info('Models API Total Fetched:', ['manufacturer_id' => $manufacturerId, 'count' => count($allModels)]);
+                return $allModels;
             } catch (\Exception $e) {
                 \Log::error('RapidAPI Models Error: ' . $e->getMessage());
                 return [];
@@ -95,20 +109,34 @@ class RapidApiVehicleService
         
         return Cache::remember($cacheKey, self::CACHE_DURATION, function () use ($modelId) {
             try {
-                $url = 'https://' . self::API_HOST . '/types/type-id/' . self::TYPE_ID 
-                     . '/list-vehicles-types/' . $modelId 
-                     . '/lang-id/' . self::LANG_ID 
-                     . '/country-filter-id/' . self::COUNTRY_FILTER_ID;
+                $allTypes = [];
+                $page = 1;
+                $totalPages = 1;
 
-                $response = Http::withHeaders($this->getHeaders())->get($url);
+                do {
+                    $url = 'https://' . self::API_HOST . '/types/type-id/' . self::TYPE_ID 
+                         . '/list-vehicles-types/' . $modelId 
+                         . '/lang-id/' . self::LANG_ID 
+                         . '/country-filter-id/' . self::COUNTRY_FILTER_ID
+                         . '?page=' . $page;
 
-                if ($response->successful()) {
-                    $data = $response->json();
-                    \Log::info('Vehicle Types API Response:', ['model_id' => $modelId, 'count' => count($data['modelTypes'] ?? [])]);
-                    return $data['modelTypes'] ?? $data['data'] ?? [];
-                }
-                \Log::error('Vehicle Types API Failed:', ['status' => $response->status(), 'body' => $response->body()]);
-                return [];
+                    $response = Http::withHeaders($this->getHeaders())->get($url);
+
+                    if ($response->successful()) {
+                        $data = $response->json();
+                        $types = $data['modelTypes'] ?? $data['data'] ?? [];
+                        $allTypes = array_merge($allTypes, $types);
+
+                        $totalPages = $data['totalPages'] ?? 1;
+                        $page++;
+                    } else {
+                        \Log::error('Vehicle Types API Failed:', ['status' => $response->status(), 'page' => $page, 'body' => $response->body()]);
+                        break;
+                    }
+                } while ($page <= $totalPages);
+
+                \Log::info('Vehicle Types API Total Fetched:', ['model_id' => $modelId, 'count' => count($allTypes)]);
+                return $allTypes;
             } catch (\Exception $e) {
                 \Log::error('RapidAPI Vehicle Types Error: ' . $e->getMessage());
                 return [];
@@ -125,28 +153,35 @@ class RapidApiVehicleService
         
         return Cache::remember($cacheKey, self::CACHE_DURATION, function () use ($manufacturerId, $modelSeriesId) {
             try {
-                // Try vehicles/list endpoint
-                $url = 'https://' . self::API_HOST . '/vehicles/list/type-id/' . self::TYPE_ID 
-                     . '/manufacturer-id/' . $manufacturerId 
-                     . '/model-series-id/' . $modelSeriesId 
-                     . '/lang-id/' . self::LANG_ID 
-                     . '/country-filter-id/' . self::COUNTRY_FILTER_ID;
+                $allEngines = [];
+                $page = 1;
+                $totalPages = 1;
 
-                $response = Http::withHeaders($this->getHeaders())->get($url);
+                do {
+                    $url = 'https://' . self::API_HOST . '/vehicles/list/type-id/' . self::TYPE_ID 
+                         . '/manufacturer-id/' . $manufacturerId 
+                         . '/model-series-id/' . $modelSeriesId 
+                         . '/lang-id/' . self::LANG_ID 
+                         . '/country-filter-id/' . self::COUNTRY_FILTER_ID
+                         . '?page=' . $page;
 
-                if ($response->successful()) {
-                    $data = $response->json();
-                    \Log::info('Engines API Response:', ['model_id' => $modelSeriesId, 'count' => count($data['vehicles'] ?? [])]);
-                    return $data['vehicles'] ?? $data['data'] ?? [];
-                }
-                
-                // If not found, try alternative endpoint
-                if ($response->status() == 404) {
-                    \Log::warning('Vehicles endpoint not found, trying alternative', ['url' => $url]);
-                }
-                
-                \Log::error('Engines API Failed:', ['status' => $response->status(), 'body' => $response->body()]);
-                return [];
+                    $response = Http::withHeaders($this->getHeaders())->get($url);
+
+                    if ($response->successful()) {
+                        $data = $response->json();
+                        $engines = $data['vehicles'] ?? $data['data'] ?? [];
+                        $allEngines = array_merge($allEngines, $engines);
+
+                        $totalPages = $data['totalPages'] ?? 1;
+                        $page++;
+                    } else {
+                        \Log::error('Engines API Failed:', ['status' => $response->status(), 'page' => $page, 'body' => $response->body()]);
+                        break;
+                    }
+                } while ($page <= $totalPages);
+
+                \Log::info('Engines API Total Fetched:', ['model_id' => $modelSeriesId, 'count' => count($allEngines)]);
+                return $allEngines;
             } catch (\Exception $e) {
                 \Log::error('RapidAPI Engine Types Error: ' . $e->getMessage());
                 return [];

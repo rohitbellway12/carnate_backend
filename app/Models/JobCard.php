@@ -35,6 +35,7 @@ class JobCard extends Model
         'step',
         'sms_alert',
         'service_reminder_sent_at',
+        'service_reminder_6m_sent_at',
         'user_id',
         'notes',
         'soft_delete',
