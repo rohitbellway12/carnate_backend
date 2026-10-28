@@ -218,15 +218,19 @@
                     return;
                 }
 
-                if (instance && select.data('searchable-select-options') !== optionSignature) {
-                    let selectedValue = select.val();
+                let htmlSelected = select.find('option:selected').val();
+                let selectedValue = (htmlSelected !== undefined && htmlSelected !== '') ? htmlSelected : select.val();
 
+                if (instance && select.data('searchable-select-options') !== optionSignature) {
                     select.select2('destroy');
-                    select.val(selectedValue);
                 }
 
                 if (!select.hasClass('select2-hidden-accessible')) {
                     select.select2(options);
+                }
+
+                if (selectedValue !== undefined && selectedValue !== null && selectedValue !== '') {
+                    select.val(selectedValue).trigger('change.select2');
                 }
 
                 select.data('searchable-select-options', optionSignature);
@@ -302,5 +306,18 @@
         } else {
             window.initSearchableSelects();
         }
+
+        window.addEventListener('sync-searchable-selects', function() {
+            window.setTimeout(function() {
+                destroyAllSearchableSelects();
+                window.initSearchableSelects();
+                jQuery('select.searchable-select').each(function() {
+                    let sel = jQuery(this).find('option:selected').val();
+                    if (sel !== undefined && sel !== null && sel !== '') {
+                        jQuery(this).val(sel).trigger('change.select2');
+                    }
+                });
+            }, 60);
+        });
     })();
 </script>

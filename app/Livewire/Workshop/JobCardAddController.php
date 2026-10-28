@@ -1611,4 +1611,249 @@ class JobCardAddController extends Component
             ->values()
             ->toArray();
     }
+
+    public function updatedChassisNo($value)
+    {
+        $clean = trim(strtoupper($value));
+        if (strlen($clean) === 17) {
+            $this->fetchVehicleByVin();
+        }
+    }
+
+    public function fetchVehicleByVin()
+    {
+        $vin = trim(strtoupper($this->chassisNo));
+        if (empty($vin)) {
+            $this->dispatch('swal:toast', [
+                'type' => 'error',
+                'message' => 'Please enter Chassis No / VIN first.',
+            ]);
+            return;
+        }
+
+        if (strlen($vin) < 5) {
+            $this->dispatch('swal:toast', [
+                'type' => 'warning',
+                'message' => 'Please enter a valid VIN (minimum 5 characters).',
+            ]);
+            return;
+        }
+
+        // 🔹 RESET previous vehicle details so old/fake data is never retained!
+        $this->variant_name = '';
+        $this->selected_year = '';
+        $this->search_vehicle = '';
+        $this->modificationId = null;
+        $this->selectedVehicleName = '';
+        $this->vehicle_id = null;
+        $this->selectedModelId = null;
+        $this->years = [];
+        $this->modifications = [];
+        $this->all_modifications = [];
+
+        try {
+            $vehicleService = new RapidApiVehicleService();
+            $vinData = $vehicleService->checkVinTecdoc($vin);
+
+            if (empty($vinData)) {
+                $this->brand_name = '';
+                $this->selectedBrandId = null;
+                $this->vehicleBrand = '';
+                $this->variants = [];
+                $this->dispatch('sync-searchable-selects');
+                $this->dispatch('swal:toast', [
+                    'type' => 'warning',
+                    'message' => 'VIN not found in catalog. Please select vehicle details manually.',
+                ]);
+                return;
+            }
+
+            // Ensure brands are loaded
+            if (empty($this->brands)) {
+                $this->brands = collect($vehicleService->getBrandsList())->toArray();
+            }
+
+            $matchedManu = null;
+            if (!empty($vinData['matchingManufacturers']['array'])) {
+                $matchedManu = $vinData['matchingManufacturers']['array'][0] ?? null;
+            }
+
+            if (!$matchedManu) {
+                $this->brand_name = '';
+                $this->selectedBrandId = null;
+                $this->vehicleBrand = '';
+                $this->variants = [];
+                $this->dispatch('sync-searchable-selects');
+                $this->dispatch('swal:toast', [
+                    'type' => 'warning',
+                    'message' => 'No matching manufacturer found for this VIN in catalog.',
+                ]);
+                return;
+            }
+
+            $manuId = $matchedManu['manuId'] ?? null;
+            $manuName = $matchedManu['manuName'] ?? '';
+
+            // Find brand in $this->brands
+            $matchedBrand = collect($this->brands)->first(function ($b) use ($manuId, $manuName) {
+                $bId = is_array($b) ? ($b['id'] ?? null) : ($b->id ?? null);
+                $bName = is_array($b) ? ($b['name'] ?? null) : ($b->name ?? null);
+                return ($manuId && $bId == $manuId) || (strcasecmp($bName ?? '', $manuName) === 0);
+            });
+
+            if (!$matchedBrand) {
+                $matchedBrand = ['id' => $manuId, 'name' => $manuName];
+                $this->brands[] = $matchedBrand;
+            }
+
+            $this->brand_name = json_encode($matchedBrand);
+            $this->selectedBrandId = $manuId;
+            $this->vehicleBrand = is_array($matchedBrand) ? ($matchedBrand['name'] ?? $manuName) : $matchedBrand->name;
+
+            // Fetch models for this manufacturer
+            $modelsList = $vehicleService->getModelsList($manuId);
+            $this->variants = collect($modelsList)->toArray();
+
+            $matchedModel = null;
+            if (!empty($vinData['matchingModels']['array'])) {
+                $matchedModel = $vinData['matchingModels']['array'][0] ?? null;
+            }
+
+            if (!$matchedModel) {
+                // Only Brand is detected! Keep Model, Year, Modification blank!
+                $this->variant_name = '';
+                $this->selected_year = '';
+                $this->search_vehicle = '';
+                $this->modificationId = null;
+                $this->selectedVehicleName = '';
+                $this->years = [];
+                $this->modifications = [];
+                $this->all_modifications = [];
+
+                $this->dispatch('sync-searchable-selects');
+                $this->dispatch('swal:toast', [
+                    'type' => 'info',
+                    'message' => "Brand '{$this->vehicleBrand}' detected. Model & Variant are not in catalog, please select manually.",
+                ]);
+                return;
+            }
+
+            $modelId = $matchedModel['modelId'] ?? null;
+            $modelName = $matchedModel['modelName'] ?? '';
+
+            // Find variant index in $this->variants
+            $foundVariantIndex = null;
+            foreach ($this->variants as $index => $v) {
+                if (($modelId && ($v['id'] ?? null) == $modelId) || (strcasecmp($v['name'] ?? '', $modelName) === 0)) {
+                    $foundVariantIndex = $index;
+                    break;
+                }
+            }
+
+            if ($foundVariantIndex === null && $modelId) {
+                $this->variants[] = [
+                    'id' => $modelId,
+                    'name' => $modelName,
+                    'modelYearFrom' => null,
+                    'modelYearTo' => null,
+                ];
+                $foundVariantIndex = count($this->variants) - 1;
+            }
+
+            if ($foundVariantIndex !== null) {
+                $this->variant_name = (string) $foundVariantIndex;
+                $variant = $this->variants[$foundVariantIndex];
+
+                $modelYearFrom = $variant['modelYearFrom'] ?? null;
+                $modelYearTo = $variant['modelYearTo'] ?? null;
+
+                if ($modelYearFrom) {
+                    $startYear = (int) substr($modelYearFrom, 0, 4);
+                    $endYear = $modelYearTo ? (int) substr($modelYearTo, 0, 4) : (int) date('Y');
+
+                    $yearRange = [];
+                    for ($year = $endYear; $year >= $startYear; $year--) {
+                        $yearRange[] = [
+                            'value' => $year,
+                            'label' => $year
+                        ];
+                    }
+                    $this->years = $yearRange;
+                } else {
+                    $this->years = [];
+                }
+
+                $this->selectedModelId = $modelId;
+                $this->selectedVehicleName = $variant['name'] ?? $modelName;
+                $this->vehicle_id = $modelId;
+
+                // Decode VIN year from 10th character
+                $decodedYear = RapidApiVehicleService::decodeVinYear($vin);
+                if ($decodedYear) {
+                    $this->selected_year = $decodedYear;
+                    $yearExists = collect($this->years)->firstWhere('value', $decodedYear);
+                    if (!$yearExists) {
+                        array_unshift($this->years, ['value' => $decodedYear, 'label' => $decodedYear]);
+                    }
+                }
+
+                // Fetch all modifications for this model
+                $typesList = $vehicleService->getVehicleTypesList($modelId);
+                $this->all_modifications = collect($typesList)->toArray();
+
+                // Check matching vehicles from VIN check
+                $matchingVehicles = $vinData['matchingVehicles']['array'] ?? [];
+                if (!empty($matchingVehicles)) {
+                    $matchingVehicleIds = collect($matchingVehicles)->pluck('vehicleId')->map(fn($id) => (int)$id)->toArray();
+
+                    $filteredMods = collect($this->all_modifications)->filter(function ($m) use ($matchingVehicleIds) {
+                        return in_array((int)($m['id'] ?? 0), $matchingVehicleIds);
+                    })->values()->toArray();
+
+                    if (!empty($filteredMods)) {
+                        $this->modifications = $filteredMods;
+                    } else {
+                        $this->modifications = collect($matchingVehicles)->map(function ($mv) {
+                            return [
+                                'id' => $mv['vehicleId'] ?? null,
+                                'name' => $mv['vehicleTypeDescription'] ?? ($mv['carName'] ?? ''),
+                                'fuelType' => '',
+                                'yearFrom' => '',
+                                'yearTo' => '',
+                            ];
+                        })->values()->toArray();
+                    }
+
+                    if (!empty($this->modifications)) {
+                        $this->search_vehicle = $this->modifications[0]['id'];
+                        $this->updatedSearchVehicle($this->search_vehicle);
+                    }
+                } else {
+                    if (!empty($this->selected_year)) {
+                        $this->updatedSelectedYear($this->selected_year);
+                    } else {
+                        $this->modifications = $this->all_modifications;
+                    }
+
+                    if (!empty($this->modifications)) {
+                        $this->search_vehicle = $this->modifications[0]['id'];
+                        $this->updatedSearchVehicle($this->search_vehicle);
+                    }
+                }
+
+                $this->dispatch('sync-searchable-selects');
+
+                $this->dispatch('swal:toast', [
+                    'type' => 'success',
+                    'message' => "Vehicle details successfully auto-filled from VIN!",
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error in fetchVehicleByVin: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            $this->dispatch('swal:toast', [
+                'type' => 'error',
+                'message' => 'Failed to decode VIN: ' . $e->getMessage(),
+            ]);
+        }
+    }
 }

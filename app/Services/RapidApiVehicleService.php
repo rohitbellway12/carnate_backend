@@ -369,4 +369,60 @@ class RapidApiVehicleService
             return $valid;
         })->values();
     }
+
+    /**
+     * Check VIN details using TecDoc VIN check endpoint
+     */
+    public function checkVinTecdoc($vin)
+    {
+        $cleanVin = trim(strtoupper($vin));
+        if (empty($cleanVin)) {
+            return null;
+        }
+
+        $cacheKey = "tecdoc_vin_" . $cleanVin;
+
+        return Cache::remember($cacheKey, self::CACHE_DURATION, function () use ($cleanVin) {
+            try {
+                $url = 'https://' . self::API_HOST . '/vin/tecdoc-vin-check/' . urlencode($cleanVin);
+
+                $response = Http::withHeaders($this->getHeaders())->timeout(15)->get($url);
+
+                if ($response->successful()) {
+                    $json = $response->json();
+                    \Log::info('TecDoc VIN Check API Response:', ['vin' => $cleanVin, 'response' => $json]);
+                    return $json['data'] ?? $json;
+                }
+
+                \Log::error('TecDoc VIN Check API Failed:', ['vin' => $cleanVin, 'status' => $response->status(), 'body' => $response->body()]);
+                return null;
+            } catch (\Exception $e) {
+                \Log::error('RapidAPI TecDoc VIN Error: ' . $e->getMessage());
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Decode Model Year from the 10th character of a standard VIN
+     */
+    public static function decodeVinYear($vin)
+    {
+        $cleanVin = trim(strtoupper($vin));
+        if (strlen($cleanVin) < 10) {
+            return null;
+        }
+
+        $char = $cleanVin[9]; // 10th character (0-indexed)
+        $map = [
+            'A' => 2010, 'B' => 2011, 'C' => 2012, 'D' => 2013, 'E' => 2014,
+            'F' => 2015, 'G' => 2016, 'H' => 2017, 'J' => 2018, 'K' => 2019,
+            'L' => 2020, 'M' => 2021, 'N' => 2022, 'P' => 2023, 'R' => 2024,
+            'S' => 2025, 'T' => 2026, 'V' => 2027, 'W' => 2028, 'X' => 2029,
+            'Y' => 2030, '1' => 2001, '2' => 2002, '3' => 2003, '4' => 2004,
+            '5' => 2005, '6' => 2006, '7' => 2007, '8' => 2008, '9' => 2009,
+        ];
+
+        return $map[$char] ?? null;
+    }
 }

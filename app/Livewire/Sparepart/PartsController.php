@@ -45,6 +45,7 @@ class PartsController extends Component
     public $hsn_code, $rack_no, $category, $customerPrice = 0, $selling_amount = 0;
     public $online_price = 0, $offline_price = 0;
     public $imageName, $imageImage, $image, $searchfilter;
+    public $chassisNo;
     public $brand_name, $variant_name, $selected_year, $modification_id;
     public $brands = [], $variants = [], $years = [], $filter_modifications = [];
     public $modifications;
@@ -193,9 +194,256 @@ class PartsController extends Component
         }
     }
 
+    public function updatedChassisNo($value)
+    {
+        $clean = trim(strtoupper($value));
+        if (strlen($clean) === 17) {
+            $this->fetchVehicleByVin();
+        }
+    }
+
+    public function fetchVehicleByVin()
+    {
+        $vin = trim(strtoupper($this->chassisNo));
+        if (empty($vin)) {
+            $this->dispatch('swal:toast', [
+                'type' => 'error',
+                'message' => 'Please enter Chassis No / VIN first.',
+            ]);
+            return;
+        }
+
+        if (strlen($vin) < 5) {
+            $this->dispatch('swal:toast', [
+                'type' => 'warning',
+                'message' => 'Please enter a valid VIN (minimum 5 characters).',
+            ]);
+            return;
+        }
+
+        // Reset previous vehicle filter selections
+        $this->variant_name = '';
+        $this->selected_year = '';
+        $this->modification_id = '';
+        $this->variants = [];
+        $this->years = [];
+        $this->filter_modifications = [];
+
+        try {
+            $vehicleService = new RapidApiVehicleService();
+            $vinData = $vehicleService->checkVinTecdoc($vin);
+
+            if (empty($vinData)) {
+                $this->brand_name = '';
+                $this->dispatch('swal:toast', [
+                    'type' => 'warning',
+                    'message' => 'VIN not found in catalog. Please filter manually.',
+                ]);
+                return;
+            }
+
+            $matchedManu = null;
+            if (!empty($vinData['matchingManufacturers']['array'])) {
+                $matchedManu = $vinData['matchingManufacturers']['array'][0] ?? null;
+            }
+
+            if (!$matchedManu) {
+                $this->brand_name = '';
+                $this->dispatch('swal:toast', [
+                    'type' => 'warning',
+                    'message' => 'No matching manufacturer found for this VIN in catalog.',
+                ]);
+                return;
+            }
+
+            $manuName = $matchedManu['manuName'] ?? '';
+
+            // Match brand in existing local brands
+            $matchedBrand = collect($this->brands)->first(function ($b) use ($manuName) {
+                $name = is_array($b) ? ($b['name'] ?? '') : $b;
+                return strcasecmp($name, $manuName) === 0 || stripos($name, $manuName) !== false || stripos($manuName, $name) !== false;
+            });
+
+            if ($matchedBrand) {
+                $this->brand_name = is_array($matchedBrand) ? ($matchedBrand['name'] ?? $manuName) : $matchedBrand;
+            } else {
+                $this->brand_name = $manuName;
+                $this->brands[] = $manuName;
+            }
+
+            // Load variants for this brand from local Modification DB
+            try {
+                $this->variants = Modification::where('status', 1)
+                    ->where('brand_name', 'like', '%' . $this->brand_name . '%')
+                    ->select('variant_name as name')
+                    ->distinct()
+                    ->pluck('name')
+                    ->toArray();
+            } catch (\Exception $e) {
+                $this->variants = [];
+            }
+
+            $matchedModel = null;
+            if (!empty($vinData['matchingModels']['array'])) {
+                $matchedModel = $vinData['matchingModels']['array'][0] ?? null;
+            }
+
+            if (!$matchedModel) {
+                $this->dispatch('swal:toast', [
+                    'type' => 'info',
+                    'message' => "Brand '{$this->brand_name}' detected. Model details are not in catalog, please select manually.",
+                ]);
+                return;
+            }
+
+            $modelName = $matchedModel['modelName'] ?? '';
+
+            // Find matching variant
+            $matchedVariant = collect($this->variants)->first(function ($v) use ($modelName) {
+                $vName = is_array($v) ? ($v['name'] ?? '') : $v;
+                return strcasecmp($vName, $modelName) === 0 || stripos($modelName, $vName) !== false || stripos($vName, $modelName) !== false;
+            });
+
+            if ($matchedVariant) {
+                $this->variant_name = is_array($matchedVariant) ? ($matchedVariant['name'] ?? $modelName) : $matchedVariant;
+            } else {
+                $this->variant_name = $modelName;
+                $this->variants[] = $modelName;
+            }
+
+            // Load years from local DB
+            try {
+                $this->years = Modification::where('status', 1)
+                    ->where('brand_name', 'like', '%' . $this->brand_name . '%')
+                    ->where('variant_name', 'like', '%' . $this->variant_name . '%')
+                    ->select('year')
+                    ->distinct()
+                    ->pluck('year')
+                    ->map(fn($year) => ['value' => $year, 'label' => $year])
+                    ->toArray();
+            } catch (\Exception $e) {
+                $this->years = [];
+            }
+
+            // Decode year from VIN 10th digit
+            $decodedYear = RapidApiVehicleService::decodeVinYear($vin);
+            if ($decodedYear) {
+                // Check if any existing year option in $this->years encompasses $decodedYear (e.g. "2014 / 2018")
+                $matchedYearOption = null;
+                foreach ($this->years as $yOption) {
+                    $val = is_array($yOption) ? ($yOption['value'] ?? '') : $yOption;
+                    if ($val == $decodedYear) {
+                        $matchedYearOption = $val;
+                        break;
+                    }
+                    if (preg_match('/(\d{4})\s*[\/\-]\s*(\d{4})/', $val, $matches)) {
+                        $startYear = (int) $matches[1];
+                        $endYear = (int) $matches[2];
+                        if ($decodedYear >= $startYear && $decodedYear <= $endYear) {
+                            $matchedYearOption = $val;
+                            break;
+                        }
+                    } elseif (strpos($val, (string) $decodedYear) !== false) {
+                        $matchedYearOption = $val;
+                        break;
+                    }
+                }
+
+                if ($matchedYearOption) {
+                    $this->selected_year = (string) $matchedYearOption;
+                } else {
+                    $this->selected_year = (string) $decodedYear;
+                    $yearExists = collect($this->years)->firstWhere('value', (string)$decodedYear);
+                    if (!$yearExists) {
+                        array_unshift($this->years, ['value' => (string)$decodedYear, 'label' => (string)$decodedYear]);
+                    }
+                }
+            }
+
+            // Load modifications from local DB
+            try {
+                $modQuery = Modification::where('status', 1)
+                    ->where('brand_name', 'like', '%' . $this->brand_name . '%')
+                    ->where('variant_name', 'like', '%' . $this->variant_name . '%');
+
+                if (!empty($this->selected_year)) {
+                    $modQuery->where('year', 'like', '%' . $this->selected_year . '%');
+                }
+
+                $this->filter_modifications = $modQuery
+                    ->select('id', 'title as name')
+                    ->distinct()
+                    ->get()
+                    ->toArray();
+            } catch (\Exception $e) {
+                $this->filter_modifications = [];
+            }
+
+            // If local modifications is empty, try without year filter
+            if (empty($this->filter_modifications)) {
+                try {
+                    $this->filter_modifications = Modification::where('status', 1)
+                        ->where('brand_name', 'like', '%' . $this->brand_name . '%')
+                        ->where('variant_name', 'like', '%' . $this->variant_name . '%')
+                        ->select('id', 'title as name')
+                        ->distinct()
+                        ->get()
+                        ->toArray();
+                } catch (\Exception $e) {
+                    $this->filter_modifications = [];
+                }
+            }
+
+            // If still empty, populate from TecDoc matchingVehicles
+            $matchingVehicles = $vinData['matchingVehicles']['array'] ?? [];
+            if (empty($this->filter_modifications) && !empty($matchingVehicles)) {
+                $this->filter_modifications = collect($matchingVehicles)->map(function ($mv) {
+                    return [
+                        'id' => $mv['vehicleId'] ?? null,
+                        'name' => $mv['vehicleTypeDescription'] ?? ($mv['carName'] ?? ''),
+                    ];
+                })->toArray();
+            }
+
+            // Select best matching modification from TecDoc matching vehicles or default to first
+            $matchedModId = null;
+            if (!empty($this->filter_modifications) && !empty($matchingVehicles)) {
+                foreach ($this->filter_modifications as $fMod) {
+                    $fName = $fMod['name'] ?? '';
+                    foreach ($matchingVehicles as $mv) {
+                        $mvDesc = $mv['vehicleTypeDescription'] ?? '';
+                        if ($mvDesc && (strcasecmp($fName, $mvDesc) === 0 || stripos($mvDesc, $fName) !== false || stripos($fName, $mvDesc) !== false)) {
+                            $matchedModId = $fMod['id'];
+                            break 2;
+                        }
+                    }
+                }
+            }
+
+            if ($matchedModId) {
+                $this->modification_id = $matchedModId;
+            } elseif (!empty($this->filter_modifications)) {
+                $this->modification_id = $this->filter_modifications[0]['id'];
+            }
+
+            $this->dispatch('swal:toast', [
+                'type' => 'success',
+                'message' => "Filter applied for VIN: {$this->brand_name} {$this->variant_name} ({$this->selected_year})",
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error in PartsController fetchVehicleByVin: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            $this->dispatch('swal:toast', [
+                'type' => 'error',
+                'message' => 'Failed to decode VIN: ' . $e->getMessage(),
+            ]);
+        }
+    }
+
     public function resetFilter()
     {
         $this->reset([
+            'chassisNo',
             'searchfilter',
             'brand_name',
             'variant_name',
@@ -267,36 +515,55 @@ class PartsController extends Component
         $parts = Part::with('label', 'unit')->where('spare_part_type', 2)->where('user_id', $this->sparepartId);
 
         if ($this->brand_name || $this->variant_name || $this->selected_year || $this->modification_id) {
-            $parts->whereHas('modifications', function ($q) {
-                // Extract actual brand name from JSON
-                if (!empty($this->brand_name)) {
-                    $decodedBrand = @json_decode($this->brand_name, true);
-                    $actualBrandName = (is_array($decodedBrand) && isset($decodedBrand['name'])) ? $decodedBrand['name'] : $this->brand_name;
-                    $q->where('brand_name', $actualBrandName);
-                }
-                
-                // Extract actual variant name from index
-                if (!empty($this->variant_name) && $this->variant_name !== '') {
-                    $variant = $this->variants[$this->variant_name] ?? null;
-                    $actualVariantName = is_array($variant) ? ($variant['name'] ?? '') : ($variant->name ?? $this->variant_name);
-                    $q->where('variant_name', $actualVariantName);
-                }
-                
-                // Year might be stored as "2010 / 2012", so use LIKE
-                if (!empty($this->selected_year)) {
-                    $q->where('year', 'like', '%' . $this->selected_year . '%');
-                }
-                
-                // Extract modification title from API array
-                if (!empty($this->modification_id)) {
-                    $mod = collect($this->filter_modifications)->firstWhere('id', $this->modification_id);
-                    if ($mod) {
-                        $q->where('title', $mod['name'] ?? '');
-                    } else {
-                        // Fallback if not found in array (maybe it's a local ID)
-                        $q->where('modifications.id', $this->modification_id);
-                    }
-                }
+            $parts->where(function ($partQuery) {
+                $partQuery->where('forAllVehicles', 1)
+                    ->orWhereHas('modifications', function ($q) {
+                        // Extract actual brand name from JSON or string
+                        if (!empty($this->brand_name)) {
+                            $decodedBrand = @json_decode($this->brand_name, true);
+                            $actualBrandName = (is_array($decodedBrand) && isset($decodedBrand['name'])) ? $decodedBrand['name'] : $this->brand_name;
+                            $q->where('brand_name', 'like', '%' . $actualBrandName . '%');
+                        }
+
+                        // Extract actual variant name
+                        if (!empty($this->variant_name) && $this->variant_name !== '') {
+                            $variant = $this->variants[$this->variant_name] ?? null;
+                            $actualVariantName = is_array($variant) ? ($variant['name'] ?? '') : ($variant->name ?? $this->variant_name);
+                            $q->where('variant_name', 'like', '%' . $actualVariantName . '%');
+                        }
+
+                        // Year matching (supports single year or ranges like '2014 / 2018')
+                        if (!empty($this->selected_year)) {
+                            $yearVal = (string) $this->selected_year;
+                            if (is_numeric($yearVal)) {
+                                $y = (int) $yearVal;
+                                $q->where(function ($yearQ) use ($y, $yearVal) {
+                                    $yearQ->where('year', 'like', '%' . $yearVal . '%')
+                                        ->orWhere(function ($rangeQ) use ($y) {
+                                            $rangeQ->whereRaw("CAST(SUBSTRING_INDEX(year, '/', 1) AS UNSIGNED) <= ?", [$y])
+                                                   ->whereRaw("CAST(SUBSTRING_INDEX(year, '/', -1) AS UNSIGNED) >= ?", [$y]);
+                                        });
+                                });
+                            } else {
+                                $q->where('year', 'like', '%' . $yearVal . '%');
+                            }
+                        }
+
+                        // Modification ID or title matching
+                        if (!empty($this->modification_id)) {
+                            $mod = collect($this->filter_modifications)->firstWhere('id', $this->modification_id);
+                            $modName = $mod['name'] ?? null;
+                            $modId = $this->modification_id;
+
+                            $q->where(function ($subQ) use ($modId, $modName) {
+                                if (is_numeric($modId) && Modification::where('id', $modId)->exists()) {
+                                    $subQ->where('modifications.id', $modId);
+                                } elseif ($modName) {
+                                    $subQ->where('title', 'like', '%' . $modName . '%');
+                                }
+                            });
+                        }
+                    });
             });
         }
 

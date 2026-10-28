@@ -117,6 +117,34 @@
     </div>
     <div class="card-body">
         <div class="row g-3">
+            
+            <div class="col-md-5">
+                <label class="form-label">Number Plate<span class="text-danger">*</span></label>
+                <input type="text" wire:model="numberPlate" class="form-control" id="numberPlate"
+                    placeholder="Enter Number Plate"
+                    oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '')">
+                @error('numberPlate')
+                    <span class="text-danger">{{ $message }}</span>
+                @enderror
+            </div>
+ 
+            <div class="col-md-7">
+                <label class="form-label">Chassis No (VIN)<span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <input type="text" wire:model.live.debounce.500ms="chassisNo" class="form-control" placeholder="Enter Chassis No / VIN"
+                        oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '')">
+                    <button type="button" class="btn btn-primary" wire:click="fetchVehicleByVin" wire:loading.attr="disabled">
+                        <span wire:loading.remove wire:target="fetchVehicleByVin"><i class="bx bx-search"></i> Fetch Details</span>
+                        <span wire:loading wire:target="fetchVehicleByVin"><span class="spinner-border spinner-border-sm me-1"></span> Fetching...</span>
+                    </button>
+                </div>
+                <small class="text-muted">Enter 17-digit Chassis No / VIN to autofill Brand, Model & Modification</small>
+                @error('chassisNo')
+                    <div><span class="text-danger">{{ $message }}</span></div>
+                @enderror
+            </div>
+            
+
             <div class="col-12">
                 <label class="form-label">Vehicle Details<span class="text-danger">*</span></label>
                 <div class="row g-2">
@@ -125,7 +153,12 @@
                         <select class="form-select searchable-select" data-placeholder="Select Brand" wire:model.live="brand_name">
                             <option value="">Select Brand</option>
                             @foreach ($brands as $brand)
-                                <option value="{{ json_encode($brand) }}">
+                                @php
+                                    $brandJson = json_encode($brand);
+                                    $bId = is_array($brand) ? ($brand['id'] ?? null) : ($brand->id ?? null);
+                                    $isBrandSel = ((string)$brand_name === (string)$brandJson) || (isset($selectedBrandId) && $bId == $selectedBrandId);
+                                @endphp
+                                <option value="{{ $brandJson }}" {{ $isBrandSel ? 'selected' : '' }}>
                                     {{ is_array($brand) ? $brand['name'] : $brand->name ?? $brand }}
                                 </option>
                             @endforeach
@@ -138,7 +171,11 @@
                             @if(empty($variants)) disabled @endif>
                             <option value="">Select Model</option>
                             @foreach ($variants as $index => $variant)
-                                <option value="{{ $index }}">
+                                @php
+                                    $vId = is_array($variant) ? ($variant['id'] ?? null) : ($variant->id ?? null);
+                                    $isVarSel = ((string)$variant_name === (string)$index) || (isset($selectedModelId) && $vId == $selectedModelId);
+                                @endphp
+                                <option value="{{ $index }}" {{ $isVarSel ? 'selected' : '' }}>
                                     {{ is_array($variant) ? $variant['name'] : $variant->name ?? $variant }}
                                 </option>
                             @endforeach
@@ -151,8 +188,13 @@
                             @if(empty($years)) disabled @endif>
                             <option value="">Select Year</option>
                             @foreach ($years as $year)
-                                <option value="{{ is_array($year) ? $year['value'] : $year }}">
-                                    {{ is_array($year) ? $year['label'] : $year }}
+                                @php
+                                    $yVal = is_array($year) ? ($year['value'] ?? '') : $year;
+                                    $yLbl = is_array($year) ? ($year['label'] ?? '') : $year;
+                                    $isYrSel = ((string)$selected_year === (string)$yVal);
+                                @endphp
+                                <option value="{{ $yVal }}" {{ $isYrSel ? 'selected' : '' }}>
+                                    {{ $yLbl }}
                                 </option>
                             @endforeach
                         </select>
@@ -164,8 +206,12 @@
                             @if(empty($modifications)) disabled @endif>
                             <option value="">Select Modification</option>
                             @foreach ($modifications as $index => $mod)
-                                <option value="{{ is_array($mod) ? $mod['id'] : $index }}">
-                                    {{ is_array($mod) ? $mod['name'] . ' (' . $mod['yearFrom'] . '-' . $mod['yearTo'] . ')' . ($mod['fuelType'] ? ' - ' . $mod['fuelType'] : '') : $mod }}
+                                @php
+                                    $mId = is_array($mod) ? ($mod['id'] ?? null) : $index;
+                                    $isModSel = ((string)$search_vehicle === (string)$mId);
+                                @endphp
+                                <option value="{{ $mId }}" {{ $isModSel ? 'selected' : '' }}>
+                                    {{ is_array($mod) ? $mod['name'] . ' (' . ($mod['yearFrom'] ?? '') . '-' . ($mod['yearTo'] ?? '') . ')' . (!empty($mod['fuelType']) ? ' - ' . $mod['fuelType'] : '') : $mod }}
                                 </option>
                             @endforeach
                         </select>
@@ -178,23 +224,6 @@
                     </p>
                 @endif
                 @error('search_vehicle')
-                    <span class="text-danger">{{ $message }}</span>
-                @enderror
-            </div>
-            <div class="col-md-6">
-                <label class="form-label">Number Plate<span class="text-danger">*</span></label>
-                <input type="text" wire:model="numberPlate" class="form-control" id="numberPlate"
-                    placeholder="Enter Number Plate"
-                    oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '')">
-                @error('numberPlate')
-                    <span class="text-danger">{{ $message }}</span>
-                @enderror
-            </div>
-            <div class="col-md-6">
-                <label class="form-label">Chassis No<span class="text-danger">*</span></label>
-                <input type="text" wire:model="chassisNo" class="form-control" placeholder="Enter Chassis No"
-                    oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '')">
-                @error('chassisNo')
                     <span class="text-danger">{{ $message }}</span>
                 @enderror
             </div>

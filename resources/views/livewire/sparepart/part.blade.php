@@ -364,43 +364,90 @@
                         <i class='bx bx-car fs-6'></i>
                     </div>
                     <span class="fw-bold" style="color:var(--brand);">Vehicle-Specific Filter</span>
-                    <span class="text-muted small">— narrow results by vehicle</span>
+                    <span class="text-muted small">— filter parts by chassis no (VIN) or vehicle details</span>
                 </div>
+
+                {{-- 🔹 Chassis No (VIN) Filter Section (Commented)
+                <div class="row g-2 align-items-end mb-3 pb-3" style="border-bottom: 1px dashed #e2e8f0;">
+                    <div class="col-md-6 col-lg-5">
+                        <label class="form-label font-12 fw-bold text-muted mb-1">
+                            <i class='bx bx-barcode-reader me-1'></i> Chassis No (VIN) Filter
+                        </label>
+                        <div class="input-group">
+                            <input type="text" wire:model.live.debounce.500ms="chassisNo" class="form-control"
+                                placeholder="Enter 17-digit Chassis No / VIN"
+                                oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '')">
+                            <button type="button" class="btn btn-primary px-3" wire:click="fetchVehicleByVin" wire:loading.attr="disabled">
+                                <span wire:loading.remove wire:target="fetchVehicleByVin"><i class="bx bx-search"></i> Filter by VIN</span>
+                                <span wire:loading wire:target="fetchVehicleByVin"><span class="spinner-border spinner-border-sm me-1"></span> Fetching...</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-7">
+                        @if ($chassisNo && ($brand_name || $variant_name))
+                            <div class="d-flex align-items-center gap-2 text-success small pt-2">
+                                <i class='bx bx-check-circle fs-5'></i>
+                                <span>Filtered by VIN: <strong>{{ $brand_name }} {{ $variant_name }} {{ $selected_year ? "($selected_year)" : '' }}</strong></span>
+                            </div>
+                        @else
+                            <small class="text-muted d-block pt-2">Enter 17-digit VIN to automatically select Brand, Model, Year & Spec to filter suitable parts.</small>
+                        @endif
+                    </div>
+                </div>
+                --}}
 
                 <div class="row g-3 mb-4">
                     <div class="col-md-3">
                         <label class="form-label">Vehicle Brand</label>
-                        <select class="form-select filter-select" wire:model.live="brand_name">
+                        <select class="form-select filter-select" wire:model.live="brand_name" wire:key="brand-select-{{ $brand_name }}">
                             <option value="">All Brands</option>
                             @foreach ($brands as $brand)
-                                <option value="{{ is_array($brand) ? $brand['name'] : $brand }}">{{ is_array($brand) ? $brand['name'] : $brand }}</option>
+                                @php
+                                    $bVal = is_array($brand) ? ($brand['name'] ?? '') : $brand;
+                                    $isBrandSel = !empty($brand_name) && (strcasecmp((string)$brand_name, (string)$bVal) === 0);
+                                @endphp
+                                <option value="{{ $bVal }}" {{ $isBrandSel ? 'selected' : '' }}>{{ $bVal }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Variant Name</label>
-                        <select class="form-select filter-select" wire:model.live="variant_name" {{ empty($brand_name) ? 'disabled' : '' }}>
+                        <select class="form-select filter-select" wire:model.live="variant_name" {{ empty($brand_name) ? 'disabled' : '' }} wire:key="variant-select-{{ $variant_name }}-{{ $brand_name }}">
                             <option value="">All Variants</option>
                             @foreach ($variants as $variant)
-                                <option value="{{ is_array($variant) ? $variant['name'] : $variant }}">{{ is_array($variant) ? $variant['name'] : $variant }}</option>
+                                @php
+                                    $vVal = is_array($variant) ? ($variant['name'] ?? '') : $variant;
+                                    $isVarSel = !empty($variant_name) && (strcasecmp((string)$variant_name, (string)$vVal) === 0);
+                                @endphp
+                                <option value="{{ $vVal }}" {{ $isVarSel ? 'selected' : '' }}>{{ $vVal }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Model Year</label>
-                        <select class="form-select filter-select" wire:model.live="selected_year" {{ empty($variant_name) ? 'disabled' : '' }}>
+                        <select class="form-select filter-select" wire:model.live="selected_year" {{ empty($variant_name) ? 'disabled' : '' }} wire:key="year-select-{{ $selected_year }}">
                             <option value="">All Years</option>
                             @foreach ($years as $year)
-                                <option value="{{ is_array($year) ? $year['value'] : $year }}">{{ is_array($year) ? $year['label'] : $year }}</option>
+                                @php
+                                    $yVal = is_array($year) ? ($year['value'] ?? '') : $year;
+                                    $yLbl = is_array($year) ? ($year['label'] ?? '') : $year;
+                                    $isYrSel = !empty($selected_year) && ((string)$selected_year === (string)$yVal);
+                                @endphp
+                                <option value="{{ $yVal }}" {{ $isYrSel ? 'selected' : '' }}>{{ $yLbl }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Engine / Spec</label>
-                        <select class="form-select filter-select" wire:model.live="modification_id" {{ empty($selected_year) ? 'disabled' : '' }}>
+                        <select class="form-select filter-select" wire:model.live="modification_id" {{ empty($selected_year) ? 'disabled' : '' }} wire:key="mod-select-{{ $modification_id }}">
                             <option value="">All Modifications</option>
                             @foreach ($filter_modifications as $mod)
-                                <option value="{{ is_array($mod) ? $mod['id'] : $mod }}">{{ is_array($mod) ? $mod['name'] : $mod }}</option>
+                                @php
+                                    $mId = is_array($mod) ? ($mod['id'] ?? '') : $mod;
+                                    $mName = is_array($mod) ? ($mod['name'] ?? '') : $mod;
+                                    $isModSel = !empty($modification_id) && ((string)$modification_id === (string)$mId);
+                                @endphp
+                                <option value="{{ $mId }}" {{ $isModSel ? 'selected' : '' }}>{{ $mName }}</option>
                             @endforeach
                         </select>
                     </div>
