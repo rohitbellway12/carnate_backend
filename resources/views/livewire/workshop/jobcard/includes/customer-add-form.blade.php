@@ -131,14 +131,14 @@
             <div class="col-md-7">
                 <label class="form-label">Chassis No (VIN)<span class="text-danger">*</span></label>
                 <div class="input-group">
-                    <input type="text" wire:model.live.debounce.500ms="chassisNo" class="form-control" placeholder="Enter Chassis No / VIN"
-                        oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '')">
+                    <input type="text" wire:model="chassisNo" maxlength="17" class="form-control" placeholder="Enter Chassis No / VIN"
+                        oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 17)">
                     <button type="button" class="btn btn-primary" wire:click="fetchVehicleByVin" wire:loading.attr="disabled">
                         <span wire:loading.remove wire:target="fetchVehicleByVin"><i class="bx bx-search"></i> Fetch Details</span>
                         <span wire:loading wire:target="fetchVehicleByVin"><span class="spinner-border spinner-border-sm me-1"></span> Fetching...</span>
                     </button>
                 </div>
-                <small class="text-muted">Enter 17-digit Chassis No / VIN to autofill Brand, Model & Modification</small>
+                <small class="text-muted">Enter exact 17-digit Chassis No / VIN and click 'Fetch Details'</small>
                 @error('chassisNo')
                     <div><span class="text-danger">{{ $message }}</span></div>
                 @enderror

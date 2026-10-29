@@ -1612,32 +1612,28 @@ class JobCardAddController extends Component
             ->toArray();
     }
 
-    public function updatedChassisNo($value)
-    {
-        $clean = trim(strtoupper($value));
-        if (strlen($clean) === 17) {
-            $this->fetchVehicleByVin();
-        }
-    }
-
     public function fetchVehicleByVin()
     {
-        $vin = trim(strtoupper($this->chassisNo));
+        $vin = trim(strtoupper($this->chassisNo ?? ''));
         if (empty($vin)) {
+            $this->addError('chassisNo', 'Please enter 17-digit Chassis No (VIN).');
             $this->dispatch('swal:toast', [
                 'type' => 'error',
-                'message' => 'Please enter Chassis No / VIN first.',
+                'message' => 'Please enter 17-digit Chassis No / VIN first.',
             ]);
             return;
         }
 
-        if (strlen($vin) < 5) {
+        if (strlen($vin) !== 17) {
+            $this->addError('chassisNo', 'Chassis No (VIN) must be exactly 17 characters. You entered ' . strlen($vin) . ' characters.');
             $this->dispatch('swal:toast', [
-                'type' => 'warning',
-                'message' => 'Please enter a valid VIN (minimum 5 characters).',
+                'type' => 'error',
+                'message' => 'Chassis No (VIN) must be exactly 17 characters. (Entered: ' . strlen($vin) . ')',
             ]);
             return;
         }
+
+        $this->resetErrorBag('chassisNo');
 
         // 🔹 RESET previous vehicle details so old/fake data is never retained!
         $this->variant_name = '';
