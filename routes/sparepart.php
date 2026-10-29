@@ -76,6 +76,7 @@ Route::prefix('sparepart')->name('sparepart.')->group(function () {
         Route::get('report/commission', \App\Livewire\Sparepart\Report\CommissionReportController::class)->name('report.commission');
         Route::get('report/salary', \App\Livewire\Sparepart\Report\SalaryReportController::class)->name('report.salary');
         Route::get('report/expenses', \App\Livewire\Sparepart\ExpensesReportController::class)->name('report.expenses');
+        Route::get('report/profit-loss', \App\Livewire\Sparepart\Report\ProfitReportController::class)->name('report.profit-loss');
     });
 });
 

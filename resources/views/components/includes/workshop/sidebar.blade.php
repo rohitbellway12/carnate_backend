@@ -465,6 +465,7 @@ if (!empty($logo->Image) && !empty($logo->Image->file)) {
                             <span class="fa fa-chevron-right dropdown-right-icon icon"></span>
                         </a>
                         <div class="dropdown-content">
+                            <a href="{{ route('workshop.report.profit-loss') }}" class="{{ request()->routeIs('workshop.report.profit-loss') ? 'active' : '' }}">Profit & Loss Report</a>
                             <a href="{{ route('workshop.report.salary') }}" class="{{ request()->routeIs('workshop.report.salary') ? 'active' : '' }}">Salary Report</a>
                             <a href="{{ route('workshop.report.customers') }}" class="{{ request()->routeIs('workshop.report.customers') ? 'active' : '' }}">Customers Report</a>
                             <a href="{{ route('workshop.report.customer-balance') }}" class="{{ request()->routeIs('workshop.report.customer-balance') ? 'active' : '' }}">Customer Balance Report</a>

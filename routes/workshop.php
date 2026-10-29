@@ -1,6 +1,6 @@
 <?php
 use App\Livewire\Workshop\{AddTocardController, ApiPartDetailsController, AppointmentController, AuthController, CustomerController, ResetPasswordController, EmployeeController, ExpensesController, StaffController,JobCardController,
-    JobCardAddController,JobCardEditController, PlanController,Select2Search,ManageRoles,ManagePermissions, PurchaseCartController,OrderController, PaidOrderController, VehicleSearchController,CounterSaleAddController,CounterSaleController,CounterSaleEditController,LabourChargeController, SalaryReportController, CustomersReportController, JobCardsReportController, StaffReportController, ExpensesReportController, InventoryReportController, CustomerBalanceReportController, NotificationController, ExpenseCategoryController, ExpenseSupplierController};
+    JobCardAddController,JobCardEditController, PlanController,Select2Search,ManageRoles,ManagePermissions, PurchaseCartController,OrderController, PaidOrderController, VehicleSearchController,CounterSaleAddController,CounterSaleController,CounterSaleEditController,LabourChargeController, SalaryReportController, CustomersReportController, JobCardsReportController, StaffReportController, ExpensesReportController, InventoryReportController, CustomerBalanceReportController, ProfitReportController, NotificationController, ExpenseCategoryController, ExpenseSupplierController};
 use App\Livewire\Workshop\Distributor\{AddDistributorController, DistributorController};
 use App\Livewire\Workshop\Auth\Login;
 use App\Livewire\Workshop\Dashboard;
@@ -53,6 +53,7 @@ Route::prefix('workshop')->name('workshop.')->group(function () {
         Route::get('report/staff', StaffReportController::class)->name('report.staff');
         Route::get('report/expenses', ExpensesReportController::class)->name('report.expenses');
         Route::get('report/inventory', InventoryReportController::class)->name('report.inventory');
+        Route::get('report/profit-loss', ProfitReportController::class)->name('report.profit-loss');
 
 
   //counter sales

@@ -1825,6 +1825,12 @@ if (Auth::guard('sparepart')->check()) {
 
                             </a>
 
+                            <a href="{{ route('sparepart.report.profit-loss') }}" class="{{ request()->routeIs('sparepart.report.profit-loss*') ? 'active' : '' }}">
+
+                                Profit & Loss Report
+
+                            </a>
+
                         </div>
 
                     </div>

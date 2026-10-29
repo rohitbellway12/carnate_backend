@@ -40,7 +40,7 @@ class PurchaseOrderItem extends Model
 
     public function part()
 {
-    return $this->belongsTo(SparePart::class, 'part_id');
+    return $this->belongsTo(SparePart::class, 'part_id')->withTrashed();
 }
 
 } 

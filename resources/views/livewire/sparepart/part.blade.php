@@ -367,21 +367,24 @@
                     <span class="text-muted small">— filter parts by chassis no (VIN) or vehicle details</span>
                 </div>
 
-                {{-- 🔹 Chassis No (VIN) Filter Section (Commented)
+               
                 <div class="row g-2 align-items-end mb-3 pb-3" style="border-bottom: 1px dashed #e2e8f0;">
                     <div class="col-md-6 col-lg-5">
                         <label class="form-label font-12 fw-bold text-muted mb-1">
                             <i class='bx bx-barcode-reader me-1'></i> Chassis No (VIN) Filter
                         </label>
                         <div class="input-group">
-                            <input type="text" wire:model.live.debounce.500ms="chassisNo" class="form-control"
+                            <input type="text" wire:model="chassisNo" maxlength="17" class="form-control"
                                 placeholder="Enter 17-digit Chassis No / VIN"
-                                oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '')">
+                                oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 17)">
                             <button type="button" class="btn btn-primary px-3" wire:click="fetchVehicleByVin" wire:loading.attr="disabled">
                                 <span wire:loading.remove wire:target="fetchVehicleByVin"><i class="bx bx-search"></i> Filter by VIN</span>
                                 <span wire:loading wire:target="fetchVehicleByVin"><span class="spinner-border spinner-border-sm me-1"></span> Fetching...</span>
                             </button>
                         </div>
+                        @error('chassisNo')
+                            <div><span class="text-danger small">{{ $message }}</span></div>
+                        @enderror
                     </div>
                     <div class="col-md-6 col-lg-7">
                         @if ($chassisNo && ($brand_name || $variant_name))
@@ -394,7 +397,7 @@
                         @endif
                     </div>
                 </div>
-                --}}
+              
 
                 <div class="row g-3 mb-4">
                     <div class="col-md-3">
@@ -445,9 +448,12 @@
                                 @php
                                     $mId = is_array($mod) ? ($mod['id'] ?? '') : $mod;
                                     $mName = is_array($mod) ? ($mod['name'] ?? '') : $mod;
+                                    $mFuel = is_array($mod) ? ($mod['fuel_type'] ?? ($mod['fuelType'] ?? '')) : '';
+                                    $mYear = is_array($mod) ? ($mod['year'] ?? '') : '';
                                     $isModSel = !empty($modification_id) && ((string)$modification_id === (string)$mId);
+                                    $modLabel = $mName . (!empty($mYear) ? ' (' . $mYear . ')' : '') . (!empty($mFuel) ? ' - ' . $mFuel : '');
                                 @endphp
-                                <option value="{{ $mId }}" {{ $isModSel ? 'selected' : '' }}>{{ $mName }}</option>
+                                <option value="{{ $mId }}" {{ $isModSel ? 'selected' : '' }}>{{ $modLabel }}</option>
                             @endforeach
                         </select>
                     </div>
