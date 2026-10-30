@@ -173,8 +173,7 @@
         .carnate-jobcard-create .modal .list-group { max-height: min(300px, calc(100dvh - 330px)) !important; }
         .carnate-jobcard-create .jc-search-title { margin: 0 0 12px; color: #334155; font-size: 15px; font-weight: 700; text-align: left !important; }
         .carnate-jobcard-create .modal .img-thumbnail { border-color: var(--jc-border); border-radius: 10px; padding: 3px; }
-        .carnate-jobcard-create .modal #toggleDetailsBtn { border-color: var(--jc-red); background: var(--jc-red); }
-        .carnate-jobcard-create .modal .controls { gap: 8px; padding-bottom: 16px; border-bottom: 1px solid var(--jc-border); }
+                .carnate-jobcard-create .modal .controls { gap: 8px; padding-bottom: 16px; border-bottom: 1px solid var(--jc-border); }
         .carnate-jobcard-create .modal .controls .btn-group { border: 0 !important; border-radius: 9px !important; overflow: hidden; }
         .carnate-jobcard-create .modal .controls .btn { min-height: 34px; border-radius: 0; }
         .carnate-jobcard-create .modal #dentBtn { border-color: var(--jc-red) !important; background: var(--jc-red) !important; color: #fff; }
@@ -1593,13 +1592,5 @@
             });
         });
     </script>
-    <script>
-        document.getElementById('toggleDetailsBtn').addEventListener('click', function() {
-            const section = document.getElementById('detailsSection');
-            const isVisible = section.style.display === 'block';
 
-            section.style.display = isVisible ? 'none' : 'block';
-            this.textContent = isVisible ? 'Show Details' : 'Hide Details';
-        });
-    </script>
 @endsection

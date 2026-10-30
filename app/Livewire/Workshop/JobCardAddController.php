@@ -88,6 +88,7 @@ class JobCardAddController extends Component
 
     public $showCustomerAlert = false, $showCustomerVoiceInput = false, $customerVoiceInpt = "", $customersVoiceData, $showWorkNoteInput = false, $workNotInpt, $worknotVoicesData, $showAccessoriesInput = false, $accessoriesVoicesInput, $accessoryData;
     public $cust_type = 0, $company_name, $show_company_name, $pincode;
+    public $show_more_details = false;
     public $brand_name, $variant_name, $selected_year, $modificationId;
     public $brands = [], $variants = [], $years = [], $modifications = [], $all_modifications = [];
     public $selectedBrandId, $selectedModelId;
@@ -240,7 +241,7 @@ class JobCardAddController extends Component
         $this->modifications = [];
         $this->all_modifications = [];
 
-        $this->reset('modificationId', 'show_company_name', 'cust_type', 'search_vehicle', 'vehicle_type_id', 'modelName', 'selectedVehicleName', 'states', 'cities', 'name', 'lastname', 'mobile_no', 'address', 'insurance_name', 'policy_expiry_date', 'gst_no', 'country_id', 'state_id', 'city_id', 'email', 'birth_date', 'user_title', 'numberPlate', 'fuel_id', 'chassisNo', 'modelYear', 'noOfGear', 'vehicle_color', 'gearbox', 'gearboxNo', 'engineNo', 'engineSize', 'engine', 'keyNo', 'pickup_address', 'drop_address', 'driver_name', 'driver_number', 'policy_number', 'brand_name', 'variant_name', 'selected_year');
+        $this->reset('modificationId', 'show_company_name', 'cust_type', 'show_more_details', 'search_vehicle', 'vehicle_type_id', 'modelName', 'selectedVehicleName', 'states', 'cities', 'name', 'lastname', 'mobile_no', 'address', 'insurance_name', 'policy_expiry_date', 'gst_no', 'country_id', 'state_id', 'city_id', 'email', 'birth_date', 'user_title', 'numberPlate', 'fuel_id', 'chassisNo', 'modelYear', 'noOfGear', 'vehicle_color', 'gearbox', 'gearboxNo', 'engineNo', 'engineSize', 'engine', 'keyNo', 'pickup_address', 'drop_address', 'driver_name', 'driver_number', 'policy_number', 'brand_name', 'variant_name', 'selected_year');
 
     }
 
@@ -1500,6 +1501,7 @@ class JobCardAddController extends Component
             $this->show_company_name = true;
         } else {
             $this->show_company_name = false;
+            $this->gst_no = '';
         }
         $this->reset('company_name', 'name', 'user_title', 'lastname');
     }

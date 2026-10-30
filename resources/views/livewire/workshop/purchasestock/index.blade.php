@@ -719,7 +719,7 @@
 
             <div class="sl-modal-content">
 
-                <form wire:submit.prevent="{{ $isEdit ? 'update' : 'storeSpareParts' }}">
+                <form wire:submit.prevent="storeSpareParts">
 
                     <div class="sl-modal-header">
 
@@ -760,11 +760,11 @@
 
                                 <input
                                     type="text"
-                                    wire:model="name"
+                                    wire:model="new_spare_part_name"
                                     class="form-control"
                                     placeholder="Enter Name">
 
-                                @error('name')
+                                @error('new_spare_part_name')
                                     <span class="text-danger error">
                                         {{ $message }}
                                     </span>
@@ -1021,6 +1021,7 @@
                                             </label>
 
                                             <select
+                                                id="stock_product_name_select"
                                                 class="form-select searchable-select"
                                                 data-placeholder="Select Name"
                                                 wire:model="name"
@@ -1032,7 +1033,7 @@
 
                                                 @foreach($sparePartLabels as $sparePartLabel)
 
-                                                    <option value="{{ $sparePartLabel->id }}">
+                                                    <option value="{{ $sparePartLabel->id }}" {{ (string)$name === (string)$sparePartLabel->id ? 'selected' : '' }}>
                                                         {{ $sparePartLabel->title }}
                                                     </option>
 
@@ -2165,6 +2166,21 @@
 
             }
 
+            window.addEventListener('set-stock-product-name', function(event) {
+                let detail = event.detail;
+                let labelId = (detail && typeof detail === 'object') ? (detail.id ?? (detail[0] ? detail[0].id : null)) : detail;
+                if (labelId) {
+                    setTimeout(function() {
+                        let $select = $('#stock_product_name_select');
+                        if ($select.length) {
+                            $select.val(labelId).trigger('change');
+                            if ($select.data('select2')) {
+                                $select.trigger('change.select2');
+                            }
+                        }
+                    }, 80);
+                }
+            });
         </script>
 
     @endsection

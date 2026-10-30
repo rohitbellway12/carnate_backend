@@ -137,8 +137,8 @@
             <tr style="background:#f8fafc;">
                 <td class="fw-bold" style="background:#ecfdf5;color:#065f46;font-size:11px;">1) Total Sales</td>
                 <td class="text-right fw-bold" style="background:#ecfdf5;color:#065f46;font-size:11px;">₹{{ number_format($financials['sales']['total'], 2) }}</td>
-                <td class="fw-bold" style="background:#fff5f5;color:#991b1b;font-size:11px;">2) Total Costs & Expenses</td>
-                <td class="text-right fw-bold" style="background:#fff5f5;color:#991b1b;font-size:11px;">₹{{ number_format($financials['costs']['total'], 2) }}</td>
+                <td class="fw-bold" style="background:#fff5f5;color:#991b1b;font-size:11px;">2) Direct Purchases Total</td>
+                <td class="text-right fw-bold" style="background:#fff5f5;color:#991b1b;font-size:11px;">₹{{ number_format($financials['costs']['direct_total'], 2) }}</td>
             </tr>
         </tbody>
     </table>
@@ -149,7 +149,7 @@
             <tr>
                 <td>
                     <div style="font-size: 13px; font-weight: bold; text-transform: uppercase;">Final Statement Net Profit</div>
-                    <div style="font-size: 10px; color: #94a3b8; margin-top: 4px;">Formula: 1 Total (Sales) — 2 Total (Costs & Expenses)</div>
+                    <div style="font-size: 10px; color: #94a3b8; margin-top: 4px;">Formula: 1 Total (Sales) — 2 Total (Direct Purchases) = Profit — Expenses = Net Profit</div>
                 </td>
                 <td class="text-right">
                     <div style="font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: bold;">NET PROFIT</div>

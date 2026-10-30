@@ -136,8 +136,8 @@
             <tr style="background:#f8fafc;">
                 <td class="fw-bold" style="background:#ecfdf5;color:#065f46;font-size:11px;">1) Total Sales</td>
                 <td class="text-right fw-bold" style="background:#ecfdf5;color:#065f46;font-size:11px;">₹{{ number_format($f['totalSales'], 2) }}</td>
-                <td class="fw-bold" style="background:#fff5f5;color:#991b1b;font-size:11px;">2) Total Costs & Expenses</td>
-                <td class="text-right fw-bold" style="background:#fff5f5;color:#991b1b;font-size:11px;">₹{{ number_format($f['totalExpenses'], 2) }}</td>
+                <td class="fw-bold" style="background:#fff5f5;color:#991b1b;font-size:11px;">2) Purchases & Commission Total</td>
+                <td class="text-right fw-bold" style="background:#fff5f5;color:#991b1b;font-size:11px;">₹{{ number_format($f['totalCosts'], 2) }}</td>
             </tr>
         </tbody>
     </table>
@@ -151,7 +151,7 @@
                         Final Statement {{ $f['isProfitable'] ? 'Net Profit' : 'Net Loss' }}
                     </div>
                     <div style="font-size: 10px; color: #94a3b8; margin-top: 4px;">
-                        Formula: 1 Total (Sales) — 2 Total (Purchases + Commission + Expenses)
+                        Formula: 1 Total (Sales) — 2 Total (Purchases & Commission) = Profit — Expenses = Net Profit
                     </div>
                 </td>
                 <td class="text-right">

@@ -514,105 +514,6 @@
     @endif
 
 
-    {{-- ============================================================
-        SUPPLIER MODAL
-    ============================================================= --}}
-
-    @if($showSupplierModal)
-
-        <div
-            class="ce-modal-backdrop"
-            style="z-index: 1055;">
-
-            <div class="ce-modal-dialog ce-modal-dialog-sm">
-
-                <div class="ce-modal-content">
-
-                    <div class="ce-modal-header">
-
-                        <h5 class="ce-modal-title">
-                            <i class="bx bx-user-plus me-2" style="color:#e53935;"></i>
-                            Add New Supplier
-                        </h5>
-
-                        <button
-                            type="button"
-                            class="ce-close"
-                            wire:click="$set('showSupplierModal', false)">
-                            <i class="bx bx-x"></i>
-                        </button>
-
-                    </div>
-
-                    <div class="ce-modal-body">
-
-                        <div class="mb-3">
-
-                            <label class="ce-label">
-                                First Name
-                            </label>
-
-                            <input
-                                type="text"
-                                class="form-control"
-                                wire:model="newSupplier.name">
-
-                            @error('newSupplier.name')
-                                <span class="ce-error">
-                                    {{ $message }}
-                                </span>
-                            @enderror
-
-                        </div>
-
-                        <div>
-
-                            <label class="ce-label">
-                                Last Name
-                            </label>
-
-                            <input
-                                type="text"
-                                class="form-control"
-                                wire:model="newSupplier.lastname">
-
-                            @error('newSupplier.lastname')
-                                <span class="ce-error">
-                                    {{ $message }}
-                                </span>
-                            @enderror
-
-                        </div>
-
-                    </div>
-
-                    <div class="ce-modal-footer">
-
-                        <button
-                            type="button"
-                            class="ce-btn ce-btn-secondary"
-                            wire:click="$set('showSupplierModal', false)">
-                            Cancel
-                        </button>
-
-                        <button
-                            type="button"
-                            class="ce-btn ce-btn-primary"
-                            wire:click="saveSupplier">
-                            <i class="bx bx-check"></i>
-                            Save
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    @endif
-
 
     {{-- ============================================================
         EXPENSE ADD / EDIT MODAL
@@ -729,20 +630,19 @@
                                     <div class="ce-supplier-control">
 
                                         <select
-                                            class="form-select"
+                                            id="expense_supplier_id_select"
+                                            class="form-select searchable-select"
+                                            data-placeholder="-- select name --"
                                             wire:model="supplier_id">
 
-                                            <option
-                                                value=""
-                                                selected
-                                                disabled>
+                                            <option value="">
                                                 -- select name --
                                             </option>
 
                                             @foreach ($suppliers as $supplier)
 
-                                                <option value="{{ $supplier->id }}">
-                                                    {{ $supplier->business_first_name }}
+                                                <option value="{{ $supplier->id }}" {{ (string)$supplier_id === (string)$supplier->id ? 'selected' : '' }}>
+                                                    {{ $supplier->business_first_name }} {{ $supplier->owner_first_name ?? '' }}
                                                 </option>
 
                                             @endforeach
@@ -952,6 +852,106 @@
                         </div>
 
                     </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    @endif
+
+
+{{-- ============================================================
+        SUPPLIER MODAL
+    ============================================================= --}}
+
+    @if($showSupplierModal)
+
+        <div
+            class="ce-modal-backdrop supplier-modal"
+            style="z-index: 1070 !important;">
+
+            <div class="ce-modal-dialog ce-modal-dialog-sm">
+
+                <div class="ce-modal-content">
+
+                    <div class="ce-modal-header">
+
+                        <h5 class="ce-modal-title">
+                            <i class="bx bx-user-plus me-2" style="color:#e53935;"></i>
+                            Add New Supplier
+                        </h5>
+
+                        <button
+                            type="button"
+                            class="ce-close"
+                            wire:click="$set('showSupplierModal', false)">
+                            <i class="bx bx-x"></i>
+                        </button>
+
+                    </div>
+
+                    <div class="ce-modal-body">
+
+                        <div class="mb-3">
+
+                            <label class="ce-label">
+                                First Name
+                            </label>
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                wire:model="newSupplier.name">
+
+                            @error('newSupplier.name')
+                                <span class="ce-error">
+                                    {{ $message }}
+                                </span>
+                            @enderror
+
+                        </div>
+
+                        <div>
+
+                            <label class="ce-label">
+                                Last Name
+                            </label>
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                wire:model="newSupplier.lastname">
+
+                            @error('newSupplier.lastname')
+                                <span class="ce-error">
+                                    {{ $message }}
+                                </span>
+                            @enderror
+
+                        </div>
+
+                    </div>
+
+                    <div class="ce-modal-footer">
+
+                        <button
+                            type="button"
+                            class="ce-btn ce-btn-secondary"
+                            wire:click="$set('showSupplierModal', false)">
+                            Cancel
+                        </button>
+
+                        <button
+                            type="button"
+                            class="ce-btn ce-btn-primary"
+                            wire:click="saveSupplier">
+                            <i class="bx bx-check"></i>
+                            Save
+                        </button>
+
+                    </div>
 
                 </div>
 
@@ -1450,6 +1450,22 @@
 
                 });
 
+            });
+
+            window.addEventListener('set-supplier-select', function(event) {
+                let detail = event.detail;
+                let sId = (detail && typeof detail === 'object') ? (detail.id ?? (detail[0] ? detail[0].id : null)) : detail;
+                if (sId) {
+                    setTimeout(function() {
+                        let $s = $('#expense_supplier_id_select');
+                        if ($s.length) {
+                            $s.val(sId).trigger('change');
+                            if ($s.data('select2')) {
+                                $s.trigger('change.select2');
+                            }
+                        }
+                    }, 80);
+                }
             });
 
         </script>

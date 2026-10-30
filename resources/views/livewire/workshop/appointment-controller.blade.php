@@ -1017,33 +1017,6 @@
                         </div>
 
                         <div class="ca-modal-body">
-
-                            <div class="mb-4">
-                                <label class="ca-field-label mb-2">Customer Type</label>
-
-                                <div class="d-flex gap-4">
-                                    <label class="d-flex align-items-center gap-2">
-                                        <input
-                                            class="form-check-input"
-                                            type="radio"
-                                            wire:model.live="cust_type"
-                                            id="individual"
-                                            value="0">
-                                        <span>Individual</span>
-                                    </label>
-
-                                    <label class="d-flex align-items-center gap-2">
-                                        <input
-                                            class="form-check-input"
-                                            type="radio"
-                                            wire:model.live="cust_type"
-                                            id="company"
-                                            value="1">
-                                        <span>Company</span>
-                                    </label>
-                                </div>
-                            </div>
-
                             @include('livewire.workshop.jobcard.includes.customer-add-form')
 
                         </div>

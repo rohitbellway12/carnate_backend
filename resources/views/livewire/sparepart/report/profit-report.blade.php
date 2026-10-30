@@ -708,28 +708,28 @@
             {{-- 2. Total Purchases --}}
             <div class="pr-kpi-card purchases">
                 <div class="pr-kpi-top">
-                    <span class="pr-kpi-label">Inventory Purchases</span>
+                    <span class="pr-kpi-label">2) Purchases & Commission</span>
                     <div class="pr-kpi-icon-bubble">
                         <i class="fa fa-boxes-stacked"></i>
                     </div>
                 </div>
-                <h3 class="pr-kpi-value">₹{{ number_format($f['totalPurchases'], 2) }}</h3>
+                <h3 class="pr-kpi-value">₹{{ number_format($f['totalCosts'], 2) }}</h3>
                 <p class="pr-kpi-subtext">
-                    {{ $f['poCount'] }} POs (Parts, Lubes, Acc., Tools)
+                    Purchases (₹{{ number_format($f['totalPurchases'], 2) }}) + Comm (₹{{ number_format($f['platformCharges'], 2) }})
                 </p>
             </div>
 
             {{-- 3. Platform & Expenses --}}
             <div class="pr-kpi-card expenses">
                 <div class="pr-kpi-top">
-                    <span class="pr-kpi-label">Commission & Expenses</span>
+                    <span class="pr-kpi-label">Shop Expenses</span>
                     <div class="pr-kpi-icon-bubble">
                         <i class="fa fa-receipt"></i>
                     </div>
                 </div>
-                <h3 class="pr-kpi-value">₹{{ number_format($f['platformCharges'] + $f['expenses'], 2) }}</h3>
+                <h3 class="pr-kpi-value">₹{{ number_format($f['expenses'], 2) }}</h3>
                 <p class="pr-kpi-subtext">
-                    Commission: ₹{{ number_format($f['platformCharges'], 2) }} | Shop: ₹{{ number_format($f['expenses'], 2) }}
+                    {{ $f['expensesCount'] }} General expenses (rent, electricity, staff, etc.)
                 </p>
             </div>
 
@@ -761,7 +761,7 @@
                         {{ $f['isProfitable'] ? 'Net Profit Earned' : 'Net Loss Incurred' }}
                     </h2>
                     <p class="pr-banner-desc">
-                        Calculation: [Total Sales: ₹{{ number_format($f['totalSales'], 2) }}] Less [Purchases + Commission + Expenses: ₹{{ number_format($f['totalExpenses'], 2) }}]
+                        Calculation: [1 Total Sales: ₹{{ number_format($f['totalSales'], 2) }}] Less [2 Total Purchases & Comm: ₹{{ number_format($f['totalCosts'], 2) }}] = [Profit: ₹{{ number_format($f['grossProfit'], 2) }}] Less [Expenses: ₹{{ number_format($f['expenses'], 2) }}]
                     </p>
                 </div>
             </div>
@@ -842,7 +842,7 @@
                             </div>
                             <div>
                                 <h5 class="pr-line-name">Parts Purchase</h5>
-                                <p class="pr-line-subtext">Spare parts purchase cost (Category 2)</p>
+                                <p class="pr-line-subtext">Parts purchase (only when sold online or offline)</p>
                             </div>
                         </div>
                         <div class="pr-line-val">₹{{ number_format($f['partsPurchase'], 2) }}</div>
@@ -856,7 +856,7 @@
                             </div>
                             <div>
                                 <h5 class="pr-line-name">Lubes Purchase</h5>
-                                <p class="pr-line-subtext">Lubricants & oils purchase cost (Category 4)</p>
+                                <p class="pr-line-subtext">Lubes purchase (only when sold online or offline)</p>
                             </div>
                         </div>
                         <div class="pr-line-val">₹{{ number_format($f['lubesPurchase'], 2) }}</div>
@@ -870,7 +870,7 @@
                             </div>
                             <div>
                                 <h5 class="pr-line-name">Accessory Purchase</h5>
-                                <p class="pr-line-subtext">Car accessories purchase cost (Category 1)</p>
+                                <p class="pr-line-subtext">Accessory purchase (only when sold online or offline)</p>
                             </div>
                         </div>
                         <div class="pr-line-val">₹{{ number_format($f['accessoryPurchase'], 2) }}</div>
@@ -884,7 +884,7 @@
                             </div>
                             <div>
                                 <h5 class="pr-line-name">Tools Purchase</h5>
-                                <p class="pr-line-subtext">Tools & garage equipment purchase cost (Category 3)</p>
+                                <p class="pr-line-subtext">Tools purchase (only when sold online or offline)</p>
                             </div>
                         </div>
                         <div class="pr-line-val">₹{{ number_format($f['toolsPurchase'], 2) }}</div>
@@ -920,8 +920,8 @@
                 </div>
 
                 <div class="pr-card-footer">
-                    <span class="pr-footer-label">Total Cost & Expenses (2)</span>
-                    <span class="pr-footer-total red">₹{{ number_format($f['totalExpenses'], 2) }}</span>
+                    <span class="pr-footer-label">2) Total Purchases & Commission</span>
+                    <span class="pr-footer-total red">₹{{ number_format($f['totalCosts'], 2) }}</span>
                 </div>
             </div>
 
@@ -932,7 +932,7 @@
             <div>
                 <i class="fa fa-info-circle text-primary me-2"></i>
                 <strong>Accounting Formula Applied:</strong>
-                <code>1 Total (Counter + Online Sale) - 2 Total (Purchases + Commission + Expenses) = Profit</code>
+                <code>1 Total (Counter + Online Sale) - 2 Total (Purchases + Commission) = Profit — Expenses = Net Profit</code>
             </div>
             <span class="text-muted small">Updated in Real-Time</span>
         </div>

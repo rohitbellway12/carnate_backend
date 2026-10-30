@@ -22,6 +22,7 @@ class ProductStockController extends Component
     public $isAdd = false, $showModal;
     public $user_id, $order_items, $showAdd, $sparePartLabels = [];
     public $name, $user, $category_id, $price, $stock;
+    public $new_spare_part_name;
     public $showSpariOartesModal = false, $isEdit = false;
     public $units = [], $categories = [];
     public $brand, $purchase_amount, $amount, $unit, $tax_type, $hsn_code, $category, $tax_percentage, $stockId, $name_title , $sp_type;
@@ -292,42 +293,46 @@ class ProductStockController extends Component
                 'title' => "Please Select Category ",
             ]);
         }
+        $this->new_spare_part_name = '';
         $this->showModal = false;
         $this->showSpariOartesModal = true;
-
     }
 
     public function closeSpariOartesModal()
     {
-            $this->reset(['name']);
+        $this->new_spare_part_name = '';
         $this->showModal = true;
         $this->showSpariOartesModal = false;
-    
     }
 
     public function storeSpareParts()
     {
+        $this->validate([
+            'new_spare_part_name' => ['required'],
+        ], [
+            'new_spare_part_name.required' => 'The name field is required.',
+        ]);
 
-        $valArr = [
-            'name' => ["required"],
-        ];
-
-        $this->validate($valArr);
+        $trimmedTitle = trim($this->new_spare_part_name);
 
         $sparePartLabel = SparePartLabel::firstOrCreate(
-            ['title' => $this->name],
-            ['title' => $this->name, 'spare_part_type' => $this->category_id]
+            ['title' => $trimmedTitle],
+            ['title' => $trimmedTitle, 'spare_part_type' => $this->category_id]
         );
 
-
-        $this->reset(['name']);
+        $this->sparePartLabels = SparePartLabel::select('id', 'title')->get();
+        $this->name = $sparePartLabel->id;
+        $this->new_spare_part_name = '';
         $this->showModal = true;
         $this->showSpariOartesModal = false;
+
+        $this->dispatch('sync-searchable-selects');
+        $this->dispatch('set-stock-product-name', id: $sparePartLabel->id);
+
         return $this->dispatch('swal:toast', [
             'type' => 'success',
             'title' => "Data Add Successfully",
         ]);
-
     }
 
     public function resetFilter()

@@ -49,6 +49,7 @@ class AppointmentController extends Component
     public $country_id, $state_id, $city_id;
     public $gst_no;
     public $show_company_name = false, $company_name, $cust_type = 0, $pincode;
+    public $show_more_details = false;
     public $brand_name, $variant_name, $selected_year, $modificationId;
     public $brands = [], $variants = [], $years = [], $modifications = [], $all_modifications = [];
     public $selectedBrandId, $selectedModelId, $selectedEngineId;
@@ -150,6 +151,7 @@ class AppointmentController extends Component
             $this->show_company_name = true;
         } else {
             $this->show_company_name = false;
+            $this->gst_no = '';
         }
         $this->reset('company_name', 'name', 'user_title', 'lastname');
     }
@@ -632,7 +634,7 @@ class AppointmentController extends Component
         $this->modifications = [];
         $this->all_modifications = [];
 
-        $this->reset('modificationId', 'show_company_name', 'cust_type', 'search_vehicle', 'selectedVehicleName', 'states', 'cities', 'name', 'lastname', 'mobile_no', 'address', 'insurance_name', 'policy_expiry_date', 'gst_no', 'country_id', 'state_id', 'city_id', 'email', 'birth_date', 'user_title', 'numberPlate', 'chassisNo', 'dateOfManufacturing', 'engineNo', 'pickup_address', 'drop_address', 'driver_name', 'driver_number', 'policy_number', 'brand_name', 'variant_name', 'selected_year', 'selectedBrandId', 'selectedModelId', 'selectedEngineId');
+        $this->reset('modificationId', 'show_company_name', 'cust_type', 'show_more_details', 'search_vehicle', 'selectedVehicleName', 'states', 'cities', 'name', 'lastname', 'mobile_no', 'address', 'insurance_name', 'policy_expiry_date', 'gst_no', 'country_id', 'state_id', 'city_id', 'email', 'birth_date', 'user_title', 'numberPlate', 'chassisNo', 'dateOfManufacturing', 'engineNo', 'pickup_address', 'drop_address', 'driver_name', 'driver_number', 'policy_number', 'brand_name', 'variant_name', 'selected_year', 'selectedBrandId', 'selectedModelId', 'selectedEngineId');
     }
 
     public function openCustomerModal()
@@ -685,7 +687,7 @@ class AppointmentController extends Component
             $customer->company_name = $this->company_name ?? '';
             $customer->address = $this->address ?? '';
             $customer->user_id = $this->workshopId;
-            $customer->gst_number = $this->gst_no ?? '';
+            $customer->gst_number = ($this->cust_type == 1) ? ($this->gst_no ?? '') : '';
             $customer->save();
         } else {
             $customer = $customerSerch;

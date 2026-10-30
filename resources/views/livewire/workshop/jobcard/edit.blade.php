@@ -2711,7 +2711,8 @@
                                             <td>
                                                 <input type="text" class="form-control"
                                                     wire:model="extraCharges.{{ $index }}.label"
-                                                    placeholder="Enter Label Here" readonly>
+                                                    placeholder="Enter Label Here"
+                                                    @disabled($jobcardData->status == 3 || !$user->hasPermissionTo('Jobcard-edit'))>
                                             </td>
                                             {{-- <td>
                                                     <input type="number" min="1" class="form-control"
@@ -2720,10 +2721,10 @@
                                                 </td> --}}
 
                                             <td>
-                                                <input type="number" class="form-control"
+                                                <input type="number" step="0.01" min="0" class="form-control"
                                                     wire:model.lazy="extraCharges.{{ $index }}.amount"
                                                     wire:change="calculateTotals" placeholder="Enter Charge Here"
-                                                    readonly>
+                                                    @disabled($jobcardData->status == 3 || !$user->hasPermissionTo('Jobcard-edit'))>
                                             </td>
 
 

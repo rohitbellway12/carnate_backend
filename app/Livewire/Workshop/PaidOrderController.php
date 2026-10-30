@@ -49,9 +49,11 @@ class PaidOrderController extends Component
         $items= '';
         if ($this->showOrderItem) {
             
-            $orders = Order::with([ 'orderItem' ])->orderBy('id', 'DESC')->whereId($this->orderId)->where('workshop_id', $user->is_user == 0 ? $this->user_id : $user->parent_id)->whereIN('payment_status',[1,2])->where('is_cart',1)->first();
+            $orders = Order::with(['orderItem' => function ($q) {
+                $q->where('status', '!=', 2);
+            }])->orderBy('id', 'DESC')->whereId($this->orderId)->where('workshop_id', $user->is_user == 0 ? $this->user_id : $user->parent_id)->whereIn('payment_status', [1, 2])->where('is_cart', 1)->where('order_status', '!=', 2)->first();
         } else {
-            $items = Order:: where('workshop_id', $user->is_user == 0 ? $this->user_id : $user->parent_id)->orderBy('id', 'DESC')->whereIn('payment_status',[1,2])->where('is_cart',1);
+            $items = Order::where('workshop_id', $user->is_user == 0 ? $this->user_id : $user->parent_id)->orderBy('id', 'DESC')->whereIn('payment_status', [1, 2])->where('is_cart', 1)->where('order_status', '!=', 2);
             if($this->searchfilter){
                 $items = $items->where('id',$this->searchfilter);
             }

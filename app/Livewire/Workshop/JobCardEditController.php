@@ -1292,9 +1292,9 @@ class JobCardEditController extends Component
             $this->recalculateAccessories();
         }
 
-        // if (strpos($propertyName, 'extraCharges') !== false) {
-        //     $this->recalculateExtraCharges();
-        // }
+        if (strpos($propertyName, 'extraCharges') !== false) {
+            $this->calculateTotals();
+        }
 
         $this->resetErrorBag();
     }

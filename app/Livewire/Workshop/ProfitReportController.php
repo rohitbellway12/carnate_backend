@@ -79,21 +79,27 @@ class ProfitReportController extends Component
 
     /**
      * Compute comprehensive financial figures according to user formula:
-     * 1) Labour charges + Parts sale + Lubes sale + Accessory sale + Tools sale + Outsource sale = Total (1)
+     * 1) Labour charges + Parts sale + Lubes sale + Accessory sale + Tools sale + Outsource sale (all from completed [status=2] and closed [status=3] jobcards + counter sales) = Total (1)
      * Less
-     * 2) Parts purchase + Lubes purchase + Accessory purchase + Tools purchase + Outsource purchase + Expenses = Total (2)
-     * 1 Total - 2 Total = Profit
+     * 2) Parts purchase + Lubes purchase + Accessory purchase + Tools purchase + Outsource purchase (only when sold online/offline in jobcards and counter sales) = Total (2)
+     * 
+     * 1 Total - 2 Total = Gross Profit
+     * Gross Profit - Workshop Expenses = Net Profit
      */
     public function getFinancials(): array
     {
         // 1. Get JobCard IDs for this workshop in selected date range
-        $jobcardQuery = JobCard::where('user_id', $this->workshopId);
+        // ONLY COMPLETED (status=2) AND CLOSED (status=3) JOBCARDS (soft_delete = 0)
+        $jobcardQuery = JobCard::where('user_id', $this->workshopId)
+            ->where('soft_delete', 0)
+            ->whereIn('status', [2, 3]);
+
         if ($this->fromDate && $this->toDate) {
             $jobcardQuery->whereBetween(DB::raw('DATE(created_at)'), [$this->fromDate, $this->toDate]);
         }
         $jobcardIds = (clone $jobcardQuery)->pluck('id')->toArray();
 
-        // 2. Extra charges (Labour & Outsource)
+        // 2. Extra charges (Labour & Outsource) from completed/closed jobcards
         $extraCharges = JobCardExtraCharge::whereIn('jobcard_id', $jobcardIds)->get();
 
         // Labour charges sale (charge_type = 1 or null)
@@ -111,74 +117,111 @@ class ProfitReportController extends Component
             return (float) ($c->outsource_price ?? 0);
         });
 
-        // 3. Spare parts used in JobCards
+        // 3. Spare parts used in Completed/Closed JobCards
         // Categories: 1 => Accessory, 2 => Parts, 3 => Tools, 4 => Lubricants (Lubes)
         $jobcardParts = JobCardSparePart::whereIn('job_card_spare_parts.jobcard_id', $jobcardIds)
             ->leftJoin('spare_part_labels', 'spare_part_labels.id', '=', 'job_card_spare_parts.stock_label_id')
+            ->leftJoin('stocks', 'stocks.id', '=', 'job_card_spare_parts.product_stock_id')
             ->select(
                 'job_card_spare_parts.*',
-                'spare_part_labels.spare_part_type'
+                'spare_part_labels.spare_part_type',
+                'stocks.buy_price as stock_buy_price'
             )
             ->get();
 
         $partsSale = (float) $jobcardParts->filter(fn($p) => ($p->spare_part_type == 2 || empty($p->spare_part_type)))->sum('final_amount');
         $partsPurchase = (float) $jobcardParts->filter(fn($p) => ($p->spare_part_type == 2 || empty($p->spare_part_type)))->sum(function ($p) {
             $qty = $p->quantity ?: 1;
-            return $qty * (float) ($p->purchase_price ?? 0);
+            $buyPrice = (float) ($p->purchase_price ?: ($p->stock_buy_price ?? 0));
+            return $qty * $buyPrice;
         });
 
         $lubesSale = (float) $jobcardParts->where('spare_part_type', 4)->sum('final_amount');
         $lubesPurchase = (float) $jobcardParts->where('spare_part_type', 4)->sum(function ($p) {
             $qty = $p->quantity ?: 1;
-            return $qty * (float) ($p->purchase_price ?? 0);
+            $buyPrice = (float) ($p->purchase_price ?: ($p->stock_buy_price ?? 0));
+            return $qty * $buyPrice;
         });
 
         $accessorySale = (float) $jobcardParts->where('spare_part_type', 1)->sum('final_amount');
         $accessoryPurchase = (float) $jobcardParts->where('spare_part_type', 1)->sum(function ($p) {
             $qty = $p->quantity ?: 1;
-            return $qty * (float) ($p->purchase_price ?? 0);
+            $buyPrice = (float) ($p->purchase_price ?: ($p->stock_buy_price ?? 0));
+            return $qty * $buyPrice;
         });
 
         $toolsSale = (float) $jobcardParts->where('spare_part_type', 3)->sum('final_amount');
         $toolsPurchase = (float) $jobcardParts->where('spare_part_type', 3)->sum(function ($p) {
             $qty = $p->quantity ?: 1;
-            return $qty * (float) ($p->purchase_price ?? 0);
+            $buyPrice = (float) ($p->purchase_price ?: ($p->stock_buy_price ?? 0));
+            return $qty * $buyPrice;
         });
 
-        // 4. Counter Sales (if any exist for this workshop)
+        // 4. Counter Sales (sold online and offline)
         $counterSaleQuery = CounterSale::where('workshop_id', $this->workshopId);
         if ($this->fromDate && $this->toDate) {
             $counterSaleQuery->whereBetween(DB::raw('DATE(date)'), [$this->fromDate, $this->toDate]);
         }
         $counterSaleIds = $counterSaleQuery->pluck('id')->toArray();
         if (!empty($counterSaleIds)) {
-            $counterParts = CounterSaleSparePart::whereIn('countersale_id', $counterSaleIds)
+            $counterParts = CounterSaleSparePart::whereIn('counter_sale_spare_parts.countersale_id', $counterSaleIds)
                 ->leftJoin('spare_part_labels', 'spare_part_labels.id', '=', 'counter_sale_spare_parts.stock_label_id')
-                ->select('counter_sale_spare_parts.*', 'spare_part_labels.spare_part_type')
+                ->leftJoin('stocks', 'stocks.id', '=', 'counter_sale_spare_parts.product_id')
+                ->select(
+                    'counter_sale_spare_parts.*',
+                    'spare_part_labels.spare_part_type',
+                    'stocks.buy_price as stock_buy_price'
+                )
                 ->get();
 
+            // Counter Sale Revenues
             $partsSale += (float) $counterParts->filter(fn($p) => ($p->spare_part_type == 2 || empty($p->spare_part_type)))->sum('final_amount');
             $lubesSale += (float) $counterParts->where('spare_part_type', 4)->sum('final_amount');
             $accessorySale += (float) $counterParts->where('spare_part_type', 1)->sum('final_amount');
             $toolsSale += (float) $counterParts->where('spare_part_type', 3)->sum('final_amount');
+
+            // Counter Sale Purchases (only when sold)
+            $partsPurchase += (float) $counterParts->filter(fn($p) => ($p->spare_part_type == 2 || empty($p->spare_part_type)))->sum(function ($p) {
+                $qty = $p->quantity ?: 1;
+                return $qty * (float) ($p->stock_buy_price ?? 0);
+            });
+            $lubesPurchase += (float) $counterParts->where('spare_part_type', 4)->sum(function ($p) {
+                $qty = $p->quantity ?: 1;
+                return $qty * (float) ($p->stock_buy_price ?? 0);
+            });
+            $accessoryPurchase += (float) $counterParts->where('spare_part_type', 1)->sum(function ($p) {
+                $qty = $p->quantity ?: 1;
+                return $qty * (float) ($p->stock_buy_price ?? 0);
+            });
+            $toolsPurchase += (float) $counterParts->where('spare_part_type', 3)->sum(function ($p) {
+                $qty = $p->quantity ?: 1;
+                return $qty * (float) ($p->stock_buy_price ?? 0);
+            });
         }
 
         // 5. Total Sales (1)
         $totalSales = $labourChargesSale + $partsSale + $lubesSale + $accessorySale + $toolsSale + $outsourceSale;
 
-        // 6. Overhead Expenses
+        // 6. Direct Purchases Total (2) - Cost of Goods Sold & Outsource
+        $directPurchasesTotal = $partsPurchase + $lubesPurchase + $accessoryPurchase + $toolsPurchase + $outsourcePurchase;
+
+        // 7. Gross Profit = 1 Total - 2 Total
+        $grossProfit = $totalSales - $directPurchasesTotal;
+
+        // 8. Overhead Expenses (Rent, Electricity, Tea, Petty cash)
         $expenseQuery = Expense::where('parent_id', $this->workshopId);
         if ($this->fromDate && $this->toDate) {
             $expenseQuery->whereBetween(DB::raw('DATE(date)'), [$this->fromDate, $this->toDate]);
         }
         $expenses = (float) $expenseQuery->sum('total_amount');
 
-        // 7. Total Cost & Expenses (2)
-        $totalCosts = $partsPurchase + $lubesPurchase + $accessoryPurchase + $toolsPurchase + $outsourcePurchase + $expenses;
+        // 9. Total Costs & Expenses (Direct Purchases + Expenses)
+        $totalCosts = $directPurchasesTotal + $expenses;
 
-        // 8. Net Profit = 1 Total - 2 Total
-        $netProfit = $totalSales - $totalCosts;
+        // 10. Net Profit = Gross Profit - Expenses = Total Sales - Total Costs
+        $netProfit = $grossProfit - $expenses;
         $profitMargin = $totalSales > 0 ? round(($netProfit / $totalSales) * 100, 2) : 0;
+        $grossMargin = $totalSales > 0 ? round(($grossProfit / $totalSales) * 100, 2) : 0;
 
         return [
             'sales' => [
@@ -196,11 +239,14 @@ class ProfitReportController extends Component
                 'accessory_purchase' => round($accessoryPurchase, 2),
                 'tools_purchase'     => round($toolsPurchase, 2),
                 'outsource_purchase' => round($outsourcePurchase, 2),
+                'direct_total'       => round($directPurchasesTotal, 2),
                 'expenses'           => round($expenses, 2),
                 'total'              => round($totalCosts, 2),
             ],
-            'net_profit'    => round($netProfit, 2),
-            'profit_margin' => $profitMargin,
+            'gross_profit'   => round($grossProfit, 2),
+            'gross_margin'   => $grossMargin,
+            'net_profit'     => round($netProfit, 2),
+            'profit_margin'  => $profitMargin,
             'jobcards_count' => count($jobcardIds),
         ];
     }
@@ -235,7 +281,7 @@ class ProfitReportController extends Component
     {
         $financials = $this->getFinancials();
 
-        // Paginated jobcards with individual profit calculation
+        // Paginated jobcards with individual profit calculation (ONLY COMPLETED & CLOSED)
         $jobcardsQuery = JobCard::with([
             'customer',
             'vehicle',
@@ -243,6 +289,8 @@ class ProfitReportController extends Component
             'labours'
         ])
         ->where('user_id', $this->workshopId)
+        ->where('soft_delete', 0)
+        ->whereIn('status', [2, 3])
         ->when(trim($this->search) !== '', function ($q) {
             $s = trim($this->search);
             $q->where(function ($qq) use ($s) {
@@ -264,4 +312,3 @@ class ProfitReportController extends Component
         ]);
     }
 }
-

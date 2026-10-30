@@ -508,12 +508,12 @@
         <div class="col-xl-3 col-md-6">
             <div class="pr-metric-card">
                 <div class="pr-metric-top">
-                    <span class="pr-metric-title">Purchases & Outsource (Cost)</span>
+                    <span class="pr-metric-title">2) Direct Purchases (Cost)</span>
                     <div class="pr-metric-icon icon-cogs">
                         <i class="bx bx-cart"></i>
                     </div>
                 </div>
-                <h2 class="pr-metric-val">₹{{ number_format($financials['costs']['total'] - $financials['costs']['expenses'], 2) }}</h2>
+                <h2 class="pr-metric-val">₹{{ number_format($financials['costs']['direct_total'], 2) }}</h2>
                 <div class="pr-metric-footer">
                     <span class="badge-pill-soft icon-cogs">
                         Parts, Lubes, Acc, Tools & Outsource
@@ -780,10 +780,10 @@
                 {{-- 2) Total Costs Bar --}}
                 <div class="pr-total-bar expense-total">
                     <div>
-                        <span class="fw-bold font-15">2) Total Costs & Expenses</span>
-                        <div class="font-11 text-muted">Sum of all 6 cost/expense items</div>
+                        <span class="fw-bold font-15">2) Total Direct Purchases</span>
+                        <div class="font-11 text-muted">Parts, Lubes, Acc, Tools & Outsource cost</div>
                     </div>
-                    <span class="fw-bold font-20">₹{{ number_format($financials['costs']['total'], 2) }}</span>
+                    <span class="fw-bold font-20">₹{{ number_format($financials['costs']['direct_total'], 2) }}</span>
                 </div>
             </div>
         </div>
@@ -799,8 +799,22 @@
                 <span class="eq-sign">—</span>
 
                 <div class="eq-pill costs-pill">
-                    <span class="eq-pill-label">2) Total Costs & Exp</span>
-                    <span class="eq-pill-val text-danger">₹{{ number_format($financials['costs']['total'], 2) }}</span>
+                    <span class="eq-pill-label">2) Direct Purchases</span>
+                    <span class="eq-pill-val text-danger">₹{{ number_format($financials['costs']['direct_total'], 2) }}</span>
+                </div>
+
+                <span class="eq-sign">=</span>
+
+                <div class="eq-pill" style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3);">
+                    <span class="eq-pill-label" style="color:#93c5fd;">Profit</span>
+                    <span class="eq-pill-val text-primary">₹{{ number_format($financials['gross_profit'], 2) }}</span>
+                </div>
+
+                <span class="eq-sign">—</span>
+
+                <div class="eq-pill" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3);">
+                    <span class="eq-pill-label" style="color:#fcd34d;">Expenses</span>
+                    <span class="eq-pill-val text-warning">₹{{ number_format($financials['costs']['expenses'], 2) }}</span>
                 </div>
 
                 <span class="eq-sign">=</span>
@@ -905,7 +919,7 @@
                             </td>
                             <td class="text-center">
                                 <span class="badge bg-light text-secondary border font-11">
-                                    {{ ucfirst($jc->status ?? 'pending') }}
+                                    {{ $jc->status == 2 ? 'Completed' : 'Closed' }}
                                 </span>
                             </td>
                         </tr>

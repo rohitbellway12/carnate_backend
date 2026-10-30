@@ -1,13 +1,12 @@
 @php
-    $headerBg = match($mode) {
-        0 => 'linear-gradient(135deg, #ca8a04, #eab308)', // Open - Yellow
-        1 => 'linear-gradient(135deg, #2563eb, #3b82f6)', // Confirmed - Blue
-        2 => 'linear-gradient(135deg, #16a34a, #22c55e)', // Completed - Green
-        3 => 'linear-gradient(135deg, #0891b2, #06b6d4)', // Closed - Cyan
-        4 => 'linear-gradient(135deg, #ea580c, #f97316)', // Process - Orange
-        5 => 'linear-gradient(135deg, #dc2626, #ef4444)', // Deleted - Red
-        6 => 'linear-gradient(135deg, #475569, #64748b)', // Total - Slate
-        default => 'linear-gradient(135deg, #ca8a04, #eab308)',
+    $modeClass = match((int)$mode) {
+        0 => 'thead-open',
+        4 => 'thead-process',
+        1 => 'thead-confirmed',
+        2 => 'thead-completed',
+        3 => 'thead-closed',
+        5 => 'thead-deleted',
+        default => 'thead-total',
     };
 @endphp
 
@@ -286,24 +285,76 @@
             border-spacing: 0;
         }
 
-        .carnate-jobcard-report .jobcardtable thead,
-        .carnate-jobcard-report .jobcardtable thead tr {
-            background: #f8fafc !important;
-        }
-
         .carnate-jobcard-report .jobcardtable thead th {
-            background: #f8fafc !important;
-            color: #64748b !important;
             border: 0 !important;
-            border-bottom: 1px solid var(--cj-border) !important;
             padding: 13px 14px !important;
             font-size: 11px !important;
             font-weight: 700 !important;
-            letter-spacing: .35px;
+            letter-spacing: .45px;
             text-transform: uppercase;
             white-space: nowrap;
             text-shadow: none !important;
             vertical-align: middle;
+            color: #ffffff !important;
+        }
+
+        .carnate-jobcard-report .jobcardtable thead th:first-child {
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+        }
+
+        .carnate-jobcard-report .jobcardtable thead th:last-child {
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+        .carnate-jobcard-report .jobcardtable thead.thead-open,
+        .carnate-jobcard-report .jobcardtable thead.thead-open tr,
+        .carnate-jobcard-report .jobcardtable thead.thead-open th {
+            background: linear-gradient(135deg, #ca8a04, #eab308) !important;
+            color: #ffffff !important;
+        }
+
+        .carnate-jobcard-report .jobcardtable thead.thead-process,
+        .carnate-jobcard-report .jobcardtable thead.thead-process tr,
+        .carnate-jobcard-report .jobcardtable thead.thead-process th {
+            background: linear-gradient(135deg, #ea580c, #f97316) !important;
+            color: #ffffff !important;
+        }
+
+        .carnate-jobcard-report .jobcardtable thead.thead-confirmed,
+        .carnate-jobcard-report .jobcardtable thead.thead-confirmed tr,
+        .carnate-jobcard-report .jobcardtable thead.thead-confirmed th {
+            background: linear-gradient(135deg, #2563eb, #3b82f6) !important;
+            color: #ffffff !important;
+        }
+
+        .carnate-jobcard-report .jobcardtable thead.thead-completed,
+        .carnate-jobcard-report .jobcardtable thead.thead-completed tr,
+        .carnate-jobcard-report .jobcardtable thead.thead-completed th {
+            background: linear-gradient(135deg, #16a34a, #22c55e) !important;
+            color: #ffffff !important;
+        }
+
+        .carnate-jobcard-report .jobcardtable thead.thead-closed,
+        .carnate-jobcard-report .jobcardtable thead.thead-closed tr,
+        .carnate-jobcard-report .jobcardtable thead.thead-closed th {
+            background: linear-gradient(135deg, #0891b2, #06b6d4) !important;
+            color: #ffffff !important;
+        }
+
+        .carnate-jobcard-report .jobcardtable thead.thead-deleted,
+        .carnate-jobcard-report .jobcardtable thead.thead-deleted tr,
+        .carnate-jobcard-report .jobcardtable thead.thead-deleted th {
+            background: linear-gradient(135deg, #dc2626, #ef4444) !important;
+            color: #ffffff !important;
+        }
+
+        .carnate-jobcard-report .jobcardtable thead.thead-total,
+        .carnate-jobcard-report .jobcardtable thead.thead-total tr,
+        .carnate-jobcard-report .jobcardtable thead.thead-total th {
+            background: linear-gradient(135deg, #475569, #64748b) !important;
+            color: #ffffff !important;
         }
 
         .carnate-jobcard-report .jobcardtable tbody td {
@@ -775,7 +826,7 @@
                     <div class="cj-table-wrap">
                         <table class="table jobcardtable">
 
-                            <thead>
+                            <thead class="{{ $modeClass }}">
                                 <tr>
                                     <th>S.No.</th>
                                     <th>Entry Date</th>
