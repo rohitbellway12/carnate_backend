@@ -183,7 +183,7 @@
                     </div>
 
                     {{-- 🔹 Year Dropdown --}}
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <select class="form-select searchable-select" data-placeholder="Select Year" wire:model.live="selected_year"
                             @if(empty($years)) disabled @endif>
                             <option value="">Select Year</option>
@@ -201,7 +201,7 @@
                     </div>
 
                     {{-- 🔹 Modification Dropdown --}}
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <select class="form-select searchable-select" data-placeholder="Select Modification" wire:model.live="search_vehicle"
                             @if(empty($modifications)) disabled @endif>
                             <option value="">Select Modification</option>
