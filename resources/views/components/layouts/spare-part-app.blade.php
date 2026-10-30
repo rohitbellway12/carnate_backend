@@ -80,6 +80,39 @@
             border-color: #e2e8f0;
             background: #f8fafc;
         }
+
+        /* Remove spinner arrows from number inputs across all browsers */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none !important;
+            margin: 0 !important;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield !important;
+            appearance: textfield !important;
+        }
+
+        /* Mobile / Tablet Sidebar Backdrop Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(2px);
+            z-index: 1055;
+            display: none;
+            cursor: pointer;
+        }
+        .wrapper.toggled .overlay {
+            display: block;
+        }
+        @media (min-width: 1025px) {
+            .wrapper.toggled .overlay {
+                display: none !important;
+            }
+        }
     </style>
     @yield('style')
     <!-- Scripts -->
@@ -98,6 +131,9 @@
                     {{ $slot }}
                 </div>
             </div>
+
+            <!-- Mobile sidebar backdrop overlay -->
+            <div class="overlay nav-toggle-icon"></div>
 
             <!-- Bell Modal for Order Notifications -->
             <div class="modal fade" id="bellModal" tabindex="-1" aria-hidden="true" role="dialog"
@@ -135,6 +171,29 @@
     <script src="{{ asset('assets/plugins/perfect-scrollbar/js/perfect-scrollbar.js') }}"></script>
     <!--app JS-->
     <script src="{{ asset('assets/js/app.js') }}"></script>
+    <script>
+        $(document).ready(function() {
+            $('.mobile-toggle-menu').off('click').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $('.wrapper').toggleClass('toggled');
+            });
+            $(document).on('click', '.overlay', function(e) {
+                e.preventDefault();
+                $('.wrapper').removeClass('toggled');
+            });
+            $(document).on('click', '.carnate-toggle, .toggle-icon', function() {
+                if ($(window).width() <= 1024) {
+                    $('.wrapper').removeClass('toggled');
+                }
+            });
+            $(document).on('keydown', function(e) {
+                if (e.key === 'Escape' && $(window).width() <= 1024) {
+                    $('.wrapper').removeClass('toggled');
+                }
+            });
+        });
+    </script>
     <script src="{{ asset('assets/plugins/vectormap/jquery-jvectormap-2.0.2.min.js') }}"></script>
     <script src="{{ asset('assets/plugins/vectormap/jquery-jvectormap-world-mill-en.js') }}"></script>
     <script src="{{ asset('assets/plugins/chartjs/js/Chart.min.js') }}"></script>

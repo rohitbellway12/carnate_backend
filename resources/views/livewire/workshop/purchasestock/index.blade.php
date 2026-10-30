@@ -637,6 +637,23 @@
             }
         }
 
+        @media (max-width: 1024px) {
+            .carnate-stock-list-page .sl-modal {
+                padding: 12px 8px;
+                overflow-x: hidden;
+            }
+
+            .carnate-stock-list-page .sl-modal-dialog {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 auto !important;
+            }
+
+            .carnate-stock-list-page .sl-modal-content {
+                border-radius: 12px;
+            }
+        }
+
         @media (max-width: 767px) {
             .carnate-stock-list-page .sl-header-body {
                 align-items: flex-start;

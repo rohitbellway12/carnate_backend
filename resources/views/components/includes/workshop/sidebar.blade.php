@@ -26,7 +26,9 @@ if (!empty($logo->Image) && !empty($logo->Image->file)) {
     /* Override legacy blue theme & establish clean 260px container */
     html .sidebar-wrapper.customsidebar.carnate-sidebar { 
         position: fixed; 
-        inset: 0 auto 0 0; 
+        top: 0;
+        bottom: 0;
+        left: 0;
         z-index: 1050; 
         display: flex; 
         flex-direction: column; 
@@ -297,7 +299,36 @@ if (!empty($logo->Image) && !empty($logo->Image->file)) {
             color: transparent !important;
         }
     }
-    @media (max-width: 1024px) { .sidebar-wrapper.carnate-sidebar { left: -260px; } .page-wrapper { margin-left: 0; } .page-footer { left: 0; } .toggled .sidebar-wrapper.carnate-sidebar { left: 0; } }
+    @media (max-width: 1024px) {
+        html .sidebar-wrapper.customsidebar.carnate-sidebar {
+            left: -280px !important;
+            top: 0 !important;
+            bottom: 0 !important;
+            width: 270px !important;
+            max-width: 85vw !important;
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            z-index: 1060 !important;
+            box-shadow: none !important;
+        }
+        html .page-wrapper {
+            margin-left: 0 !important;
+        }
+        html .page-footer {
+            left: 0 !important;
+        }
+        html .topbar.topbarcarnet {
+            left: 0 !important;
+        }
+        html .wrapper.toggled .sidebar-wrapper.customsidebar.carnate-sidebar,
+        .wrapper.toggled .sidebar-wrapper.customsidebar.carnate-sidebar,
+        .wrapper.toggled .sidebar-wrapper {
+            left: 0 !important;
+            box-shadow: 6px 0 30px rgba(0, 0, 0, 0.25) !important;
+        }
+        .carnate-toggle i {
+            font-size: 20px;
+        }
+    }
 </style>
 <div class="sidebar-wrapper customsidebar carnate-sidebar">
     <div class="carnate-sidebar-header">

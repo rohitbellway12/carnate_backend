@@ -33,7 +33,12 @@ $logo = App\Models\WorkShopVendor::where('id', Auth::guard('workshop')->user()->
     .topbarcarnet #notification-list .dropdown-item { white-space: normal; overflow-wrap: anywhere; padding: 14px 16px; color: #64748b; border-color: #e2e8f0 !important; }
     .topbarcarnet .notification-box .dropdown-divider { margin: 0; border-color: #e2e8f0; }
     .topbarcarnet .notification-box .dropdown-item.text-center { padding: 13px 16px; color: #e53935 !important; font-size: 13px; }
-    @media (max-width: 991px) { .topbar.topbarcarnet { left: 0; } }
+    .topbarcarnet .mobile-toggle-menu { display: none; cursor: pointer; }
+    @media (max-width: 1024px) { 
+        .topbar.topbarcarnet { left: 0 !important; }
+        .topbarcarnet .mobile-toggle-menu { display: inline-flex !important; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid #e2e8f0; border-radius: 10px; color: #475569; font-size: 22px; margin-right: 10px; background: #fff; }
+        .topbarcarnet .mobile-toggle-menu:active { background: #f1f5f9; }
+    }
     @media (max-width: 575px) { .topbarcarnet .notification-box .dropdown-menu { position: fixed !important; top: 72px !important; right: 12px !important; left: 12px !important; width: auto !important; transform: none !important; } }
 </style>
 <header>
