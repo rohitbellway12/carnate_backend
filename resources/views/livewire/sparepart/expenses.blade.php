@@ -659,135 +659,7 @@
     @endif
 
 
-    {{-- =========================================================
-         SUPPLIER MODAL
-    ========================================================== --}}
-
-    @if($showSupplierModal)
-
-        <div
-            class="modal fade show d-block"
-            tabindex="-1"
-            style="
-                background: rgba(15,23,42,.55);
-                z-index: 1055;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-            "
-        >
-
-            <div class="modal-dialog small-modal-dialog">
-
-                <div class="modal-content">
-
-                    <div class="modal-header">
-
-                        <div>
-                            <h5 class="modal-title">
-                                Add New Supplier
-                            </h5>
-                        </div>
-
-                        <button
-                            type="button"
-                            class="btn-close"
-                            wire:click="$set('showSupplierModal', false)"
-                            aria-label="Close"
-                        ></button>
-
-                    </div>
-
-                    <div class="modal-body small-modal-body">
-
-                        <div class="form-section">
-
-                            <div class="section-heading">
-
-                                <span class="section-icon">
-                                    <i class="bx bx-user-plus"></i>
-                                </span>
-
-                                Supplier Details
-
-                            </div>
-
-                            <div class="row g-3">
-
-                                <div class="col-md-6">
-
-                                    <label class="form-label">
-                                        First Name
-                                    </label>
-
-                                    <input
-                                        type="text"
-                                        class="form-control"
-                                        wire:model="newSupplier.name"
-                                        placeholder="Enter first name"
-                                    >
-
-                                    @error('newSupplier.name')
-                                        <span class="text-danger">{{ $message }}</span>
-                                    @enderror
-
-                                </div>
-
-                                <div class="col-md-6">
-
-                                    <label class="form-label">
-                                        Last Name
-                                    </label>
-
-                                    <input
-                                        type="text"
-                                        class="form-control"
-                                        wire:model="newSupplier.lastname"
-                                        placeholder="Enter last name"
-                                    >
-
-                                    @error('newSupplier.lastname')
-                                        <span class="text-danger">{{ $message }}</span>
-                                    @enderror
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <div class="modal-footer">
-
-                        <button
-                            type="button"
-                            class="btn btn-secondary"
-                            wire:click="$set('showSupplierModal', false)"
-                        >
-                            Cancel
-                        </button>
-
-                        <button
-                            type="button"
-                            class="btn btn-primary"
-                            wire:click="saveSupplier"
-                        >
-                            <i class="bx bx-check me-1"></i>
-                            Save
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    @endif
+    
 
 
     {{-- =========================================================
@@ -922,7 +794,8 @@
                                         <div class="field-main">
 
                                             <select
-                                                class="form-select"
+                                                class="form-select searchable-select"
+                                                id="sparepart_expense_supplier_id"
                                                 wire:model="supplier_id"
                                             >
 
@@ -932,8 +805,8 @@
 
                                                 @foreach ($suppliers as $supplier)
 
-                                                    <option value="{{ $supplier->id }}">
-                                                        {{ $supplier->business_first_name }}
+                                                    <option value="{{ $supplier->id }}" {{ (string)$supplier_id === (string)$supplier->id ? 'selected' : '' }}>
+                                                        {{ $supplier->business_first_name }} {{ $supplier->owner_first_name ?? '' }}
                                                     </option>
 
                                                 @endforeach
@@ -1150,6 +1023,137 @@
         </div>
 
     </div>
+
+
+    {{-- =========================================================
+         SUPPLIER MODAL
+    ========================================================== --}}
+
+    @if($showSupplierModal)
+
+        <div
+            class="modal fade show d-block supplier-modal"
+            tabindex="-1"
+            style="
+                background: rgba(15,23,42,.55);
+                z-index: 1070 !important;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+            "
+        >
+
+            <div class="modal-dialog small-modal-dialog">
+
+                <div class="modal-content">
+
+                    <div class="modal-header">
+
+                        <div>
+                            <h5 class="modal-title">
+                                Add New Supplier
+                            </h5>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="btn-close"
+                            wire:click="$set('showSupplierModal', false)"
+                            aria-label="Close"
+                        ></button>
+
+                    </div>
+
+                    <div class="modal-body small-modal-body">
+
+                        <div class="form-section">
+
+                            <div class="section-heading">
+
+                                <span class="section-icon">
+                                    <i class="bx bx-user-plus"></i>
+                                </span>
+
+                                Supplier Details
+
+                            </div>
+
+                            <div class="row g-3">
+
+                                <div class="col-md-6">
+
+                                    <label class="form-label">
+                                        First Name
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        wire:model="newSupplier.name"
+                                        placeholder="Enter first name"
+                                    >
+
+                                    @error('newSupplier.name')
+                                        <span class="text-danger">{{ $message }}</span>
+                                    @enderror
+
+                                </div>
+
+                                <div class="col-md-6">
+
+                                    <label class="form-label">
+                                        Last Name
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        wire:model="newSupplier.lastname"
+                                        placeholder="Enter last name"
+                                    >
+
+                                    @error('newSupplier.lastname')
+                                        <span class="text-danger">{{ $message }}</span>
+                                    @enderror
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            wire:click="$set('showSupplierModal', false)"
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            wire:click="saveSupplier"
+                        >
+                            <i class="bx bx-check me-1"></i>
+                            Save
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    @endif
 
 
     {{-- =========================================================
@@ -1586,6 +1590,22 @@
 @section('footerscript')
 
     <script>
+        window.addEventListener('set-supplier-select', function(event) {
+            let detail = event.detail;
+            let sId = (detail && typeof detail === 'object') ? (detail.id ?? (detail[0] ? detail[0].id : null)) : detail;
+            if (sId) {
+                setTimeout(function() {
+                    let $s = $('#sparepart_expense_supplier_id');
+                    if ($s.length) {
+                        $s.val(sId).trigger('change');
+                        if ($s.data('select2')) {
+                            $s.trigger('change.select2');
+                        }
+                    }
+                }, 80);
+            }
+        });
+
         document.addEventListener('livewire:init', function () {
 
             Livewire.hook('morphed', (message, component) => {

@@ -356,38 +356,128 @@
                         <span>₹{{ number_format($gst ?? 0, 2) }}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-danger">Balance</span>
-                        <span class="text-danger">₹{{ number_format($balance ?? 0, 2) }}</span>
+                        <span class="text-danger">Remaining Balance</span>
+                        <span class="text-danger fw-bold">₹{{ number_format($balance ?? 0, 2) }}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-success">Paid</span>
-                        <span class="text-success">₹{{ number_format($paid ?? 0, 2) }}</span>
+                        <span class="text-success">Total Paid</span>
+                        <span class="text-success fw-bold">₹{{ number_format($paid ?? 0, 2) }}</span>
                     </div>
-                    <div class="mb-2">
-                        <label class="form-label">PO Payment</label>
-                        <input type="number" class="form-control" wire:model.lazy="po_payment" placeholder="PO Payment" required>
-                    </div>
-                    <div class="row g-2 mb-2">
-                        <div class="col-md-4">
-                            <label class="form-label">Transaction Type</label>
-                            <select class="form-select" wire:model.lazy="transaction_type" required>
-                                <option value="">Select Type</option>
-                                <option value="cash">Cash</option>
-                                <option value="bank">Bank</option>
-                                <option value="cheque">Cheque</option>
-                                <option value="upi">UPI</option>
-                            </select>
-                            @error('transaction_type') <span class="text-danger">{{ $message }}</span> @enderror
+
+                    @if(!$isEdit)
+                        {{-- New PO Initial Payment Form --}}
+                        <div class="mb-2">
+                            <label class="form-label fw-bold">Initial Payment (Optional)</label>
+                            <input type="number" step="any" min="0" class="form-control" wire:model.live="po_payment" placeholder="e.g. 40000">
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Transaction Date</label>
-                            <input type="date" class="form-control" wire:model.lazy="transaction_date" value="{{ $transaction_date ?? date('Y-m-d') }}">
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-4">
+                                <label class="form-label">Payment Method</label>
+                                <select class="form-select" wire:model.lazy="transaction_type">
+                                    <option value="cash">Cash</option>
+                                    <option value="upi">UPI</option>
+                                    <option value="bank">Bank</option>
+                                    <option value="cheque">Cheque</option>
+                                    <option value="card">Card</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Payment Date</label>
+                                <input type="date" class="form-control" wire:model.lazy="transaction_date" value="{{ $transaction_date ?? date('Y-m-d') }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Reference / Trx No.</label>
+                                <input type="text" class="form-control" wire:model.lazy="transaction_no" placeholder="Trx / Ref No.">
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Transaction Number</label>
-                            <input type="text" class="form-control" wire:model.lazy="transaction_no" placeholder="Enter the transaction Num">
+                    @else
+                        {{-- Edit Mode: Dedicated Payment History Ledger (Like JobCard) --}}
+                        <div class="mt-3 pt-3 border-top">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0 text-primary fw-bold" style="font-size: 0.95rem; border-bottom: 2px solid #007bff; display: inline-block; padding-bottom: 3px;">
+                                    <i class="bx bx-receipt me-1"></i> Payment History Ledger
+                                </h6>
+                                <span class="badge bg-success" style="font-size: 0.8rem;">
+                                    Total Paid: ₹{{ number_format($paid ?? 0, 2) }}
+                                </span>
+                            </div>
+
+                            @if(!empty($payments_list))
+                                <div class="table-responsive mb-3 border rounded">
+                                    <table class="table table-sm table-striped table-hover align-middle mb-0" style="font-size: 0.82rem;">
+                                        <thead class="bg-light">
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Amount</th>
+                                                <th>Method</th>
+                                                <th>Ref / Trx No.</th>
+                                                <th class="text-center" style="width: 50px;">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($payments_list as $pay)
+                                                <tr>
+                                                    <td>{{ \Carbon\Carbon::parse($pay['payment_date'] ?? $pay['created_at'])->format('d-M-Y H:i') }}</td>
+                                                    <td class="fw-bold text-success">₹{{ number_format($pay['amount'], 2) }}</td>
+                                                    <td>
+                                                        <span class="badge bg-info text-capitalize">{{ ucwords(str_replace('_', ' ', $pay['payment_type'])) }}</span>
+                                                    </td>
+                                                    <td>{{ $pay['transaction_number'] ?: 'N/A' }}</td>
+                                                    <td class="text-center">
+                                                        <button type="button" class="btn btn-sm btn-outline-danger py-0 px-1" 
+                                                            wire:click="deletePayment({{ $pay['id'] }})"
+                                                            wire:confirm="Are you sure you want to delete this payment record?">
+                                                            <i class="bx bx-trash" style="font-size: 14px;"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <div class="alert alert-info py-2 text-center" style="font-size: 0.85rem;">
+                                    No payments recorded in ledger yet.
+                                </div>
+                            @endif
+
+                            {{-- Add New Payment Card --}}
+                            <div class="card bg-light border p-3 mt-2">
+                                <h6 class="mb-2" style="font-size: 0.88rem; font-weight: 600; color: #1e293b;">
+                                    <i class="bx bx-plus-circle text-primary me-1"></i> Add Payment Entry
+                                </h6>
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-md-4">
+                                        <label class="form-label mb-1" style="font-size: 0.8rem; font-weight: 500;">Amount (₹) <span class="text-danger">*</span></label>
+                                        <input type="number" step="0.01" min="0.01" class="form-control form-control-sm @error('new_payment_amount') is-invalid @enderror" 
+                                            wire:model.live="new_payment_amount" placeholder="e.g. 10000">
+                                        @error('new_payment_amount')
+                                            <span class="invalid-feedback d-block">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label mb-1" style="font-size: 0.8rem; font-weight: 500;">Method <span class="text-danger">*</span></label>
+                                        <select class="form-select form-select-sm @error('new_payment_type') is-invalid @enderror" wire:model.live="new_payment_type">
+                                            <option value="cash">Cash</option>
+                                            <option value="upi">UPI</option>
+                                            <option value="bank">Bank</option>
+                                            <option value="cheque">Cheque</option>
+                                            <option value="card">Card</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label mb-1" style="font-size: 0.8rem; font-weight: 500;">Ref / Trx No.</label>
+                                        <input type="text" class="form-control form-control-sm" wire:model.live="new_payment_transaction_number" placeholder="Ref No.">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-sm btn-primary w-100" wire:click="addPayment">
+                                            <i class="bx bx-plus"></i> Add
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    @endif
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span>Return</span>
                         <span>₹{{ number_format($return_amount ?? 0, 2) }}</span>

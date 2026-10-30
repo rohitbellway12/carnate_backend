@@ -238,19 +238,29 @@ class ExpensesController extends Component
     {
         $this->validate([
             'newSupplier.name' => 'required|string|max:255',
-            'newSupplier.lastname' => 'required|string|max:255',
+            'newSupplier.lastname' => 'nullable|string|max:255',
+        ], [
+            'newSupplier.name.required' => 'The supplier name field is required.',
         ]);
 
         $supplier = SparePartSupplier::create([
-            'business_first_name' => $this->newSupplier['name'],
-            'owner_first_name' => $this->newSupplier['lastname'],
+            'business_first_name' => trim($this->newSupplier['name']),
+            'owner_first_name' => trim($this->newSupplier['lastname'] ?? ''),
             'mobile_no' => '',
             'contact_1' => '',
             'user_id' => $this->workshopId,
         ]);
 
         $this->suppliers = SparePartSupplier::where('user_id', $this->workshopId)->get();
-        $this->supplier_id = $supplier->id;
+        $this->supplier_id = (string) $supplier->id;
+        $this->newSupplier = ['name' => '', 'lastname' => ''];
         $this->showSupplierModal = false;
+
+        $this->dispatch('sync-searchable-selects');
+        $this->dispatch('set-supplier-select', id: $supplier->id);
+        $this->dispatch('swal:toast', [
+            'type' => 'success',
+            'message' => 'Supplier added and selected successfully!'
+        ]);
     }
 }

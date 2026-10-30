@@ -60,6 +60,13 @@ class PurchaseOrder extends Component
     public $balance = 0;
     public $paid = 0;
     public $po_payment = 0;
+    public $new_payment_amount;
+    public $new_payment_type = 'cash';
+    public $new_payment_transaction_number;
+    public $new_payment_date;
+    public $payments_list = [];
+    public $previously_paid = 0;
+    public $new_payment = 0;
     public $transaction_type;
     public $transaction_date;
     public $transaction_no;
@@ -427,7 +434,7 @@ class PurchaseOrder extends Component
         $this->total_balance = $po->total_balance;
         $this->po_payment = $po->po_payment;
         $this->balance = $po->balance;
-        $this->paid = $po->paid;
+        $this->loadPaymentsList();
         $this->items = [];
         foreach ($po->items as $item) {
             $this->items[] = [
@@ -450,6 +457,8 @@ class PurchaseOrder extends Component
                 // Add any other fields you use in the table
             ];
         }
+        $this->previously_paid = 0;
+        $this->new_payment = 0;
         $this->mode = 'create';
     }
 
@@ -651,6 +660,8 @@ class PurchaseOrder extends Component
         $this->resetPOForm();
         $this->isEdit = false;
         $this->editingId = null;
+        $this->previously_paid = 0;
+        $this->new_payment = 0;
         $this->mode = 'create';
     }
     public function setStatus($status)
@@ -1468,6 +1479,109 @@ class PurchaseOrder extends Component
 
 
 
+
+        public function loadPaymentsList()
+    {
+        if ($this->editingId) {
+            $po = \App\Models\PurchaseOrder::with('payments')->find($this->editingId);
+            if ($po) {
+                $this->payments_list = $po->payments()->orderBy('created_at', 'asc')->get()->toArray();
+                $this->paid = collect($this->payments_list)->sum('amount');
+                $this->balance = max(0, floatval($this->total_payable) - floatval($this->paid));
+                $this->po_payment = $this->paid;
+                return;
+            }
+        }
+        $this->payments_list = [];
+    }
+
+    public function addPayment()
+    {
+        if ($this->new_payment_amount !== null && $this->new_payment_amount !== '') {
+            $this->new_payment_amount = is_numeric($this->new_payment_amount) ? floatval($this->new_payment_amount) : trim($this->new_payment_amount);
+        }
+        $this->new_payment_type = $this->new_payment_type ?: 'cash';
+
+        $this->validate([
+            'new_payment_amount' => 'required|numeric|min:0.01',
+            'new_payment_type' => 'required|string',
+            'new_payment_transaction_number' => 'nullable|string',
+        ], [
+            'new_payment_amount.required' => 'Payment amount is required.',
+            'new_payment_amount.numeric' => 'Payment amount must be a number.',
+            'new_payment_amount.min' => 'Payment amount must be greater than zero.',
+            'new_payment_type.required' => 'Payment method is required.',
+        ]);
+
+        if (!$this->editingId) {
+            $this->dispatch('swal:toast', [
+                'type' => 'error',
+                'message' => 'Please save the Purchase Order first before adding ledger payments.'
+            ]);
+            return;
+        }
+
+        $po = \App\Models\PurchaseOrder::findOrFail($this->editingId);
+
+        \App\Models\PurchaseOrderPayment::create([
+            'purchase_order_id' => $this->editingId,
+            'amount' => $this->new_payment_amount,
+            'payment_type' => $this->new_payment_type,
+            'transaction_number' => $this->new_payment_transaction_number,
+            'payment_date' => $this->new_payment_date ?: date('Y-m-d'),
+        ]);
+
+        $this->payments_list = $po->payments()->orderBy('created_at', 'asc')->get()->toArray();
+        $this->paid = collect($this->payments_list)->sum('amount');
+        $this->balance = max(0, floatval($this->total_payable) - floatval($this->paid));
+        $this->po_payment = $this->paid;
+
+        $po->update([
+            'paid' => $this->paid,
+            'balance' => $this->balance,
+            'po_payment' => $this->paid,
+            'transaction_type' => $this->new_payment_type,
+            'transaction_no' => $this->new_payment_transaction_number,
+        ]);
+
+        $this->new_payment_amount = null;
+        $this->new_payment_type = 'cash';
+        $this->new_payment_transaction_number = null;
+        $this->new_payment_date = date('Y-m-d');
+
+        $this->dispatch('swal:toast', [
+            'type' => 'success',
+            'message' => 'Payment added to ledger successfully!'
+        ]);
+    }
+
+    public function deletePayment($id)
+    {
+        $payment = \App\Models\PurchaseOrderPayment::where('purchase_order_id', $this->editingId)->find($id);
+        if ($payment) {
+            $payment->delete();
+        }
+
+        $po = \App\Models\PurchaseOrder::findOrFail($this->editingId);
+        $this->payments_list = $po->payments()->orderBy('created_at', 'asc')->get()->toArray();
+        $this->paid = collect($this->payments_list)->sum('amount');
+        $this->balance = max(0, floatval($this->total_payable) - floatval($this->paid));
+        $this->po_payment = $this->paid;
+
+        $lastPayment = end($this->payments_list);
+        $po->update([
+            'paid' => $this->paid,
+            'balance' => $this->balance,
+            'po_payment' => $this->paid,
+            'transaction_type' => $lastPayment ? $lastPayment['payment_type'] : null,
+            'transaction_no' => $lastPayment ? $lastPayment['transaction_number'] : null,
+        ]);
+
+        $this->dispatch('swal:toast', [
+            'type' => 'success',
+            'message' => 'Payment deleted from ledger successfully!'
+        ]);
+    }
 
     public function resetPartForm()
     {
