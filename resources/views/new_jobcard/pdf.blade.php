@@ -157,7 +157,7 @@
         
         <td class="p-0 border-0" style="width: 70%; vertical-align: top;">
             @php 
-                $workshop = Auth::guard('workshop')->user();
+                $workshop = (Auth::guard('workshop')->check() ? Auth::guard('workshop')->user() : null) ?? ($logo ?? \App\Models\WorkShopVendor::find($newjobcard->user_id ?? 0));
                 
                 $stateName = '';
                 if(!empty($workshop->state_id)) {
@@ -930,10 +930,10 @@
                             <table class="table">
                                 @if ($pdfTitle != 'ESTIMATE')
                                     <tr>
-                                        <th><strong>Exit Note</strong></th>
+                                        <th><strong>Note</strong></th>
                                     </tr>
                                     <tr>
-                                        <td>{{ $exitNote?->note ?? '' }}</td>
+                                        <td>{{ !empty($newjobcard->notes) ? $newjobcard->notes : ($exitNote?->note ?? '') }}</td>
                                     </tr>
                                 @else
                                     <tr>
@@ -958,6 +958,16 @@
                                             @endforeach
                                         </td>
                                     </tr>
+                                    @if (!empty($newjobcard->notes) || !empty($exitNote?->note))
+                                        <tr>
+                                            <th colspan="2"><strong>Note</strong></th>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2">
+                                                {{ !empty($newjobcard->notes) ? $newjobcard->notes : ($exitNote?->note ?? '') }}
+                                            </td>
+                                        </tr>
+                                    @endif
                                 @endif
                             </table>
                         </td>

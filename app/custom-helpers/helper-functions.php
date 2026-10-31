@@ -139,6 +139,10 @@ if (!function_exists('sparepartOrderReference')) {
 			return 'N/A';
 		}
 
+		if ((int) $order->order_status === 2) {
+			return 'N/A';
+		}
+
 		// Invoice number is only generated AFTER payment
 		if ((int) $order->payment_status !== 1) {
 			return '#' . $order->id;
@@ -151,22 +155,21 @@ if (!function_exists('sparepartOrderReference')) {
 		if (!empty($order->spare_invoice_number)) {
 			return (string) $order->spare_invoice_number;
 		}
-		// Fallback to generic invoice_number (but ignore CARNATE workshop numbers).
+
+		// Fallback to generic invoice_number only if it is a vendor invoice (does NOT start with CARNATE).
 		if (!empty($order->invoice_number) && !str_starts_with($order->invoice_number, 'CARNATE')) {
 			return (string) $order->invoice_number;
 		}
 
-		// If the order is paid but does not yet have a stored invoice number,
-		// generate **and persist** one now. This prevents the number from
-		// changing on every view (which happened when we only previewed).
-		if ($order->payment_status == 1 && empty($order->invoice_number) && $vendor) {
+		// If the order is paid but does not yet have a stored spare invoice number,
+		// generate and persist in the dedicated spare_invoice_number column.
+		if ($order->payment_status == 1 && (int) $order->order_status !== 2 && empty($order->spare_invoice_number) && $vendor) {
 			try {
 				$companyCode   = \App\Services\SharedSerialService::resolveCompanyCode($vendor);
 				$seriesCode    = \App\Services\SharedSerialService::resolveSeriesCode();
 				$serialService = new \App\Services\SharedSerialService();
 				$newInvoice    = $serialService->claimNext($vendor->id, $companyCode, $seriesCode);
-				// Persist so future calls return the same value.
-				$order->invoice_number = $newInvoice;
+				$order->spare_invoice_number = $newInvoice;
 				$order->save();
 				return $newInvoice;
 			} catch (\Throwable $e) {
@@ -216,12 +219,17 @@ if (!function_exists('getWorkshopInvoiceNumber')) {
 			return 'N/A';
 		}
 
-		if (!empty($order->invoice_number)) {
+		if ((int) $order->order_status === 2) {
+			return 'N/A';
+		}
+
+		// Only accept invoice_number if it starts with CARNATE
+		if (!empty($order->invoice_number) && str_starts_with($order->invoice_number, 'CARNATE')) {
 			return (string) $order->invoice_number;
 		}
 
 		// Invoice number is only generated AFTER payment
-		if ((int) $order->payment_status === 1) {
+		if ((int) $order->payment_status === 1 && (int) $order->order_status !== 2) {
 			try {
 				$companyCode = 'CARNATE';
 
@@ -237,19 +245,32 @@ if (!function_exists('getWorkshopInvoiceNumber')) {
 				}
 				$financialYear = $fyStart . $fyEnd;
 
-				$serialService = new \App\Services\SharedSerialService();
-
-				$newInvoice = \DB::transaction(function() use ($order, $companyCode, $financialYear, $serialService) {
+				$newInvoice = \DB::transaction(function() use ($order, $companyCode, $financialYear) {
 					$freshOrder = \App\Models\Order::lockForUpdate()->find($order->id);
-					if ($freshOrder && !empty($freshOrder->invoice_number)) {
+					if ($freshOrder && !empty($freshOrder->invoice_number) && str_starts_with($freshOrder->invoice_number, 'CARNATE')) {
 						return $freshOrder->invoice_number;
 					}
 
-					$newInvoice = $serialService->claimNext($order->id, $companyCode, $financialYear);
-					if ($freshOrder && !\App\Models\Order::where('invoice_number', $newInvoice)->exists()) {
+					$prefix = $companyCode . '/' . $financialYear . '/';
+					$existingCarnate = \App\Models\Order::where('invoice_number', 'LIKE', $prefix . '%')->pluck('invoice_number');
+					$max = 0;
+					foreach ($existingCarnate as $inv) {
+						$parts = explode('/', $inv);
+						$num = isset($parts[2]) ? (int) $parts[2] : 0;
+						if ($num > $max) {
+							$max = $num;
+						}
+					}
+					$nextSerial = $max + 1;
+					$newInvoice = sprintf('%s/%s/%04d', $companyCode, $financialYear, $nextSerial);
+
+					if ($freshOrder) {
+						if (!empty($freshOrder->invoice_number) && !str_starts_with($freshOrder->invoice_number, 'CARNATE') && empty($freshOrder->spare_invoice_number)) {
+							$freshOrder->spare_invoice_number = $freshOrder->invoice_number;
+						}
 						$freshOrder->invoice_number = $newInvoice;
 						$freshOrder->save();
-						$order->invoice_number = $newInvoice; // sync in-memory
+						$order->invoice_number = $newInvoice;
 					}
 					return $newInvoice;
 				});

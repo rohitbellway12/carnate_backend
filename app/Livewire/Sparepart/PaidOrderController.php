@@ -36,7 +36,7 @@ class PaidOrderController extends Component
                 }
             ])->orderBy('id', 'DESC')->whereHas('orderItem', function ($qry) {
                 $qry->where('user_id', $this->currentUser->id);
-            })->whereId($this->orderId)->first();
+            })->whereId($this->orderId)->where('order_status', '!=', 2)->first();
         } else {
             $orders = Order::with([
                 'orderItem' => function ($qry) {
@@ -55,7 +55,7 @@ class PaidOrderController extends Component
             }
             $orders = $orders->whereHas('orderItem', function ($qry) {
                 $qry->where('user_id', $this->currentUser->id);
-            })->where('payment_status',1)
+            })->where('payment_status',1)->where('order_status', '!=', 2)
                 ->paginate(10);
         }
 

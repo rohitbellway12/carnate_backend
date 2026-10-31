@@ -294,7 +294,7 @@ class JobCardController extends Controller
 
 
         $title = 'View Invoice';
-        $logo = WorkShopVendor::where('id', Auth::guard('workshop')->user()->id)->first();
+        $logo = (Auth::guard('workshop')->check() ? Auth::guard('workshop')->user() : null) ?? WorkShopVendor::find($newjobcard->user_id ?? 0) ?? Setting::first();
         return view('new_jobcard.invoice', compact('title', 'logo', 'customers', 'newjobcard', 'vehicles', 'jobCardSpareParts'));
     }
 
@@ -320,9 +320,10 @@ class JobCardController extends Controller
         //dd($inspections);
         $jobCardCustomerVoice = $inspections->where('is_customer_voice', 1);
         $jobCardAccessories = $inspections->where('is_customer_voice', 0);
+        $exitNote = $newjobcard->exitNote;
 
         $title = 'View Invoice';
-        $logo = WorkShopVendor::where('id', Auth::guard('workshop')->user()->id)->first();
+        $logo = (Auth::guard('workshop')->check() ? Auth::guard('workshop')->user() : null) ?? WorkShopVendor::find($newjobcard->user_id ?? 0) ?? Setting::first();
 
         // Check vendor GST status and set PDF title accordingly - ONLY FOR COMPLETED JOB CARDS
         if ($newjobcard->status == 2) {
@@ -336,7 +337,7 @@ class JobCardController extends Controller
 
         $type = (int) $request->type;
 
-        $data = compact('title', 'logo', 'customer', 'newjobcard', 'vehicles', 'jobCardSpareParts', 'jobCardExtraCharges', 'jobCardCustomerVoice', 'jobCardAccessories', 'type', 'pdfTitle');
+        $data = compact('title', 'logo', 'customer', 'newjobcard', 'vehicles', 'jobCardSpareParts', 'jobCardExtraCharges', 'jobCardCustomerVoice', 'jobCardAccessories', 'type', 'pdfTitle', 'exitNote');
         // dd($data);
         // dump($data);
 
@@ -395,7 +396,7 @@ class JobCardController extends Controller
         $jobCardAccessories = JobCardsInspection::where('jobcard_number', $newjobcard->jobcard_number)->where('is_customer_voice', 0)->get();
 
         $title = 'View Invoice';
-        $logo = WorkShopVendor::where('id', Auth::guard('workshop')->user()->id)->first();
+        $logo = (Auth::guard('workshop')->check() ? Auth::guard('workshop')->user() : null) ?? WorkShopVendor::find($newjobcard->user_id ?? 0) ?? Setting::first();
 
         // Check vendor GST status and set PDF title accordingly - ONLY FOR COMPLETED JOB CARDS
         if ($newjobcard->status == 2) {
@@ -424,19 +425,21 @@ class JobCardController extends Controller
         $jobCardSpareParts = JobCardSparePart::where('jobcard_id', $request->id)->get();
 
         $jobCardExtraCharges = JobCardExtraCharge::where('jobcard_id', $request->id)->get();
-        $jobCardCustomerVoice = JobCardsInspection::where('jobcard_number', $newjobcard->jobcard_number)->where('is_customer_voice', 1)->get();
-        $jobCardAccessories = JobCardsInspection::where('jobcard_number', $newjobcard->jobcard_number)->where('is_customer_voice', 2)->get();
+        $inspections = JobCardsInspection::select('customer_voice', 'is_customer_voice')->where('jobcard_number', $newjobcard->jobcard_number)->whereIn('is_customer_voice', [1, 0])->get();
+        $jobCardCustomerVoice = $inspections->where('is_customer_voice', 1);
+        $jobCardAccessories = $inspections->where('is_customer_voice', 0);
+        $exitNote = $newjobcard->exitNote;
 
         // echo "<pre>";print_r($jobCardSpareParts->toArray());die;
         $title = 'View Invoice';
-        $logo = WorkShopVendor::where('id', Auth::guard('workshop')->user()->id)->first();
+        $logo = (Auth::guard('workshop')->check() ? Auth::guard('workshop')->user() : null) ?? WorkShopVendor::find($newjobcard->user_id ?? 0) ?? Setting::first();
 
         // Always show ESTIMATE for Estimate Worksheet
         $pdfTitle = 'ESTIMATE';
 
         $type = (int) $request->type;
 
-        $data = compact('title', 'logo', 'customer', 'newjobcard', 'vehicles', 'jobCardSpareParts', 'jobCardExtraCharges', 'jobCardCustomerVoice', 'jobCardAccessories', 'pdfTitle', 'type');
+        $data = compact('title', 'logo', 'customer', 'newjobcard', 'vehicles', 'jobCardSpareParts', 'jobCardExtraCharges', 'jobCardCustomerVoice', 'jobCardAccessories', 'pdfTitle', 'type', 'exitNote');
 
         $pdf = PDF::loadView('new_jobcard.pdf', $data)
             ->setPaper('a4', 'portrait');
@@ -465,7 +468,7 @@ class JobCardController extends Controller
 
         // echo "<pre>";print_r($jobCardSpareParts->toArray());die;
         $title = 'View Invoice';
-        $logo = WorkShopVendor::where('id', Auth::guard('workshop')->user()->id)->first();
+        $logo = (Auth::guard('workshop')->check() ? Auth::guard('workshop')->user() : null) ?? WorkShopVendor::find($newjobcard->user_id ?? 0) ?? Setting::first();
 
         $data = compact('title', 'logo', 'customer', 'newjobcard', 'vehicles', 'jobCardSpareParts', 'jobCardExtraCharges', 'jobCardCustomerVoice', 'jobCardAccessories');
 
@@ -499,7 +502,7 @@ class JobCardController extends Controller
                 $exitNote = $newjobcard->exitNote;
 
                 $title = 'View Invoice';
-                $logo = WorkShopVendor::where('id', Auth::guard('workshop')->user()->id)->first();
+                $logo = (Auth::guard('workshop')->check() ? Auth::guard('workshop')->user() : null) ?? WorkShopVendor::find($newjobcard->user_id ?? 0) ?? Setting::first();
 
                 $data = compact('title', 'logo', 'customer', 'newjobcard', 'vehicles', 'jobCardSpareParts', 'jobCardExtraCharges', 'jobCardCustomerVoice', 'jobCardAccessories', 'exitNote');
 
@@ -517,7 +520,7 @@ class JobCardController extends Controller
                 $jobCardAccessories = JobCardsInspection::where('jobcard_number', $newjobcard->jobcard_number)->where('is_customer_voice', 2)->get();
 
                 $title = 'View Invoice';
-                $logo = WorkShopVendor::where('id', Auth::guard('workshop')->user()->id)->first();
+                $logo = (Auth::guard('workshop')->check() ? Auth::guard('workshop')->user() : null) ?? WorkShopVendor::find($newjobcard->user_id ?? 0) ?? Setting::first();
 
                 $data = compact('title', 'logo', 'customer', 'newjobcard', 'vehicles', 'jobCardSpareParts', 'jobCardExtraCharges', 'jobCardCustomerVoice', 'jobCardAccessories');
 
@@ -858,28 +861,10 @@ class JobCardController extends Controller
         }
 
       
-        if ($order && empty($order->invoice_number) && $order->payment_status == 1) {
-            $companyCode = 'CARNATE';
-
-            // Financial Year Logic (same as before)
-            $currentMonth = date('m');
-            $currentYear = date('Y');
-            if ($currentMonth >= 4) {
-                $fyStart = substr($currentYear, -2);
-                $fyEnd = substr($currentYear + 1, -2);
-            } else {
-                $fyStart = substr($currentYear - 1, -2);
-                $fyEnd = substr($currentYear, -2);
-            }
-            $financialYear = $fyStart . $fyEnd;
-
-            $serialService = new \App\Services\SharedSerialService();
-           
-            $newInvoice = $serialService->claimNext($order->id, $companyCode, $financialYear);
-           
-            if (!\App\Models\Order::where('invoice_number', $newInvoice)->exists()) {
-                $order->invoice_number = $newInvoice;
-                $order->save();
+        if ($order && (empty($order->invoice_number) || !str_starts_with($order->invoice_number, 'CARNATE')) && $order->payment_status == 1 && $order->order_status != 2) {
+            $carnateInvoice = function_exists('getWorkshopInvoiceNumber') ? getWorkshopInvoiceNumber($order) : null;
+            if ($carnateInvoice && $carnateInvoice !== 'N/A') {
+                $order->invoice_number = $carnateInvoice;
             }
         }
 

@@ -2,10 +2,10 @@
 
 namespace App\Livewire\Workshop;
 
-use App\Models\{Accessory, Category, OrderItem, Stock, SparePartLabel, Unit, WorkShopVendor, Modification, SparePartVehicleModification, WorkshopSupplier};
+use App\Models\{Accessory, Category, OrderItem, Stock, SparePartLabel, Unit, WorkShopVendor, Modification, SparePartVehicleModification, WorkshopSupplier, Maker, MakerType};
 use App\Models\ProductStock;
 use App\Models\Staff;
-use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Support\Facades\{Auth, DB, Http, Log};
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Hash;
@@ -33,6 +33,8 @@ class ProductStockController extends Component
     public $supplier_id;
     public $is_self_stock = true;
     public $activeTab = 'manual';
+    public $isSearching = false;
+    public $api_compatible_vehicles = [];
 
     protected $listeners = ['delete'];
    
@@ -442,6 +444,157 @@ class ProductStockController extends Component
     {
         if (isset($this->suitable_for[$index])) {
             unset($this->suitable_for[$index]);
+            $this->suitable_for = array_values($this->suitable_for);
+        }
+    }
+
+    public function searchPartNumber()
+    {
+        $value = trim($this->part_number ?? '');
+        if (empty($value)) {
+            $this->dispatch('swal:toast', [
+                'type' => 'warning',
+                'message' => 'Please enter a part number to search.',
+            ]);
+            return;
+        }
+
+        if (strlen($value) < 3) {
+            $this->dispatch('swal:toast', [
+                'type' => 'warning',
+                'message' => 'Part number must be at least 3 characters.',
+            ]);
+            return;
+        }
+
+        $this->isSearching = true;
+
+        try {
+            $cleanValue = preg_replace('/[^A-Za-z0-9]/', '', $value);
+            $searchResponse = Http::timeout(30)->withHeaders([
+                'x-rapidapi-host' => 'auto-parts-catalog.p.rapidapi.com',
+                'X-RapidAPI-Key' => config('services.rapidapi.key'),
+            ])->get('https://auto-parts-catalog.p.rapidapi.com/artlookup/search-for-cross-numbers/lang-id/4/article-type/ArticleNumber/article-no/' . $cleanValue);
+
+            if ($searchResponse->successful() && !empty($searchResponse->json()['articles'])) {
+                $article = $searchResponse->json()['articles'][0];
+                $articleId = $article['articleId'] ?? null;
+                $brand = $article['supplierName'] ?? '';
+
+                if (empty($this->brand) && !empty($brand)) {
+                    $this->brand = $brand;
+                }
+
+                $this->category_id = 2; // Auto-select Part category
+
+                $this->api_compatible_vehicles = [];
+                Log::info('Workshop Stock - Fetching Compatibility for Article ID: ' . $articleId);
+
+                $compResponse = Http::timeout(30)->withHeaders([
+                    'x-rapidapi-host' => 'auto-parts-catalog.p.rapidapi.com',
+                    'X-RapidAPI-Key' => config('services.rapidapi.key'),
+                ])->get('https://auto-parts-catalog.p.rapidapi.com/articles/article-complete-details/type-id/1', [
+                    'langId' => 4,
+                    'countryFilterId' => 119,
+                    'articleId' => $articleId
+                ]);
+
+                if ($compResponse->successful()) {
+                    $compData = $compResponse->json();
+                    $root = $compData['article'] ?? $compData['articleDetails'] ?? null;
+                    $linkedVehicles = $root['compatibleCars'] ?? $root['linkedVehicles'] ?? [];
+
+                    Log::info('Workshop Stock - Found compatible vehicles: ' . count($linkedVehicles));
+
+                    if (!is_array($this->suitable_for)) {
+                        $this->suitable_for = [];
+                    }
+
+                    $addedCount = 0;
+                    foreach ($linkedVehicles as $v) {
+                        $engineName = $v['typeEngineName'] ?? $v['engineName'] ?? $v['engine'] ?? '';
+                        $startYear = substr($v['constructionIntervalStart'] ?? $v['year'] ?? '', 0, 4);
+                        $endYear = substr($v['constructionIntervalEnd'] ?? '', 0, 4);
+
+                        if (!empty($startYear)) {
+                            $yearRange = $startYear;
+                            if (!empty($endYear)) {
+                                $yearRange .= ' / ' . $endYear;
+                            }
+                        } else {
+                            $yearRange = date('Y');
+                        }
+
+                        $mfgName = $v['manufacturerName'] ?? $v['brand'] ?? 'Unknown';
+                        $modelName = $v['modelName'] ?? $v['model'] ?? 'Standard';
+
+                        $makerType = MakerType::firstOrCreate(['title' => $mfgName], ['status' => 1]);
+                        $maker = Maker::firstOrCreate(
+                            ['title' => $modelName, 'maker_type_id' => $makerType->id],
+                            ['status' => 1]
+                        );
+
+                        $fuelType = null;
+                        $engineNameLower = strtolower($engineName);
+                        if (str_contains($engineNameLower, 'diesel') || str_contains($engineNameLower, 'cdi') || str_contains($engineNameLower, 'crdi') || str_contains($engineNameLower, 'tdi') || str_contains($engineNameLower, 'ddis') || str_contains($engineNameLower, 'dci') || preg_match('/\b\d+ d\b/', $engineNameLower)) {
+                            $fuelType = 'Diesel';
+                        } elseif (str_contains($engineNameLower, 'petrol') || str_contains($engineNameLower, 'tsi') || str_contains($engineNameLower, 'tfsi') || str_contains($engineNameLower, 'vti') || str_contains($engineNameLower, 'gdi') || str_contains($engineNameLower, 'mpfi') || preg_match('/\b\d+ i\b/', $engineNameLower)) {
+                            $fuelType = 'Petrol';
+                        }
+
+                        $titleText = !empty($engineName) ? $engineName : ($mfgName . ' ' . $modelName);
+
+                        $modification = Modification::updateOrCreate(
+                            [
+                                'brand_name' => $mfgName,
+                                'variant_name' => $modelName,
+                                'title' => $titleText,
+                                'year' => $yearRange,
+                            ],
+                            [
+                                'engine_name' => !empty($engineName) ? $engineName : null,
+                                'fuel_type' => $fuelType,
+                                'brand_id' => $makerType->id,
+                                'variant_id' => $maker->id,
+                                'status' => 1,
+                            ]
+                        );
+
+                        if (!in_array($modification->id, $this->suitable_for)) {
+                            $this->suitable_for[] = $modification->id;
+                            $addedCount++;
+                        }
+                    }
+
+                    $this->forAllVehicles = false;
+                    $this->modifications = Modification::where('status', 1)->get();
+
+                    $this->dispatch('swal:toast', [
+                        'type' => 'success',
+                        'message' => count($linkedVehicles) > 0 
+                            ? "Found " . count($linkedVehicles) . " compatible vehicle(s)!" 
+                            : "Part found, but no linked vehicles found in catalog."
+                    ]);
+                } else {
+                    $this->dispatch('swal:toast', [
+                        'type' => 'warning',
+                        'message' => 'Part found, but could not load vehicle compatibility.'
+                    ]);
+                }
+            } else {
+                $this->dispatch('swal:toast', [
+                    'type' => 'error',
+                    'message' => 'No part found for this part number.'
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Workshop Stock API Error: ' . $e->getMessage());
+            $this->dispatch('swal:toast', [
+                'type' => 'error',
+                'message' => 'API Connection error: ' . $e->getMessage()
+            ]);
+        } finally {
+            $this->isSearching = false;
             $this->suitable_for = array_values($this->suitable_for);
         }
     }

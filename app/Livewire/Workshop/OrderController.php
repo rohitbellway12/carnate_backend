@@ -30,7 +30,7 @@ class OrderController extends Component
     public $user_id,$order_items,$showOrderItem,$showReasonModel = false;
   
     public $orderId,$user,$status = '',$searchfilter,$statusReason,$sotreStatusValue,$shoImageModel=false,$imageitem, $startDate,$endDate; 
-    public $checked = false,$totalPayabaleAmount =0,$payabaleOrderId = [];
+    public $checked = false,$totalPayabaleAmount =0,$payabaleOrderId = [],$isViewReason = false;
 
     protected $listeners = ['delete'];
 
@@ -277,10 +277,15 @@ public function createOrder($order_id, $total_amount)
 
         $this->orderId = $id;
         $this->status = $status;
-        $reasonData = Order::where('id', $id)->first(); 
-        $this->decline_reason = @$reasonData->decline_reason;
+        $this->isViewReason = true;
+        $reasonData = Order::with('orderItem')->where('id', $id)->first(); 
+        $this->statusReason = ($status == 5) ? 'Delayed' : 'Decline';
+        $reason = $reasonData->decline_reason ?? null;
+        if (empty($reason) && $reasonData && $reasonData->orderItem) {
+            $reason = $reasonData->orderItem->pluck('reason')->filter()->implode(', ');
+        }
+        $this->decline_reason = $reason ?: 'No reason provided';
         $this->showReasonModel = true;
- 
     }
     
     public function showdeclineorder($id,$status){
@@ -288,15 +293,15 @@ public function createOrder($order_id, $total_amount)
         $this->showReasonModel = true;
         $this->sotreStatusValue[] = $id;
         $this->sotreStatusValue[] = $status;
+        $this->isViewReason = true;
         $order = OrderItem::where('id',$id)->first();
         if($status == 5){
             $this->statusReason = 'Delayed';
-            $this->decline_reason = $order->reason;
+            $this->decline_reason = $order ? ($order->reason ?? 'No reason provided') : 'No reason provided';
         }else{
             $this->statusReason = 'Decline';
-            $this->decline_reason = $order->decline_reason;
+            $this->decline_reason = $order ? ($order->reason ?? 'No reason provided') : 'No reason provided';
         }
- 
     } 
     
     public function clodeReasonModel(){
@@ -304,6 +309,7 @@ public function createOrder($order_id, $total_amount)
         $this->decline_reason ='';
         $this->statusReason ='';
         $this->sotreStatusValue =[];
+        $this->isViewReason = false;
     }
     
     public function resetFilter(){
@@ -379,17 +385,29 @@ public function createOrder($order_id, $total_amount)
  
     public function declinereasonStore()
     {
+        if ($this->isViewReason) {
+            $this->clodeReasonModel();
+            return;
+        }
+
+        if (empty($this->sotreStatusValue)) {
+            $this->clodeReasonModel();
+            return;
+        }
+
         $order = OrderItem::where('id', $this->sotreStatusValue[0])->first();
-        $order->reason = $this->decline_reason;
-        $order->save();
+        if ($order) {
+            $order->reason = $this->decline_reason;
+            $order->save();
+        }
  
         $this->changeItemStatus($this->sotreStatusValue[0], $this->sotreStatusValue[1]);
         $this->showReasonModel = false;
         $this->decline_reason = '';
         $this->statusReason = '';
         $this->sotreStatusValue = [];
+        $this->isViewReason = false;
         return;
- 
     }
 
     public function changeItemStatus($id, $status)
@@ -415,15 +433,19 @@ public function createOrder($order_id, $total_amount)
                 $order->order_status = 1;
             } elseif ($statuses->every(fn($status) => $status == 2)) {
                 $order->order_status = 2;
+                $order->decline_reason = $order_item->reason ?? $order->decline_reason;
             } elseif ($statuses->every(fn($status) => $status == 5)) {
                 $order->order_status = 0;
             } else {
                 $order->order_status = 3;
             }
  
-            if ($order_items->where('status', 0)->count() <= 0 && $order_items->where('status', 5)->count() <= 0 && ($order_items->where('status', 1)->count() == $order_items->where('status', 1)->whereIn('payment_status', [1, 2])->count())) {
+            $acceptedCount = $order_items->where('status', 1)->count();
+            if ($order_items->where('status', 0)->count() <= 0 && $order_items->where('status', 5)->count() <= 0 && $acceptedCount > 0 && ($acceptedCount == $order_items->where('status', 1)->whereIn('payment_status', [1, 2])->count())) {
                 $order->is_cart = 1;
-                // $order->payment_status = 1;
+            } elseif ($order->order_status == 2) {
+                $order->is_cart = 0;
+                $order->payment_status = 0;
             }
  
             $order->save();
@@ -545,5 +567,148 @@ public function createOrder($order_id, $total_amount)
         
         $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'Received Successfully!']);
         return redirect()->route('workshop.orders');
+    }
+
+
+    public function reorder($orderId)
+    {
+        $order = Order::with('orderItem')->find($orderId);
+        if (!$order) {
+            return $this->dispatch('swal:toast', ['type' => 'error', 'title' => 'Order not found!']);
+        }
+
+        $order->order_status = 0;
+        $order->payment_status = 0;
+        $order->is_cart = 0;
+        $order->decline_reason = null;
+        $order->order_date = now();
+        $order->save();
+
+        foreach ($order->orderItem as $item) {
+            $item->status = 0;
+            $item->reason = null;
+            $item->payment_status = 0;
+            $item->save();
+        }
+
+        try {
+            $workshopUser = Auth::guard('workshop')->user();
+            $workshopName = $workshopUser->company_name ?? $workshopUser->name ?? 'Workshop';
+            $vendorIds = $order->orderItem->pluck('user_id')->unique()->filter();
+            foreach ($vendorIds as $vendorId) {
+                Notification::create([
+                    'user_id' => $vendorId,
+                    'order_id' => $order->id,
+                    'title' => '🔄 Order Resubmitted',
+                    'message' => "Order #{$order->id} has been resubmitted by workshop {$workshopName}. Please review.",
+                    'sound' => 'order.mp3',
+                ]);
+            }
+        } catch (\Throwable $e) {
+            \Log::error('[REORDER NOTIF] ' . $e->getMessage());
+        }
+
+        $this->dispatch('swal:toast', ['type' => 'success', 'title' => 'Order reordered successfully!']);
+    }
+
+    public function reorderItem($itemId)
+    {
+        $item = OrderItem::with(['order', 'SpareParts'])->find($itemId);
+        if (!$item) {
+            return $this->dispatch('swal:toast', ['type' => 'error', 'title' => 'Order item not found!']);
+        }
+
+        $item->status = 0;
+        $item->reason = null;
+        $item->payment_status = 0;
+        $item->save();
+
+        $order = Order::with('orderItem')->find($item->order_id);
+        if ($order) {
+            $statuses = $order->orderItem->pluck('status');
+            if ($statuses->every(fn($s) => $s == 0)) {
+                $order->order_status = 0;
+            } elseif ($statuses->every(fn($s) => $s == 1)) {
+                $order->order_status = 1;
+            } elseif ($statuses->every(fn($s) => $s == 2)) {
+                $order->order_status = 2;
+            } else {
+                $order->order_status = 3;
+            }
+            $order->payment_status = 0;
+            $order->is_cart = 0;
+            $order->decline_reason = null;
+            $order->save();
+        }
+
+        try {
+            $workshopUser = Auth::guard('workshop')->user();
+            $workshopName = $workshopUser->company_name ?? $workshopUser->name ?? 'Workshop';
+            $partName = $item->SpareParts->name ?? 'Spare part';
+            if ($item->user_id) {
+                Notification::create([
+                    'user_id' => $item->user_id,
+                    'order_id' => $item->order_id,
+                    'title' => '🔄 Item Resubmitted',
+                    'message' => "Item '{$partName}' for Order #{$item->order_id} has been resubmitted by workshop {$workshopName}.",
+                    'sound' => 'order.mp3',
+                ]);
+            }
+        } catch (\Throwable $e) {
+            \Log::error('[REORDER ITEM NOTIF] ' . $e->getMessage());
+        }
+
+        $this->dispatch('swal:toast', ['type' => 'success', 'title' => 'Item reordered successfully!']);
+    }
+
+    public function cancelItem($itemId)
+    {
+        $item = OrderItem::find($itemId);
+        if (!$item) {
+            return $this->dispatch('swal:toast', ['type' => 'error', 'title' => 'Item not found!']);
+        }
+
+        $orderId = $item->order_id;
+        $item->delete();
+
+        $remainingItems = OrderItem::where('order_id', $orderId)->get();
+        if ($remainingItems->isEmpty()) {
+            Order::destroy($orderId);
+            $this->showOrderItem = false;
+            $this->orderId = null;
+            $this->dispatch('swal:toast', ['type' => 'success', 'title' => 'Order cancelled as all items were removed!']);
+            return;
+        }
+
+        $order = Order::find($orderId);
+        if ($order) {
+            $order->total_amount = $remainingItems->sum('total_amount');
+            $statuses = $remainingItems->pluck('status');
+            if ($statuses->every(fn($s) => $s == 0)) {
+                $order->order_status = 0;
+            } elseif ($statuses->every(fn($s) => $s == 1)) {
+                $order->order_status = 1;
+            } elseif ($statuses->every(fn($s) => $s == 2)) {
+                $order->order_status = 2;
+            } else {
+                $order->order_status = 3;
+            }
+
+            $acceptedCount = $remainingItems->where('status', 1)->count();
+            $paidCount = $remainingItems->where('status', 1)->where('payment_status', 1)->count();
+            $pendingCount = $remainingItems->where('status', 0)->count();
+
+            if ($acceptedCount > 0 && $acceptedCount == $paidCount && $pendingCount == 0) {
+                $order->payment_status = 1;
+                $order->is_cart = 1;
+            } elseif ($order->order_status == 2) {
+                $order->payment_status = 0;
+                $order->is_cart = 0;
+            }
+
+            $order->save();
+        }
+
+        $this->dispatch('swal:toast', ['type' => 'success', 'title' => 'Item cancelled successfully!']);
     }
 }

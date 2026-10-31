@@ -190,6 +190,12 @@ class Msg91Service
             }
         }
 
+        // Generate Estimation URL for customer
+        $estimateUrl = route('customer.estimate.download', [
+            'id' => base64_encode($jobcard->id),
+            'type' => base64_encode(0),
+        ]);
+
         // Specific DLT variable mappings based on MSG91 approved templates
         $eventVars = [];
         if ($event === 'create') {
@@ -212,12 +218,21 @@ class Msg91Service
             ];
         } elseif ($event === 'process') {
             // "Dear ##alp1##, Your vehicle ##alp2## inspection is complete. View your job card ##alp3##..."
+            // alp3 is mapped to the estimate download URL; aliases also provided for link/url/pdf_link
             $eventVars = [
                 'alp1' => $customerName,
                 'alp2' => $vehicleNumber,
-                'alp3' => $jobcardNumber,
+                'alp3' => $estimateUrl,
                 'alp4' => $workshopName,
+                'alp5' => $estimateUrl,
                 'num1' => $workshopPhone,
+                'link' => $estimateUrl,
+                'url' => $estimateUrl,
+                'pdf_link' => $estimateUrl,
+                'pdf_url' => $estimateUrl,
+                'estimate_link' => $estimateUrl,
+                'estimate_url' => $estimateUrl,
+                'jobcard_link' => $estimateUrl,
             ];
         } elseif ($event === 'confirm') {
             // "Dear ##alp1##, Thank you for the confirmation. Repairs for your vehicle ##alp2##..."
@@ -253,10 +268,17 @@ class Msg91Service
             'balance' => $pendingAmount,
             'date' => $currentDate,
             'phone' => $workshopPhone,
+            'link' => $estimateUrl,
+            'url' => $estimateUrl,
+            'pdf_link' => $estimateUrl,
+            'pdf_url' => $estimateUrl,
+            'estimate_link' => $estimateUrl,
+            'estimate_url' => $estimateUrl,
+            'jobcard_link' => $estimateUrl,
             // Generic positional fallback variables
             'var1' => $customerName,
             'var2' => $jobcardNumber,
-            'var3' => $vehicleNumber,
+            'var3' => ($event === 'process' ? $estimateUrl : $vehicleNumber),
             'var4' => $workshopName,
             'var5' => $finalAmount,
         ], $eventVars, $extraVariables);

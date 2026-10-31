@@ -92,15 +92,26 @@ class OrderController extends Component
                     $order->order_status = 1;
                 }elseif ($statuses->every(fn($status) => $status == 2)) {
                     $order->order_status = 2;
+                    $order->decline_reason = $order_item->reason ?? $order->decline_reason;
+                    $order->payment_status = 0;
+                    $order->is_cart = 0;
                 }elseif ($statuses->every(fn($status) => $status == 5)) {
                     $order->order_status = 0;
                 } else {
                     $order->order_status = 3;  
                 }
                 
-                if($order_items->where('status',0)->count() <= 0 && $order_items->where('status',5)->count() <= 0 && ($order_items->where('status',1)->count() == $order_items->where('status',1)->whereIn('payment_status',[1,2])->count())){
+                $acceptedCount = $order_items->where('status', 1)->count();
+                $pendingCount = $order_items->where('status', 0)->count();
+                $delayedCount = $order_items->where('status', 5)->count();
+                $paidAcceptedCount = $order_items->where('status', 1)->whereIn('payment_status', [1, 2])->count();
+
+                if ($pendingCount <= 0 && $delayedCount <= 0 && $acceptedCount > 0 && ($acceptedCount == $paidAcceptedCount)) {
                     $order->is_cart = 1;
                     $order->payment_status = 1;
+                } elseif ($order->order_status == 2) {
+                    $order->is_cart = 0;
+                    $order->payment_status = 0;
                 }
 
                 $order->save();
@@ -299,6 +310,12 @@ class OrderController extends Component
         $order = OrderItem::where('id', $this->sotreStatusValue[0])->first();
         $order->reason = $this->decline_reason;
         $order->save();
+
+        $parentOrder = Order::find($order->order_id);
+        if ($parentOrder) {
+            $parentOrder->decline_reason = $this->decline_reason;
+            $parentOrder->save();
+        }
  
         $this->changeItemStatus($this->sotreStatusValue[0], $this->sotreStatusValue[1]);
         $this->showReasonModel = false;

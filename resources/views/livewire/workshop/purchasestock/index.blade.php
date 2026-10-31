@@ -48,6 +48,16 @@
             border-radius: 16px;
             overflow: hidden;
             box-shadow: 0 25px 70px rgba(15, 23, 42, .2);
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .carnate-stock-list-page .sl-modal-content > form {
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh;
+            overflow: hidden;
         }
 
         .carnate-stock-list-page .sl-modal-header {
@@ -57,6 +67,23 @@
             align-items: center;
             justify-content: space-between;
             gap: 15px;
+            flex-shrink: 0;
+        }
+
+        .carnate-stock-list-page .sl-modal-body {
+            padding: 22px;
+            overflow-y: auto;
+            flex: 1 1 auto;
+        }
+
+        .carnate-stock-list-page .sl-modal-footer {
+            padding: 15px 22px;
+            border-top: 1px solid var(--sl-border);
+            background: #f8fafc;
+            display: flex;
+            justify-content: flex-end;
+            gap: 9px;
+            flex-shrink: 0;
         }
 
         .carnate-stock-list-page .sl-modal-title {
@@ -89,19 +116,6 @@
             background: var(--sl-red-soft);
             border-color: #fecaca;
             color: var(--sl-red);
-        }
-
-        .carnate-stock-list-page .sl-modal-body {
-            padding: 22px;
-        }
-
-        .carnate-stock-list-page .sl-modal-footer {
-            padding: 15px 22px;
-            border-top: 1px solid var(--sl-border);
-            background: #f8fafc;
-            display: flex;
-            justify-content: flex-end;
-            gap: 9px;
         }
 
         /* =========================
@@ -239,6 +253,30 @@
             display: flex;
             flex-wrap: wrap;
             gap: 7px;
+            max-height: 220px;
+            overflow-y: auto;
+            padding: 12px;
+            background: #f8fafc;
+            border: 1px solid var(--sl-border);
+            border-radius: 10px;
+        }
+
+        .carnate-stock-list-page .sl-selected-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .carnate-stock-list-page .sl-selected-list::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        .carnate-stock-list-page .sl-selected-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .carnate-stock-list-page .sl-selected-list::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
 
         .carnate-stock-list-page .sl-vehicle-badge {
@@ -976,7 +1014,7 @@
 
                                     <select
                                         class="form-select"
-                                        wire:model="category_id">
+                                        wire:model.live="category_id">
 
                                         <option value="" selected>
                                             -- Select Category --
@@ -1164,12 +1202,33 @@
                                                     Part Number
                                                 </label>
 
-                                                <input
-                                                    type="text"
-                                                    min="1"
-                                                    wire:model="part_number"
-                                                    class="form-control"
-                                                    placeholder="Enter Part Number">
+                                                @if ((string)$category_id === '2')
+                                                    <div class="input-group">
+                                                        <input
+                                                            type="text"
+                                                            wire:model="part_number"
+                                                            wire:keydown.enter.prevent="searchPartNumber"
+                                                            class="form-control"
+                                                            placeholder="Enter Part Number">
+                                                        <button
+                                                            type="button"
+                                                            class="btn"
+                                                            wire:click="searchPartNumber"
+                                                            wire:loading.attr="disabled"
+                                                            wire:target="searchPartNumber"
+                                                            title="Search Compatible Vehicles"
+                                                            style="background:var(--sl-red, #e53935);color:#fff;border:1px solid var(--sl-red, #e53935);border-radius:0 8px 8px 0 !important;cursor:pointer;padding:0.375rem 0.95rem;display:inline-flex;align-items:center;justify-content:center;font-size:16px;">
+                                                            <span wire:loading wire:target="searchPartNumber"><i class='bx bx-loader-alt bx-spin'></i></span>
+                                                            <i class='bx bx-search' wire:loading.remove wire:target="searchPartNumber"></i>
+                                                        </button>
+                                                    </div>
+                                                @else
+                                                    <input
+                                                        type="text"
+                                                        wire:model="part_number"
+                                                        class="form-control"
+                                                        placeholder="Enter Part Number">
+                                                @endif
 
                                                 @error('part_number')
                                                     <span class="text-danger error">
@@ -1581,12 +1640,23 @@
 
                                             <div>
 
-                                                <label class="form-label">
-
-                                                    Selected Compatible Vehicles
-                                                    ({{ is_array($suitable_for) ? count($suitable_for) : 0 }})
-
-                                                </label>
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <label class="form-label mb-0 fw-semibold">
+                                                        Selected Compatible Vehicles
+                                                        <span class="badge" style="background:var(--sl-red);color:#fff;border-radius:6px;font-size:11px;margin-left:4px;">
+                                                            {{ is_array($suitable_for) ? count($suitable_for) : 0 }}
+                                                        </span>
+                                                    </label>
+                                                    @if(!empty($suitable_for))
+                                                        <button
+                                                            type="button"
+                                                            class="btn btn-sm btn-link text-danger p-0 text-decoration-none"
+                                                            wire:click="$set('suitable_for', [])"
+                                                            style="font-size:12px;cursor:pointer;">
+                                                            <i class="bx bx-trash me-1"></i>Clear All
+                                                        </button>
+                                                    @endif
+                                                </div>
 
                                                 <div class="sl-selected-list">
 

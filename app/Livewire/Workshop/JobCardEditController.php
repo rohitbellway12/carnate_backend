@@ -3164,6 +3164,7 @@ class JobCardEditController extends Component
             $jobcard->balance_amount = $this->balance_amount;
             $jobcard->payment_type = $this->payment_type;
             $jobcard->transaction_number = $this->transaction_number;
+            $jobcard->notes = $this->notes;
 
 
             $jobcard->status = $status;
@@ -3359,6 +3360,7 @@ class JobCardEditController extends Component
             $jobcard->delivery_time = $this->deliveryTime;
             $jobcard->payment_type = $this->payment_type;
             $jobcard->transaction_number = $this->transaction_number;
+            $jobcard->notes = $this->notes;
             // Also claim shared serial here when moving to completed from this branch
             if ($status == 3 && empty($jobcard->shared_serial)) {
                 $serialService = new SharedSerialService();
