@@ -80,26 +80,26 @@
         ========================== --}}
         <div class="carnate-history-card">
 
-            <div class="carnate-tabs">
+            <div class="carnate-tabs" role="tablist">
 
-                <button class="carnate-tab active"
+                <button class="carnate-tab {{ $activeTab === 'withdraw' ? 'active' : '' }}"
                     id="withdraw-history-tab"
-                    data-bs-toggle="tab"
-                    data-bs-target="#withdrawHistory"
+                    wire:click="setTab('withdraw')"
                     type="button"
-                    role="tab">
+                    role="tab"
+                    aria-selected="{{ $activeTab === 'withdraw' ? 'true' : 'false' }}">
 
                     <i class="bx bx-money-withdraw"></i>
                     Withdraw History
 
                 </button>
 
-                <button class="carnate-tab"
+                <button class="carnate-tab {{ $activeTab === 'wallet' ? 'active' : '' }}"
                     id="wallet-history-tab"
-                    data-bs-toggle="tab"
-                    data-bs-target="#walletHistory"
+                    wire:click="setTab('wallet')"
                     type="button"
-                    role="tab">
+                    role="tab"
+                    aria-selected="{{ $activeTab === 'wallet' ? 'true' : 'false' }}">
 
                     <i class="bx bx-history"></i>
                     Wallet History
@@ -114,9 +114,10 @@
                 {{-- =========================
                     WITHDRAW HISTORY
                 ========================== --}}
-                <div class="tab-pane fade show active"
+                <div class="tab-pane fade {{ $activeTab === 'withdraw' ? 'show active' : '' }}"
                     id="withdrawHistory"
-                    role="tabpanel">
+                    role="tabpanel"
+                    style="{{ $activeTab === 'withdraw' ? '' : 'display: none !important;' }}">
 
                     @if (!empty($withdraws) && $withdraws->count())
 
@@ -209,7 +210,7 @@
                         </div>
 
                         <div class="carnate-pagination">
-                            {{ $withdraws->onEachSide(1)->withPath(route('sparepart.withdrawal'))->links('livewire.sparepart.custom-pagination') }}
+                            {{ $withdraws->onEachSide(1)->appends(['tab' => 'withdraw'])->links('livewire.sparepart.custom-pagination') }}
                         </div>
 
                     @else
@@ -234,9 +235,10 @@
                 {{-- =========================
                     WALLET HISTORY
                 ========================== --}}
-                <div class="tab-pane fade"
+                <div class="tab-pane fade {{ $activeTab === 'wallet' ? 'show active' : '' }}"
                     id="walletHistory"
-                    role="tabpanel">
+                    role="tabpanel"
+                    style="{{ $activeTab === 'wallet' ? '' : 'display: none !important;' }}">
 
                     @if (!empty($walletHistories) && count($walletHistories) > 0)
 
@@ -317,7 +319,7 @@
                         </div>
 
                         <div class="carnate-pagination">
-                            {{ $walletHistories->onEachSide(1)->withPath(route('sparepart.withdrawal'))->links('livewire.sparepart.custom-pagination') }}
+                            {{ $walletHistories->onEachSide(1)->appends(['tab' => 'wallet'])->links('livewire.sparepart.custom-pagination') }}
                         </div>
 
                     @else

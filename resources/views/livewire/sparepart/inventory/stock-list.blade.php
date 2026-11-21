@@ -418,11 +418,28 @@
         .carnate-stock-page .modal-header {
             flex-shrink: 0;
 
-            padding: 17px 22px !important;
+            padding: 18px 24px !important;
 
             background: #fff;
 
-            border-bottom: 1px solid var(--stock-border) !important;
+            border-bottom: 1px solid var(--stock-border-light) !important;
+        }
+
+        .carnate-stock-page .modal-header-icon {
+            width: 42px;
+            height: 42px;
+            min-width: 42px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            color: var(--stock-red);
+            background: var(--stock-red-soft);
+
+            border-radius: 11px;
+
+            font-size: 20px;
         }
 
         .carnate-stock-page .modal-title {
@@ -443,7 +460,7 @@
 
             max-height: calc(100vh - 190px);
 
-            padding: 22px !important;
+            padding: 24px !important;
 
             overflow-y: auto;
             overflow-x: hidden;
@@ -469,11 +486,11 @@
         .carnate-stock-page .modal-footer {
             flex-shrink: 0;
 
-            padding: 14px 22px !important;
+            padding: 14px 24px !important;
 
-            background: #fff;
+            background: #f8fafc;
 
-            border-top: 1px solid var(--stock-border) !important;
+            border-top: 1px solid var(--stock-border-light) !important;
         }
 
         /* =========================================================
@@ -652,20 +669,69 @@
 
             color: #475569 !important;
 
-            background: #f1f5f9 !important;
+            background: #fff !important;
 
-            border: 1px solid #e2e8f0 !important;
+            border: 1px solid #cbd5e1 !important;
             border-radius: 9px !important;
 
             font-size: 13px;
             font-weight: 600;
 
             box-shadow: none !important;
+            transition: all .18s ease;
         }
 
         .carnate-stock-page .btn-secondary:hover {
-            color: #334155 !important;
-            background: #e2e8f0 !important;
+            color: #1e293b !important;
+            background: #f1f5f9 !important;
+            border-color: #94a3b8 !important;
+        }
+
+        .carnate-stock-page .btn-primary {
+            min-height: 40px;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+
+            padding: 0 22px !important;
+
+            color: #fff !important;
+            background: var(--stock-red) !important;
+
+            border: 1px solid var(--stock-red) !important;
+            border-radius: 9px !important;
+
+            font-size: 13px;
+            font-weight: 600;
+
+            box-shadow: 0 3px 10px rgba(229, 57, 53, 0.25) !important;
+            transition: all .18s ease;
+        }
+
+        .carnate-stock-page .btn-primary:hover {
+            color: #fff !important;
+            background: var(--stock-red-dark) !important;
+            border-color: var(--stock-red-dark) !important;
+            transform: translateY(-1px);
+        }
+
+        .carnate-stock-page .modal .form-control,
+        .carnate-stock-page .modal .form-select {
+            min-height: 42px;
+            border-radius: 9px;
+            border: 1px solid var(--stock-border);
+            font-size: 13.5px;
+            color: var(--stock-text-2);
+            transition: border-color .15s ease, box-shadow .15s ease;
+        }
+
+        .carnate-stock-page .modal .form-control:focus,
+        .carnate-stock-page .modal .form-select:focus {
+            border-color: var(--stock-red);
+            box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.12);
+        }
         }
 
         /* =========================================================
@@ -954,13 +1020,14 @@
         class="modal @if ($showEditModal) show @endif"
         tabindex="-1"
         style="
-            opacity:1;
-            background-color:rgba(15,23,42,.55);
-            display:@if ($showEditModal) block @else none @endif;
+            opacity: 1;
+            background-color: rgba(15, 23, 42, .55);
+            backdrop-filter: blur(4px);
+            display: @if ($showEditModal) block @else none @endif;
         "
     >
 
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
 
             <div class="modal-content">
 
@@ -969,13 +1036,20 @@
 
                     {{-- MODAL HEADER --}}
 
-                    <div class="modal-header">
+                    <div class="modal-header d-flex align-items-center justify-content-between">
 
-                        <div>
+                        <div class="d-flex align-items-center gap-3">
 
-                            <h4 class="modal-title">
-                                Edit Parts & Stock
-                            </h4>
+                            <div class="modal-header-icon">
+                                <i class="bx bx-edit-alt"></i>
+                            </div>
+
+                            <div>
+                                <h5 class="modal-title mb-0">
+                                    Edit Parts & Stock
+                                </h5>
+                                <small class="text-muted" style="font-size: 12px;">Update spare part specifications, compatibility and inventory stock</small>
+                            </div>
 
                         </div>
 
@@ -1332,13 +1406,17 @@
                                         Selling Price
                                     </label>
 
-                                    <input
-                                        type="number"
-                                        class="form-control"
-                                        wire:model.defer="stock_selling_price"
-                                        step="1"
-                                        min="1"
-                                    >
+                                    <div class="input-group">
+                                        <span class="input-group-text" style="background: #f8fafc; border-color: var(--stock-border); color: #64748b;">₹</span>
+                                        <input
+                                            type="number"
+                                            class="form-control"
+                                            wire:model.defer="stock_selling_price"
+                                            step="any"
+                                            min="0"
+                                            placeholder="0.00"
+                                        >
+                                    </div>
 
                                 </div>
 
@@ -1351,11 +1429,11 @@
 
                     {{-- MODAL FOOTER --}}
 
-                    <div class="modal-footer">
+                    <div class="modal-footer d-flex align-items-center justify-content-end gap-2">
 
                         <button
                             type="button"
-                            class="btn btn-secondary"
+                            class="btn btn-secondary px-4"
                             wire:click="$set('showEditModal', false)"
                         >
                             Cancel
@@ -1363,10 +1441,11 @@
 
                         <button
                             type="submit"
-                            class="btn btn-primary"
+                            class="btn btn-primary px-4"
                         >
-                            <i class="bx bx-check me-1"></i>
+                            <i class="bx bx-check me-1 fs-5"></i>
                             Update Both
+                            <span class="spinner-border spinner-border-sm ms-2" wire:loading wire:target="updateFullDetails"></span>
                         </button>
 
                     </div>

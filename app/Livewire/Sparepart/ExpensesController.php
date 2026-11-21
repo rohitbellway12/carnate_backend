@@ -20,6 +20,7 @@ class ExpensesController extends Component
     public $workshopId, $categories, $suppliers, $category_id, $supplier_id, $bill_number, $expense_date, $total_amount, $paid_amount, $balance_amount, $description, $expensesId, $showCategoryModel, $category_label, $user;
     public $states = [];
     public $cities = [], $searchfilter;
+    public $newSupplier = ['name' => '', 'lastname' => ''];
 
     protected $listeners = ['delete'];
 
@@ -199,11 +200,11 @@ class ExpensesController extends Component
         ]);
 
         $this->categories = SparePartExpenseCategory::all();
-        $this->category_id = $category->id;
-        $this->dispatch('swal:toast', ['message' => 'Category added successfully!']);
-        $this->resetForm();
+        $this->category_id = (string) $category->id;
         $this->category_label = '';
         $this->showCategoryModel = false;
+        $this->dispatch('sync-searchable-selects');
+        $this->dispatch('swal:toast', ['message' => 'Category added successfully!']);
     }
 
     private function resetForm()
@@ -216,6 +217,7 @@ class ExpensesController extends Component
         $this->paid_amount = '';
         $this->balance_amount = '';
         $this->description = '';
+        $this->newSupplier = ['name' => '', 'lastname' => ''];
     }
 
     public function resetFilter()
@@ -231,7 +233,15 @@ class ExpensesController extends Component
     public function openSupplierModal()
     {
         $this->resetErrorBag();
+        $this->newSupplier = ['name' => '', 'lastname' => ''];
         $this->showSupplierModal = true;
+    }
+
+    public function closeSupplierModal()
+    {
+        $this->resetErrorBag();
+        $this->newSupplier = ['name' => '', 'lastname' => ''];
+        $this->showSupplierModal = false;
     }
 
     public function saveSupplier()
@@ -240,12 +250,15 @@ class ExpensesController extends Component
             'newSupplier.name' => 'required|string|max:255',
             'newSupplier.lastname' => 'nullable|string|max:255',
         ], [
-            'newSupplier.name.required' => 'The supplier name field is required.',
+            'newSupplier.name.required' => 'The supplier first name field is required.',
         ]);
 
+        $firstName = trim($this->newSupplier['name'] ?? '');
+        $lastName = trim($this->newSupplier['lastname'] ?? '');
+
         $supplier = SparePartSupplier::create([
-            'business_first_name' => trim($this->newSupplier['name']),
-            'owner_first_name' => trim($this->newSupplier['lastname'] ?? ''),
+            'business_first_name' => $firstName,
+            'owner_first_name' => $lastName,
             'mobile_no' => '',
             'contact_1' => '',
             'user_id' => $this->workshopId,
@@ -256,8 +269,10 @@ class ExpensesController extends Component
         $this->newSupplier = ['name' => '', 'lastname' => ''];
         $this->showSupplierModal = false;
 
+        $fullName = trim($firstName . ' ' . $lastName);
+
         $this->dispatch('sync-searchable-selects');
-        $this->dispatch('set-supplier-select', id: $supplier->id);
+        $this->dispatch('set-supplier-select', id: (string) $supplier->id, text: $fullName);
         $this->dispatch('swal:toast', [
             'type' => 'success',
             'message' => 'Supplier added and selected successfully!'

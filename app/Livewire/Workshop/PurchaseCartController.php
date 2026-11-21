@@ -519,7 +519,7 @@ class PurchaseCartController extends Component
             } elseif ($statuses->every(fn($status) => $status == 2)) {
                 $order->order_status = 2;
             } elseif ($statuses->every(fn($status) => $status == 5)) {
-                $order->order_status = 0;
+                $order->order_status = 5;
             } else {
                 $order->order_status = 3;
             }

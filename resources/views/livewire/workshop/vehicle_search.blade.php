@@ -230,32 +230,112 @@
     }
 
     /* ---------------------------------------------------------
-       SEARCH AREA
+       SPARE PART SEARCH AREA
     --------------------------------------------------------- */
 
-    .carnate-spare-search .spare-search-header {
-        gap: 12px;
+    .carnate-spare-search .spare-card-header {
+        min-height: 68px;
+        padding: 14px 20px;
+        background: #ffffff;
+        border-bottom: 1px solid var(--carnate-border);
+    }
+
+    .carnate-spare-search .spare-search-actions {
+        gap: 10px;
+    }
+
+    .carnate-spare-search .spare-local-search-wrap {
+        min-width: 240px;
+        flex: 1 1 240px;
+        max-width: 320px;
     }
 
     .carnate-spare-search .spare-search-input {
-        min-width: 240px;
+        height: 42px !important;
+        min-height: 42px !important;
+        border: 1px solid var(--carnate-border) !important;
+        border-radius: 10px !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        background: #ffffff !important;
+        transition: all 0.2s ease;
+    }
+
+    .carnate-spare-search .spare-search-input:focus {
+        border-color: rgba(229, 57, 53, 0.5) !important;
+        box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.08) !important;
+        outline: none !important;
     }
 
     .carnate-spare-search .api-search-group {
-        width: 300px !important;
+        min-width: 320px;
+        flex: 1 1 320px;
+        max-width: 380px;
+        height: 42px !important;
+    }
+
+    .carnate-spare-search .api-search-group .input-group-text {
+        height: 42px !important;
+        border: 1px solid var(--carnate-border);
+        border-right: none;
+        border-radius: 10px 0 0 10px;
+        background: #ffffff;
+        padding: 0 12px;
     }
 
     .carnate-spare-search .api-search-group .form-control {
-        border-radius: 9px 0 0 9px;
+        height: 42px !important;
+        min-height: 42px !important;
+        border: 1px solid var(--carnate-border) !important;
+        border-radius: 0 !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        transition: all 0.2s ease;
+    }
+
+    .carnate-spare-search .api-search-group .form-control:focus {
+        border-color: rgba(229, 57, 53, 0.5) !important;
+        box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.08) !important;
+        outline: none !important;
     }
 
     .carnate-spare-search .api-search-group .btn {
-        border-radius: 0 9px 9px 0;
-        min-width: 72px;
+        height: 42px !important;
+        border-radius: 0 10px 10px 0 !important;
+        background: var(--carnate-red) !important;
+        border: 1px solid var(--carnate-red) !important;
+        color: #ffffff !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        padding: 0 16px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: all 0.2s ease;
     }
 
-    .carnate-spare-search .api-search-group .btn i {
-        margin-right: 3px;
+    .carnate-spare-search .api-search-group .btn:hover {
+        background: var(--carnate-red-dark) !important;
+        border-color: var(--carnate-red-dark) !important;
+        transform: translateY(-1px);
+    }
+
+    .carnate-spare-search .clear-spare-search-btn {
+        height: 42px !important;
+        border-radius: 10px !important;
+        border: 1px solid #fecdd3 !important;
+        background: #fff1f2 !important;
+        color: var(--carnate-red) !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        padding: 0 14px !important;
+        transition: all 0.2s ease;
+    }
+
+    .carnate-spare-search .clear-spare-search-btn:hover {
+        background: var(--carnate-red) !important;
+        border-color: var(--carnate-red) !important;
+        color: #ffffff !important;
     }
 
     /* ---------------------------------------------------------
@@ -550,14 +630,19 @@
             padding: 12px;
         }
 
-        .carnate-spare-search .spare-search-header {
+        .carnate-spare-search .spare-card-header {
+            padding: 12px 14px;
+        }
+
+        .carnate-spare-search .spare-search-actions {
             width: 100%;
         }
 
-        .carnate-spare-search .spare-search-input,
+        .carnate-spare-search .spare-local-search-wrap,
         .carnate-spare-search .api-search-group {
             width: 100% !important;
-            min-width: 0;
+            max-width: 100% !important;
+            min-width: 0 !important;
         }
 
         .carnate-spare-search .product-card-link {
@@ -742,36 +827,64 @@
 
     <div class="card">
 
-        <div class="card-header d-flex justify-content-between align-items-center spare-search-header">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3 spare-card-header">
 
-            <h3>
-                Search by <span>Spare Part's</span>
-            </h3>
+            <div class="d-flex align-items-center gap-2">
+                <h3 class="m-0">
+                    Search by <span>Spare Part's</span>
+                </h3>
+            </div>
 
-            <div class="d-flex gap-2 spare-search-header">
+            <div class="d-flex flex-wrap align-items-center gap-2 spare-search-actions flex-grow-1 justify-content-sm-end">
 
-                <input type="text"
-                    class="form-control spare-search-input"
-                    placeholder="Local Search (Name/Number)"
-                    wire:model.live="search">
-
-                <div class="input-group api-search-group">
-
+                {{-- Local Search --}}
+                <div class="position-relative spare-local-search-wrap">
+                    <i class="bx bx-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted fs-5"></i>
                     <input type="text"
-                        class="form-control"
-                        placeholder="Live API Search (Part #)"
-                        wire:model.defer="apiPartNumber">
+                        class="form-control ps-5 pe-4 spare-search-input"
+                        placeholder="Local Search (Name / Part #)..."
+                        wire:model.live="search">
+                    @if(!empty($search))
+                        <button type="button"
+                            class="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0 text-muted"
+                            wire:click="$set('search', '')"
+                            style="text-decoration: none;"
+                            title="Clear search">
+                            <i class="bx bx-x fs-5"></i>
+                        </button>
+                    @endif
+                </div>
+
+                {{-- Live API Search --}}
+                <div class="input-group api-search-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted ps-3">
+                        <i class="bx bx-cloud-download fs-5"></i>
+                    </span>
+                    <input type="text"
+                        class="form-control border-start-0 ps-1"
+                        placeholder="Live API Search (Part #)..."
+                        wire:model.defer="apiPartNumber"
+                        wire:keydown.enter="searchPartViaApi">
 
                     <button type="button"
                         class="btn btn-primary"
-                        wire:click="searchPartViaApi">
-
-                        <i class="bx bx-search-alt"></i>
-                        API
-
+                        wire:click="searchPartViaApi"
+                        title="Search Live API">
+                        <i class="bx bx-search-alt me-1"></i>
+                        <span>API</span>
                     </button>
-
                 </div>
+
+                {{-- Reset Filter Button --}}
+                @if(!empty($search) || !empty($apiPartNumber) || count($apiResults) > 0)
+                    <button type="button"
+                        class="btn clear-spare-search-btn d-inline-flex align-items-center gap-1"
+                        wire:click="resetFilter"
+                        title="Reset All Searches">
+                        <i class="bx bx-x fs-5"></i>
+                        <span>Clear</span>
+                    </button>
+                @endif
 
             </div>
 

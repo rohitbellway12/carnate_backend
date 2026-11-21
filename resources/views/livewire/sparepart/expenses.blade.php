@@ -71,17 +71,21 @@
 
         .carnate-expenses-page .btn-primary {
             min-height: 40px;
-
+            padding: 0 18px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            line-height: 1 !important;
             color: #fff !important;
             background: var(--expense-red) !important;
-
-            border-color: var(--expense-red) !important;
+            border: 1px solid var(--expense-red) !important;
             border-radius: 9px !important;
-
             font-size: 13px;
             font-weight: 600;
-
+            text-decoration: none !important;
             box-shadow: none !important;
+            transition: all .2s ease;
+            cursor: pointer;
         }
 
         .carnate-expenses-page .btn-primary:hover,
@@ -89,21 +93,26 @@
             color: #fff !important;
             background: var(--expense-red-dark) !important;
             border-color: var(--expense-red-dark) !important;
+            transform: translateY(-1px);
         }
 
         .carnate-expenses-page .btn-secondary {
             min-height: 40px;
-
+            padding: 0 16px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            line-height: 1 !important;
             color: #475569 !important;
             background: #f1f5f9 !important;
-
             border: 1px solid var(--expense-border) !important;
             border-radius: 9px !important;
-
             font-size: 13px;
             font-weight: 600;
-
+            text-decoration: none !important;
             box-shadow: none !important;
+            transition: all .2s ease;
+            cursor: pointer;
         }
 
         .carnate-expenses-page .btn-secondary:hover {
@@ -407,7 +416,12 @@
         /* ================= MODAL ================= */
 
         .carnate-expenses-page .modal {
-            z-index: 99999 !important;
+            z-index: 10050 !important;
+        }
+
+        .carnate-expenses-page .modal.supplier-modal,
+        .carnate-expenses-page .modal.category-modal {
+            z-index: 106000 !important;
         }
 
         .carnate-expenses-page .modal-dialog {
@@ -796,16 +810,17 @@
                                             <select
                                                 class="form-select searchable-select"
                                                 id="sparepart_expense_supplier_id"
+                                                data-placeholder="-- Select Name --"
                                                 wire:model="supplier_id"
                                             >
 
-                                                <option value="" selected disabled>
+                                                <option value="">
                                                     -- Select Name --
                                                 </option>
 
                                                 @foreach ($suppliers as $supplier)
 
-                                                    <option value="{{ $supplier->id }}" {{ (string)$supplier_id === (string)$supplier->id ? 'selected' : '' }}>
+                                                    <option value="{{ $supplier->id }}" @selected((string)$supplier_id === (string)$supplier->id)>
                                                         {{ $supplier->business_first_name }} {{ $supplier->owner_first_name ?? '' }}
                                                     </option>
 
@@ -1035,19 +1050,22 @@
             class="modal fade show d-block supplier-modal"
             tabindex="-1"
             style="
-                background: rgba(15,23,42,.55);
-                z-index: 1070 !important;
+                background: rgba(15, 23, 42, 0.65);
+                z-index: 106000 !important;
                 position: fixed;
-                top: 0;
-                left: 0;
+                inset: 0;
                 width: 100%;
                 height: 100%;
+                display: flex !important;
+                align-items: center;
+                justify-content: center;
+                backdrop-filter: blur(2px);
             "
         >
 
-            <div class="modal-dialog small-modal-dialog">
+            <div class="modal-dialog small-modal-dialog" style="z-index: 106001; margin: auto; width: 100%; max-width: 480px;">
 
-                <div class="modal-content">
+                <div class="modal-content" style="box-shadow: 0 25px 70px rgba(0,0,0,0.35) !important;">
 
                     <div class="modal-header">
 
@@ -1060,7 +1078,7 @@
                         <button
                             type="button"
                             class="btn-close"
-                            wire:click="$set('showSupplierModal', false)"
+                            wire:click="closeSupplierModal"
                             aria-label="Close"
                         ></button>
 
@@ -1085,7 +1103,7 @@
                                 <div class="col-md-6">
 
                                     <label class="form-label">
-                                        First Name
+                                        First Name <span class="text-danger">*</span>
                                     </label>
 
                                     <input
@@ -1096,7 +1114,7 @@
                                     >
 
                                     @error('newSupplier.name')
-                                        <span class="text-danger">{{ $message }}</span>
+                                        <span class="text-danger error">{{ $message }}</span>
                                     @enderror
 
                                 </div>
@@ -1115,7 +1133,7 @@
                                     >
 
                                     @error('newSupplier.lastname')
-                                        <span class="text-danger">{{ $message }}</span>
+                                        <span class="text-danger error">{{ $message }}</span>
                                     @enderror
 
                                 </div>
@@ -1131,7 +1149,7 @@
                         <button
                             type="button"
                             class="btn btn-secondary"
-                            wire:click="$set('showSupplierModal', false)"
+                            wire:click="closeSupplierModal"
                         >
                             Cancel
                         </button>
@@ -1161,16 +1179,24 @@
     ========================================================== --}}
 
     <div
-        class="modal @if ($showCategoryModel) show @endif"
+        class="modal category-modal @if ($showCategoryModel) show d-block @endif"
         tabindex="-1"
         style="
-            opacity:1;
-            background-color:rgba(15,23,42,.55);
-            display:@if ($showCategoryModel) block @else none @endif;
+            opacity: 1;
+            background: rgba(15, 23, 42, 0.65);
+            z-index: 106000 !important;
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: @if ($showCategoryModel) flex !important @else none @endif;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(2px);
         "
     >
 
-        <div class="modal-dialog modal-md">
+        <div class="modal-dialog modal-md" style="z-index: 106001; margin: auto; width: 100%; max-width: 520px;">
 
             <div class="modal-content">
 
@@ -1311,10 +1337,10 @@
                     <a
                         href="javascript:;"
                         wire:click="create"
-                        class="btn btn-primary"
+                        class="btn btn-primary d-inline-flex align-items-center justify-content-center"
                     >
-                        <i class="bx bx-plus me-1"></i>
-                        Add Expense
+                        <i class="bx bx-plus me-1 fs-5"></i>
+                        <span>Add Expense</span>
                     </a>
 
                 @endif
@@ -1592,14 +1618,57 @@
     <script>
         window.addEventListener('set-supplier-select', function(event) {
             let detail = event.detail;
-            let sId = (detail && typeof detail === 'object') ? (detail.id ?? (detail[0] ? detail[0].id : null)) : detail;
+            let sId = null;
+            let sText = '';
+
+            if (detail) {
+                if (typeof detail === 'object') {
+                    if (Array.isArray(detail) && detail[0]) {
+                        sId = detail[0].id ?? detail[0];
+                        sText = detail[0].text ?? '';
+                    } else {
+                        sId = detail.id ?? detail;
+                        sText = detail.text ?? '';
+                    }
+                } else {
+                    sId = detail;
+                }
+            }
+
             if (sId) {
                 setTimeout(function() {
                     let $s = $('#sparepart_expense_supplier_id');
                     if ($s.length) {
+                        if (!$s.find('option[value="' + sId + '"]').length && sText) {
+                            let newOpt = new Option(sText, sId, true, true);
+                            $s.append(newOpt);
+                        }
+
+                        if ($s.hasClass('select2-hidden-accessible')) {
+                            try {
+                                $s.select2('destroy');
+                            } catch (e) {}
+                        }
+
+                        $s.val(sId);
+
+                        if (typeof window.initSearchableSelects === 'function') {
+                            window.initSearchableSelects($s.parent());
+                        }
+
                         $s.val(sId).trigger('change');
                         if ($s.data('select2')) {
                             $s.trigger('change.select2');
+                        }
+
+                        if (window.Livewire) {
+                            let compEl = $s.closest('[wire\\:id]')[0];
+                            if (compEl) {
+                                let comp = window.Livewire.find(compEl.getAttribute('wire:id'));
+                                if (comp) {
+                                    comp.set('supplier_id', sId);
+                                }
+                            }
                         }
                     }
                 }, 80);

@@ -448,8 +448,15 @@
                                 @php
                                     $mId = is_array($mod) ? ($mod['id'] ?? '') : $mod;
                                     $mName = is_array($mod) ? ($mod['name'] ?? '') : $mod;
-                                    $mFuel = is_array($mod) ? ($mod['fuel_type'] ?? ($mod['fuelType'] ?? '')) : '';
-                                    $mYear = is_array($mod) ? ($mod['year'] ?? '') : '';
+                                    $mFuel = is_array($mod) ? ($mod['fuelType'] ?? ($mod['fuel_type'] ?? '')) : '';
+                                    $mYear = '';
+                                    if (is_array($mod)) {
+                                        if (!empty($mod['yearFrom']) || !empty($mod['yearTo'])) {
+                                            $mYear = ($mod['yearFrom'] ?? '') . '-' . ($mod['yearTo'] ?? '');
+                                        } elseif (!empty($mod['year'])) {
+                                            $mYear = $mod['year'];
+                                        }
+                                    }
                                     $isModSel = !empty($modification_id) && ((string)$modification_id === (string)$mId);
                                     $modLabel = $mName . (!empty($mYear) ? ' (' . $mYear . ')' : '') . (!empty($mFuel) ? ' - ' . $mFuel : '');
                                 @endphp
@@ -768,7 +775,7 @@
                                     <label class="form-label">Purchase Price <sup class="text-danger">*</sup></label>
                                     <div class="input-group">
                                         <span class="input-group-text">₹</span>
-                                        <input type="number" wire:model.live="purchase_amount" class="form-control" {{ $isView ? 'disabled' : '' }}>
+                                        <input type="number" step="any" min="0" wire:model.live="purchase_amount" class="form-control" {{ $isView ? 'disabled' : '' }}>
                                     </div>
                                     @error('purchase_amount') <span class="text-danger small">{{ $message }}</span> @enderror
                                 </div>
@@ -776,7 +783,7 @@
                                     <label class="form-label">Selling Price <sup class="text-danger">*</sup></label>
                                     <div class="input-group">
                                         <span class="input-group-text">₹</span>
-                                        <input type="number" wire:model.live="selling_amount" class="form-control" {{ $isView ? 'disabled' : '' }}>
+                                        <input type="number" step="any" min="0" wire:model.live="selling_amount" class="form-control" {{ $isView ? 'disabled' : '' }}>
                                     </div>
                                     @error('selling_amount') <span class="text-danger small">{{ $message }}</span> @enderror
                                 </div>

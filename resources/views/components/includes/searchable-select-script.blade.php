@@ -319,5 +319,29 @@
                 });
             }, 60);
         });
+
+        // Globally disable mouse wheel changing number inputs
+        var blurNumberOnScroll = function(e) {
+            var active = document.activeElement;
+            if (active && active.tagName === 'INPUT' && active.type === 'number') {
+                active.blur();
+            }
+            if (e.target && e.target.tagName === 'INPUT' && e.target.type === 'number') {
+                e.target.blur();
+            }
+        };
+
+        window.addEventListener('wheel', blurNumberOnScroll, { capture: true, passive: true });
+        window.addEventListener('mousewheel', blurNumberOnScroll, { capture: true, passive: true });
+        document.addEventListener('wheel', blurNumberOnScroll, { capture: true, passive: true });
+        document.addEventListener('mousewheel', blurNumberOnScroll, { capture: true, passive: true });
+
+        if (window.jQuery) {
+            jQuery(document).on('wheel mousewheel DOMMouseScroll', 'input[type=number]', function(e) {
+                if (document.activeElement === this) {
+                    this.blur();
+                }
+            });
+        }
     })();
 </script>

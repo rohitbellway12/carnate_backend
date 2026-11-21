@@ -552,7 +552,6 @@
                         <thead>
                             <tr>
                                 <th>Order #</th>
-                                <th>Workshop Details</th>
                                 <th>Items</th>
                                 <th>Amount</th>
                                 <th>Status</th>
@@ -568,14 +567,6 @@
                                         </span>
                                         <div class="text-muted" style="font-size: 11px; margin-top: 3px;">
                                             {{ \Carbon\Carbon::parse($order->created_at)->format('d M, h:i A') }}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div style="font-weight: 700; color: #1e293b;">
-                                            {{ $order->workShopVendor->company_name ?? ($order->workShopVendor->name ?? 'Workshop') }}
-                                        </div>
-                                        <div class="text-muted" style="font-size: 12px;">
-                                            <i class="bx bx-phone"></i> {{ $order->workShopVendor->mobile_no ?? 'N/A' }}
                                         </div>
                                     </td>
                                     <td>
@@ -614,7 +605,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6">
+                                    <td colspan="5">
                                         <div class="empty-state-box">
                                             <i class="bx bx-cart"></i>
                                             <p>No recent orders found from workshops.</p>

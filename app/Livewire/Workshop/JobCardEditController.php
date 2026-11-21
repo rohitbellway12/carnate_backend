@@ -3272,6 +3272,11 @@ class JobCardEditController extends Component
             array_column($this->accessoriess, 'tax_type'),
         );
         $machanic = $this->mechanic_id;
+        $purchasePriceArr = array_merge(
+            array_column($this->spareParts, 'purchase_price'),
+            array_column($this->lubes, 'purchase_price'),
+            array_column($this->accessoriess, 'purchase_price')
+        );
         $vehicleId = $this->vehicle_id;
         $customer = Customer::with([
             'customerVehicles' => function ($qry) use ($vehicleId) {
@@ -3380,13 +3385,24 @@ class JobCardEditController extends Component
                 if (count($items) > 0) {
 
                     foreach ($items as $itemKey => $itemValue) {
-                        $sparePart = SparePart::where('label_id', $itemValue)->first();
+                        // Strictly lookup workshop's own stock from workshop/stocks
+                        $workshopStock = ProductStock::where('user_id', $this->workshopId)
+                            ->where('label_id', $itemValue)
+                            ->first();
+
+                        $resolvedPurchasePrice = null;
+                        if ($workshopStock && $workshopStock->buy_price !== null && $workshopStock->buy_price !== '') {
+                            $resolvedPurchasePrice = (float) $workshopStock->buy_price;
+                        } elseif (isset($purchasePriceArr[$itemKey]) && $purchasePriceArr[$itemKey] !== '' && $purchasePriceArr[$itemKey] !== null) {
+                            $resolvedPurchasePrice = (float) $purchasePriceArr[$itemKey];
+                        }
+                        $sparePart = $workshopStock;
                         $labelName = SparePartLabel::select('title')->find($itemValue);
                         $item = new JobCardSparePart;
                         $item->jobcard_id = $jobcard->id;
                         $item->stock_label_id = $itemValue;
                         // product_stock_id is not applicable when using spare_parts stock; set null
-                        $item->product_stock_id = null;
+                        $item->product_stock_id = $workshopStock->id ?? null;
                         $item->stock_label_name = $labelName->title;
                         $item->quantity = $qty[$itemKey];
                         $item->price = $price[$itemKey];
@@ -3395,7 +3411,7 @@ class JobCardEditController extends Component
                         //   $item->discount_type = $discountType[$itemKey];
                         $item->discount_type = $discountType[$itemKey] ?? 'fixed';
                         $item->final_amount = $finalAmount[$itemKey];
-                        $item->purchase_price = $sparePart->purchase_price ?? 0;
+                        $item->purchase_price = $resolvedPurchasePrice ?? ($workshopStock->buy_price ?? 0);
                         $item->tax_type = $taxTypeArr[$itemKey] ?? null;
                         $item->tax_percentage = $taxPercentageArr[$itemKey] ?? "0";
 
@@ -3406,7 +3422,7 @@ class JobCardEditController extends Component
                                 $metaStock = ProductStock::where('user_id', $this->workshopId)->where('label_id', $itemValue)->first();
                             }
                             if (property_exists($item, 'purchase_price') && empty($item->purchase_price)) {
-                                $item->purchase_price = $metaPart->purchase_price ?? ($metaStock->buy_price ?? null);
+                                $item->purchase_price = $workshopStock->buy_price ?? ($metaStock->buy_price ?? ($metaPart->purchase_price ?? null));
                             }
                             // Only fallback to meta if the UI didn't provide a tax type
                             if (property_exists($item, 'tax_type') && ($item->tax_type === null || $item->tax_type === '')) {

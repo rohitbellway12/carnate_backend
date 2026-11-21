@@ -21,6 +21,7 @@ class WithdrawController extends Component
 
     public $walletsPage = 1;
     public $withdrawsPage = 1;
+    public $activeTab = 'withdraw';
 
     public $user,$user_id, $showModal, $isEdit, $withdraw;
     public $wallet;
@@ -31,15 +32,27 @@ class WithdrawController extends Component
         $this->user = Auth::guard('sparepart')->user();
         $this->user_id = $this->user->id;
 
+        if (request()->has('walletsPage') || request()->get('tab') === 'wallet') {
+            $this->activeTab = 'wallet';
+        } elseif (request()->has('withdrawsPage') || request()->get('tab') === 'withdraw') {
+            $this->activeTab = 'withdraw';
+        }
+    }
+
+    public function setTab($tab)
+    {
+        $this->activeTab = in_array($tab, ['withdraw', 'wallet']) ? $tab : 'withdraw';
     }
 
     public function updatingWithdrawsPage()
     {
+        $this->activeTab = 'withdraw';
         $this->resetPage('walletsPage');
     }
 
     public function updatingWalletsPage()
     {
+        $this->activeTab = 'wallet';
         $this->resetPage('withdrawsPage');
     }
 

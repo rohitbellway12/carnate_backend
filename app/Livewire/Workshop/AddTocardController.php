@@ -150,6 +150,22 @@ class AddTocardController extends Component
         return redirect()->route('workshop.vehicle_search')->with('success','Item Added in cart successfully!');
     }
 
+    public function incrementQuantity()
+    {
+        $sparePartData = SparePart::find($this->sparePartId);
+        $maxStock = (int) ($sparePartData->stock ?? 1);
+        if ((int) $this->increase_stock < $maxStock) {
+            $this->increase_stock++;
+        }
+    }
+
+    public function decrementQuantity()
+    {
+        if ((int) $this->increase_stock > 1) {
+            $this->increase_stock--;
+        }
+    }
+
     public function updatedIncreaseStock()
     {
 

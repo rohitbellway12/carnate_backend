@@ -678,31 +678,53 @@ class PurchaseOrder extends Component
 
     public function focusSupplierSearch()
     {
-        $this->supplierResults = SparePartSupplier::orderBy('business_first_name')->limit(50)->get()->toArray();
+        $userId = $this->sparepartId ?: (Auth::guard('sparepart')->id() ?? Auth::id());
+        $this->supplierResults = SparePartSupplier::where('user_id', $userId)
+            ->orderBy('business_first_name')
+            ->limit(50)
+            ->get()
+            ->toArray();
+    }
+
+    public function clearSupplierSearch()
+    {
+        $this->supplierSearch = '';
+        $this->supplierResults = [];
     }
 
     public function focusPartSearch()
     {
-        $lubricants = \App\Models\Lubricant::withTrashed()->orderBy('name')->limit(10)->get();
-        $parts = \App\Models\Part::withTrashed()->orderBy('name')->limit(10)->get();
-        $accessories = \App\Models\Accessory::withTrashed()->orderBy('name')->limit(10)->get();
-        $tools = \App\Models\Tools::withTrashed()->orderBy('name')->limit(10)->get();
+        $userId = $this->sparepartId ?: (Auth::guard('sparepart')->id() ?? Auth::id());
+        $lubricants = \App\Models\Lubricant::where('user_id', $userId)->orderBy('name')->limit(10)->get();
+        $parts = \App\Models\Part::where('user_id', $userId)->orderBy('name')->limit(10)->get();
+        $accessories = \App\Models\Accessory::where('user_id', $userId)->orderBy('name')->limit(10)->get();
+        $tools = \App\Models\Tools::where('user_id', $userId)->orderBy('name')->limit(10)->get();
         $this->partResults = $lubricants->merge($parts)->merge($accessories)->merge($tools)->take(20)->values();
+    }
+
+    public function clearPartSearch()
+    {
+        $this->part_search = '';
+        $this->partResults = [];
     }
 
     // Supplier Management
     public function updatedSupplierSearch($value)
     {
         $value = trim($value);
+        $userId = $this->sparepartId ?: (Auth::guard('sparepart')->id() ?? Auth::id());
         if ($value !== '') {
-            $this->supplierResults = SparePartSupplier::where('business_first_name', 'like', "%$value%")
-                ->orWhere('mobile_no', 'like', "%$value%")
+            $this->supplierResults = SparePartSupplier::where('user_id', $userId)
+                ->where(function ($query) use ($value) {
+                    $query->where('business_first_name', 'like', "%$value%")
+                        ->orWhere('mobile_no', 'like', "%$value%");
+                })
                 ->orderBy('business_first_name')
                 ->limit(50)
                 ->get()
                 ->toArray();
         } else {
-            $this->supplierResults = SparePartSupplier::orderBy('business_first_name')->limit(50)->get()->toArray();
+            $this->supplierResults = [];
         }
         $this->supplier_name = '';
         $this->supplier_phone = '';
@@ -712,7 +734,8 @@ class PurchaseOrder extends Component
 
     public function selectSupplier($id)
     {
-        $supplier = SparePartSupplier::find($id);
+        $userId = $this->sparepartId ?: (Auth::guard('sparepart')->id() ?? Auth::id());
+        $supplier = SparePartSupplier::where('user_id', $userId)->find($id) ?? SparePartSupplier::find($id);
         if ($supplier) {
             $this->supplier_name = $supplier->business_first_name;
             $this->supplier_phone = $supplier->mobile_no;
@@ -814,16 +837,9 @@ class PurchaseOrder extends Component
     {
         $value = trim($value);
         if (strlen($value) > 1) {
-            $lubricants = \App\Models\Lubricant::withTrashed()
-                ->where(function ($query) use ($value) {
-                    $query->Where('part_number', 'like', "%$value%");
-                    $query->orWhere('name', 'like', "%$value%");
+            $userId = $this->sparepartId ?: (Auth::guard('sparepart')->id() ?? Auth::id());
 
-                })
-                ->limit(5)
-                ->get();
-
-            $parts = \App\Models\Part::withTrashed()
+            $lubricants = \App\Models\Lubricant::where('user_id', $userId)
                 ->where(function ($query) use ($value) {
                     $query->where('part_number', 'like', "%$value%");
                     $query->orWhere('name', 'like', "%$value%");
@@ -831,7 +847,7 @@ class PurchaseOrder extends Component
                 ->limit(5)
                 ->get();
 
-            $accessories = \App\Models\Accessory::withTrashed()
+            $parts = \App\Models\Part::where('user_id', $userId)
                 ->where(function ($query) use ($value) {
                     $query->where('part_number', 'like', "%$value%");
                     $query->orWhere('name', 'like', "%$value%");
@@ -839,7 +855,7 @@ class PurchaseOrder extends Component
                 ->limit(5)
                 ->get();
 
-            $tools = \App\Models\Tools::withTrashed()
+            $accessories = \App\Models\Accessory::where('user_id', $userId)
                 ->where(function ($query) use ($value) {
                     $query->where('part_number', 'like', "%$value%");
                     $query->orWhere('name', 'like', "%$value%");
@@ -847,7 +863,15 @@ class PurchaseOrder extends Component
                 ->limit(5)
                 ->get();
 
-            $this->partResults = $lubricants->merge($parts)->merge($accessories)->merge($tools)->take(5)->values();
+            $tools = \App\Models\Tools::where('user_id', $userId)
+                ->where(function ($query) use ($value) {
+                    $query->where('part_number', 'like', "%$value%");
+                    $query->orWhere('name', 'like', "%$value%");
+                })
+                ->limit(5)
+                ->get();
+
+            $this->partResults = $lubricants->merge($parts)->merge($accessories)->merge($tools)->take(10)->values();
         } else {
             $this->partResults = [];
         }
@@ -863,7 +887,12 @@ class PurchaseOrder extends Component
         if (!$id)
             return;
 
-        $part = \App\Models\Part::withTrashed()->find($id)
+        $userId = $this->sparepartId ?: (Auth::guard('sparepart')->id() ?? Auth::id());
+        $part = \App\Models\Part::where('user_id', $userId)->find($id)
+            ?? \App\Models\Lubricant::where('user_id', $userId)->find($id)
+            ?? \App\Models\Accessory::where('user_id', $userId)->find($id)
+            ?? \App\Models\Tools::where('user_id', $userId)->find($id)
+            ?? \App\Models\Part::withTrashed()->find($id)
             ?? \App\Models\Lubricant::withTrashed()->find($id)
             ?? \App\Models\Accessory::withTrashed()->find($id)
             ?? \App\Models\Tools::withTrashed()->find($id);

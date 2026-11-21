@@ -987,8 +987,8 @@
                                                 <button type="button" wire:click="changeItemStatus({{ $order_item->id }}, 1)" class="act-btn act-success" title="Accept delayed delivery">
                                                     <i class="bx bx-check"></i> Accept
                                                 </button>
-                                                <button type="button" wire:click="showdeclineorder({{ $order_item->id }}, 2)" class="act-btn act-cancel" title="Decline item">
-                                                    <i class="bx bx-x"></i> Decline
+                                                <button type="button" wire:click="showCancelItemModal({{ $order_item->id }})" class="act-btn act-cancel" title="Cancel item">
+                                                    <i class="bx bx-x"></i> Cancel
                                                 </button>
                                             @endif
 
@@ -1156,7 +1156,10 @@
                                     </td>
 
                                     <td class="text-center">
-                                        <span class="items-count-pill">{{ $order->total_item }} Items</span>
+                                        @php
+                                            $actualItemCount = ($order->orderItem && $order->orderItem->count() > 0) ? $order->orderItem->count() : ($order->total_item ?? 0);
+                                        @endphp
+                                        <span class="items-count-pill">{{ $actualItemCount }} {{ $actualItemCount == 1 ? 'Item' : 'Items' }}</span>
                                     </td>
 
                                     <td class="text-center">
@@ -1192,7 +1195,17 @@
                                     </td>
 
                                     <td>
-                                        @switch($order->order_status)
+                                        @php
+                                            $effectiveStatus = $order->order_status;
+                                            if ($order->orderItem && $order->orderItem->isNotEmpty()) {
+                                                if ($order->orderItem->every(fn($i) => $i->status == 5)) {
+                                                    $effectiveStatus = 5;
+                                                } elseif ($order->orderItem->every(fn($i) => $i->status == 2)) {
+                                                    $effectiveStatus = 2;
+                                                }
+                                            }
+                                        @endphp
+                                        @switch($effectiveStatus)
                                             @case(0)
                                                 <span class="status-pill pill-warning" data-bs-toggle="tooltip" title="Awaiting vendor response">Pending</span>
                                                 @break
@@ -1226,6 +1239,15 @@
                                                 <span class="status-pill pill-success" data-bs-toggle="tooltip" title="Order successfully completed and received">Completed</span>
                                                 @break
 
+                                            @case(5)
+                                                <div>
+                                                    <span class="status-pill pill-info" data-bs-toggle="tooltip" title="Delivery delayed by vendor">Delayed</span>
+                                                    <a href="javascript:void(0);" wire:click="declineorder({{ $order->id }}, 5)" class="view-reason-btn" title="View delay reason">
+                                                        <i class="bx bx-info-circle"></i> View Reason
+                                                    </a>
+                                                </div>
+                                                @break
+
                                             @default
                                                 <span class="status-pill pill-warning">{{ $order->order_status }}</span>
                                         @endswitch
@@ -1237,13 +1259,13 @@
                                                 <i class="bx bx-show"></i> View Items
                                             </button>
 
-                                            @if ($order->payment_status == 0 && $order->order_status == 0)
+                                            @if ($order->payment_status == 0 && ($order->order_status == 0 || $order->order_status == 5 || $effectiveStatus == 5))
                                                 <button type="button" class="act-btn act-cancel" wire:click="confirmDelete({{ $order->id }})" title="Cancel this order">
                                                     <i class="bx bx-trash"></i> Cancel
                                                 </button>
                                             @endif
 
-                                            @if ($order->order_status == 2)
+                                            @if ($order->order_status == 2 || $effectiveStatus == 2)
                                                 <button type="button" class="act-btn act-reorder" wire:click="reorder({{ $order->id }})" title="Reorder declined order">
                                                     <i class="bx bx-refresh"></i> Reorder
                                                 </button>

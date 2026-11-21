@@ -368,13 +368,16 @@
             padding: 20px;
             background: rgba(15, 23, 42, .48);
             backdrop-filter: blur(3px);
+            overflow-y: auto;
         }
 
         .carnate-expense-suppliers-page .carnate-modal-dialog {
             width: 100%;
             max-width: 760px;
             max-height: calc(100vh - 40px);
-            margin: 0;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
         }
 
         .carnate-expense-suppliers-page .carnate-modal-content {
@@ -386,6 +389,16 @@
             border-radius: 18px;
             background: #fff;
             box-shadow: 0 24px 60px rgba(15, 23, 42, .18);
+        }
+
+        .carnate-expense-suppliers-page .carnate-modal-content form,
+        .carnate-expense-suppliers-page .carnate-modal-form {
+            display: flex;
+            flex-direction: column;
+            max-height: calc(100vh - 40px);
+            height: 100%;
+            min-height: 0;
+            overflow: hidden;
         }
 
         .carnate-expense-suppliers-page .modal-head {
@@ -443,8 +456,27 @@
 
         .carnate-expense-suppliers-page .modal-body {
             flex: 1 1 auto;
+            min-height: 0;
             overflow-y: auto;
+            overflow-x: hidden;
             padding: 22px;
+        }
+
+        .carnate-expense-suppliers-page .modal-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .carnate-expense-suppliers-page .modal-body::-webkit-scrollbar-track {
+            background: #f8fafc;
+        }
+
+        .carnate-expense-suppliers-page .modal-body::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .carnate-expense-suppliers-page .modal-body::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
 
         .carnate-expense-suppliers-page .form-section {
@@ -509,6 +541,7 @@
             gap: 10px;
             padding: 16px 22px;
             border-top: 1px solid #e2e8f0;
+            background: #fff;
         }
 
         .carnate-expense-suppliers-page .cancel-btn {
@@ -580,7 +613,9 @@
             }
 
             .carnate-expense-suppliers-page .carnate-modal-dialog,
-            .carnate-expense-suppliers-page .carnate-modal-content {
+            .carnate-expense-suppliers-page .carnate-modal-content,
+            .carnate-expense-suppliers-page .carnate-modal-content form,
+            .carnate-expense-suppliers-page .carnate-modal-form {
                 max-height: calc(100vh - 20px);
             }
         }
@@ -632,7 +667,7 @@
             <div class="carnate-modal-dialog">
                 <div class="carnate-modal-content">
 
-                    <form wire:submit.prevent="{{ $isEdit ? 'update' : 'store' }}">
+                    <form wire:submit.prevent="{{ $isEdit ? 'update' : 'store' }}" class="carnate-modal-form">
 
                         <div class="modal-head">
                             <div class="modal-title-wrap">

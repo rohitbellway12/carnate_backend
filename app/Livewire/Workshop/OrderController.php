@@ -288,20 +288,24 @@ public function createOrder($order_id, $total_amount)
         $this->showReasonModel = true;
     }
     
-    public function showdeclineorder($id,$status){
+    public function showdeclineorder($id, $status, $isView = true){
  
         $this->showReasonModel = true;
-        $this->sotreStatusValue[] = $id;
-        $this->sotreStatusValue[] = $status;
-        $this->isViewReason = true;
-        $order = OrderItem::where('id',$id)->first();
+        $this->sotreStatusValue = [$id, $status];
+        $this->isViewReason = $isView;
+        $order = OrderItem::where('id', $id)->first();
         if($status == 5){
             $this->statusReason = 'Delayed';
             $this->decline_reason = $order ? ($order->reason ?? 'No reason provided') : 'No reason provided';
         }else{
-            $this->statusReason = 'Decline';
-            $this->decline_reason = $order ? ($order->reason ?? 'No reason provided') : 'No reason provided';
+            $this->statusReason = $isView ? 'Decline' : 'Cancel';
+            $this->decline_reason = $isView ? ($order ? ($order->reason ?? 'No reason provided') : 'No reason provided') : '';
         }
+    } 
+
+    public function showCancelItemModal($id)
+    {
+        $this->showdeclineorder($id, 2, false);
     } 
     
     public function clodeReasonModel(){
@@ -435,7 +439,7 @@ public function createOrder($order_id, $total_amount)
                 $order->order_status = 2;
                 $order->decline_reason = $order_item->reason ?? $order->decline_reason;
             } elseif ($statuses->every(fn($status) => $status == 5)) {
-                $order->order_status = 0;
+                $order->order_status = 5;
             } else {
                 $order->order_status = 3;
             }
@@ -632,6 +636,8 @@ public function createOrder($order_id, $total_amount)
                 $order->order_status = 1;
             } elseif ($statuses->every(fn($s) => $s == 2)) {
                 $order->order_status = 2;
+            } elseif ($statuses->every(fn($s) => $s == 5)) {
+                $order->order_status = 5;
             } else {
                 $order->order_status = 3;
             }
@@ -690,6 +696,8 @@ public function createOrder($order_id, $total_amount)
                 $order->order_status = 1;
             } elseif ($statuses->every(fn($s) => $s == 2)) {
                 $order->order_status = 2;
+            } elseif ($statuses->every(fn($s) => $s == 5)) {
+                $order->order_status = 5;
             } else {
                 $order->order_status = 3;
             }

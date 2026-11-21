@@ -96,7 +96,7 @@ class OrderController extends Component
                     $order->payment_status = 0;
                     $order->is_cart = 0;
                 }elseif ($statuses->every(fn($status) => $status == 5)) {
-                    $order->order_status = 0;
+                    $order->order_status = 5;
                 } else {
                     $order->order_status = 3;  
                 }

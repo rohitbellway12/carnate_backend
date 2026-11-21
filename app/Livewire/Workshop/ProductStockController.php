@@ -5,6 +5,7 @@ namespace App\Livewire\Workshop;
 use App\Models\{Accessory, Category, OrderItem, Stock, SparePartLabel, Unit, WorkShopVendor, Modification, SparePartVehicleModification, WorkshopSupplier, Maker, MakerType};
 use App\Models\ProductStock;
 use App\Models\Staff;
+use App\Services\SparePartCategoryService;
 use Illuminate\Support\Facades\{Auth, DB, Http, Log};
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -138,7 +139,7 @@ class ProductStockController extends Component
         $valArr = [
             'name' => ["required"],
             'category_id' => ["required"],
-            'purchase_amount' => ["required", "min:1"],
+            'purchase_amount' => ["nullable", "numeric", "min:0"],
             'amount' => ["required", "min:1"],
             'stock' => ["required", "min:1"],
             'brand' => ["required"],
@@ -173,7 +174,7 @@ class ProductStockController extends Component
             $productStock->price = $this->amount;
             $productStock->stock = $this->stock;
             $productStock->brand = $this->brand;
-            $productStock->buy_price = $this->purchase_amount;
+            $productStock->buy_price = ($this->purchase_amount !== '' && $this->purchase_amount !== null) ? $this->purchase_amount : null;
             $productStock->price = $this->amount;
             $productStock->sp_type =  $this->sp_type ;
             $productStock->tax_type = $this->tax_type;
@@ -227,7 +228,7 @@ class ProductStockController extends Component
         $valArr = [
             'name' => ["required"],
             'category_id' => ["required"],
-            'purchase_amount' => ["required", "min:1"],
+            'purchase_amount' => ["nullable", "numeric", "min:0"],
             'amount' => ["required", "min:1"],
             'stock' => ["required", "min:1"],
             'part_number' => "nullable",
@@ -242,7 +243,7 @@ class ProductStockController extends Component
         $productStock->price = $this->amount;
         $productStock->stock = $this->stock;
         $productStock->brand = $this->brand;
-        $productStock->buy_price = $this->purchase_amount;
+        $productStock->buy_price = ($this->purchase_amount !== '' && $this->purchase_amount !== null) ? $this->purchase_amount : null;
         $productStock->price = $this->amount;
          $productStock->sp_type=  $this->sp_type ;
         $productStock->tax_type = $this->tax_type;
@@ -480,12 +481,37 @@ class ProductStockController extends Component
                 $article = $searchResponse->json()['articles'][0];
                 $articleId = $article['articleId'] ?? null;
                 $brand = $article['supplierName'] ?? '';
+                $artNo = $article['articleNo'] ?? $value;
+                $baseName = $article['articleProductName'] ?? 'Unknown Part';
 
-                if (empty($this->brand) && !empty($brand)) {
+                $brand = $article['supplierName'] 
+                    ?? ($article['brand'] 
+                    ?? ($article['mfgName'] 
+                    ?? ($article['manufacturerName'] 
+                    ?? ($article['dataSupplierName'] 
+                    ?? ''))));
+
+                if (!empty($brand)) {
                     $this->brand = $brand;
                 }
 
                 $this->category_id = 2; // Auto-select Part category
+
+                // 1. Auto-fill Product Name (Full Descriptive Name) into SparePartLabel and select it
+                $fullName = trim("{$baseName} {$brand} {$artNo}");
+                if (!empty($fullName)) {
+                    $sparePartLabel = SparePartLabel::firstOrCreate(
+                        ['title' => $fullName],
+                        ['title' => $fullName, 'spare_part_type' => 2]
+                    );
+                    $this->sparePartLabels = SparePartLabel::select('id', 'title')->get();
+                    $this->name = $sparePartLabel->id;
+                }
+
+                // 2. Auto-detect Sub Category from TecDoc API
+                if ($articleId) {
+                    $this->resolveArticleCategory((int)$articleId);
+                }
 
                 $this->api_compatible_vehicles = [];
                 Log::info('Workshop Stock - Fetching Compatibility for Article ID: ' . $articleId);
@@ -502,6 +528,12 @@ class ProductStockController extends Component
                 if ($compResponse->successful()) {
                     $compData = $compResponse->json();
                     $root = $compData['article'] ?? $compData['articleDetails'] ?? null;
+                    if (empty($this->brand) && !empty($root)) {
+                        $compBrand = $root['supplierName'] ?? ($root['manufacturerName'] ?? ($root['brand'] ?? ''));
+                        if (!empty($compBrand)) {
+                            $this->brand = $compBrand;
+                        }
+                    }
                     $linkedVehicles = $root['compatibleCars'] ?? $root['linkedVehicles'] ?? [];
 
                     Log::info('Workshop Stock - Found compatible vehicles: ' . count($linkedVehicles));
@@ -596,7 +628,115 @@ class ProductStockController extends Component
         } finally {
             $this->isSearching = false;
             $this->suitable_for = array_values($this->suitable_for);
+
+            $this->dispatch('sync-searchable-selects');
+            if (!empty($this->name)) {
+                $this->dispatch('set-stock-product-name', id: $this->name);
+            }
+            if (!empty($this->category)) {
+                $this->dispatch('set-stock-category', id: $this->category);
+            }
+            if (!empty($this->brand)) {
+                $this->dispatch('set-stock-brand', brand: $this->brand);
+            }
         }
     }
 
+    private function resolveArticleCategory(int $articleId): bool
+    {
+        $headers = [
+            'x-rapidapi-host' => 'auto-parts-catalog.p.rapidapi.com',
+            'X-RapidAPI-Key'  => config('services.rapidapi.key'),
+        ];
+
+        try {
+            $categoriesResponse = Http::timeout(30)->withHeaders($headers)
+                ->get('https://auto-parts-catalog.p.rapidapi.com/articles/get-article-categories/article-id/' . $articleId . '/lang-id/4');
+
+            if (!$categoriesResponse->successful()) {
+                return false;
+            }
+
+            $categories = $categoriesResponse->json();
+            if (!is_array($categories) || empty($categories)) {
+                return false;
+            }
+
+            $primaryCategoryId = null;
+            $singularResponse = Http::timeout(30)->withHeaders($headers)
+                ->get('https://auto-parts-catalog.p.rapidapi.com/articles/get-article-category/article-id/' . $articleId . '/lang-id/4');
+
+            if ($singularResponse->successful() && !empty($singularResponse->json()['categoryId'])) {
+                $primaryCategoryId = (int) $singularResponse->json()['categoryId'];
+            }
+
+            $selected = collect($categories)->first(
+                fn ($cat) => $primaryCategoryId && (int) ($cat['categoryId'] ?? 0) === $primaryCategoryId
+            ) ?? $categories[0];
+
+            $specificName = trim($selected['categoryName'] ?? '');
+            $roots = SparePartCategoryService::getRootNames();
+            $topLevel = $this->extractRootCategoryName($selected['categoryParentName'] ?? [], $roots);
+
+            if ($topLevel === '' && $specificName !== '') {
+                $topLevel = $specificName;
+            }
+
+            if ($topLevel === '') {
+                return false;
+            }
+
+            $this->saveOrFindCategory($topLevel, $specificName);
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Error resolving article category in Workshop Stock: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    private function extractRootCategoryName(array $categoryParentName, array $roots = []): string
+    {
+        if (empty($categoryParentName)) {
+            return '';
+        }
+
+        if (!empty($roots)) {
+            foreach (array_reverse($categoryParentName) as $parent) {
+                if (!is_array($parent)) {
+                    continue;
+                }
+                $name = trim($parent['categoryName'] ?? '');
+                if ($name !== '' && in_array($name, $roots, true)) {
+                    return $name;
+                }
+            }
+        }
+
+        $root = end($categoryParentName);
+
+        return is_array($root) ? trim($root['categoryName'] ?? '') : '';
+    }
+
+    private function saveOrFindCategory(string $topLevel, string $specificName = ''): void
+    {
+        $topLevel = trim($topLevel);
+        if ($topLevel === '') {
+            return;
+        }
+
+        $cat = Category::where('title', $topLevel)->first();
+
+        if (!$cat) {
+            $cat = Category::where('title', 'like', $topLevel)->first();
+        }
+
+        if (!$cat) {
+            $cat = Category::create(['title' => $topLevel]);
+            Log::info('Created new parent category in Workshop Stock: ' . $topLevel);
+        }
+
+        $this->category = $cat->id;
+        $this->categories = Category::all();
+        Log::info('Workshop Stock - Category set to: [' . $cat->id . '] ' . $cat->title . ($specificName ? ' (sub: ' . $specificName . ')' : ''));
+    }
 }

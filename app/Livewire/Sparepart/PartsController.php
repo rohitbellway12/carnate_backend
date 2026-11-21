@@ -47,7 +47,7 @@ class PartsController extends Component
     public $imageName, $imageImage, $image, $searchfilter;
     public $chassisNo;
     public $brand_name, $variant_name, $selected_year, $modification_id;
-    public $brands = [], $variants = [], $years = [], $filter_modifications = [];
+    public $brands = [], $variants = [], $years = [], $filter_modifications = [], $all_modifications = [];
     public $modifications;
     protected $listeners = ['delete', 'vehicleAdded' => 'addSuitableVehicle', 'removeVehicle' => 'removeSuitableVehicle'];
     public $units, $categories;
@@ -129,6 +129,7 @@ class PartsController extends Component
         $this->variants = [];
         $this->years = [];
         $this->filter_modifications = [];
+        $this->all_modifications = [];
 
         if (empty($value)) return;
 
@@ -151,6 +152,7 @@ class PartsController extends Component
         $this->modification_id = '';
         $this->years = [];
         $this->filter_modifications = [];
+        $this->all_modifications = [];
 
         if (empty($value) || empty($this->brand_name)) return;
 
@@ -177,7 +179,28 @@ class PartsController extends Component
         $this->modification_id = '';
         $this->filter_modifications = [];
 
-        if (empty($value) || empty($this->brand_name) || empty($this->variant_name)) return;
+        if (empty($value)) return;
+
+        // If TecDoc API modifications are present (e.g. from VIN decoding)
+        if (!empty($this->all_modifications)) {
+            $yVal = (int)$value;
+            $filteredMods = collect($this->all_modifications)->filter(function ($m) use ($yVal) {
+                $yearFrom = $m['yearFrom'] ?? null;
+                $yearTo = $m['yearTo'] ?? null;
+                if ($yearFrom && $yearTo) return $yVal >= $yearFrom && $yVal <= $yearTo;
+                if ($yearFrom) return $yVal >= $yearFrom;
+                if ($yearTo) return $yVal <= $yearTo;
+                return true;
+            })->values()->toArray();
+
+            $this->filter_modifications = !empty($filteredMods) ? $filteredMods : $this->all_modifications;
+            if (!empty($this->filter_modifications)) {
+                $this->modification_id = $this->filter_modifications[0]['id'];
+            }
+            return;
+        }
+
+        if (empty($this->brand_name) || empty($this->variant_name)) return;
 
         try {
             $this->filter_modifications = Modification::where('status', 1)
@@ -188,9 +211,13 @@ class PartsController extends Component
                 ->distinct()
                 ->get()
                 ->toArray();
+            if (!empty($this->filter_modifications)) {
+                $this->modification_id = $this->filter_modifications[0]['id'];
+            }
         } catch (\Exception $e) {
             \Log::error('Error fetching filter modifications: ' . $e->getMessage());
             $this->filter_modifications = [];
+        $this->all_modifications = [];
         }
     }
     
@@ -225,6 +252,7 @@ class PartsController extends Component
         $this->variants = [];
         $this->years = [];
         $this->filter_modifications = [];
+        $this->all_modifications = [];
 
         try {
             $vehicleService = new RapidApiVehicleService();
@@ -357,31 +385,61 @@ class PartsController extends Component
                 }
             }
 
-            // Load modifications from local DB
-            try {
-                $modQuery = Modification::where('status', 1)
-                    ->where('brand_name', 'like', '%' . $this->brand_name . '%')
-                    ->where('variant_name', 'like', '%' . $this->variant_name . '%');
+            // Fetch modifications for decoded VIN
+            $modelId = $matchedModel['modelId'] ?? ($vinData['matchingModels']['array'][0]['modelId'] ?? null);
+            $matchingVehicles = $vinData['matchingVehicles']['array'] ?? [];
+            $matchingVehicleIds = !empty($matchingVehicles) ? collect($matchingVehicles)->pluck('vehicleId')->map(fn($id) => (int)$id)->toArray() : [];
 
-                if (!empty($this->selected_year)) {
-                    $modQuery->where('year', 'like', '%' . $this->selected_year . '%');
+            // 1. Fetch full vehicle specifications from TecDoc API if modelId exists
+            if (!empty($modelId)) {
+                try {
+                    $typesList = $vehicleService->getVehicleTypesList($modelId);
+                    $this->all_modifications = collect($typesList)->toArray();
+                } catch (\Exception $e) {
+                    \Log::error('Error fetching vehicle types list in PartsController: ' . $e->getMessage());
+                    $this->all_modifications = [];
                 }
-
-                $this->filter_modifications = $modQuery
-                    ->select('id', 'title as name', 'fuel_type', 'year')
-                    ->distinct()
-                    ->get()
-                    ->toArray();
-            } catch (\Exception $e) {
-                $this->filter_modifications = [];
             }
 
-            // If local modifications is empty, try without year filter
+            // 2. Filter TecDoc modifications matching vehicles from VIN
+            if (!empty($this->all_modifications)) {
+                if (!empty($matchingVehicleIds)) {
+                    $this->filter_modifications = collect($this->all_modifications)->filter(function ($m) use ($matchingVehicleIds) {
+                        return in_array((int)($m['id'] ?? 0), $matchingVehicleIds);
+                    })->values()->toArray();
+                }
+
+                // If matching vehicle IDs didn't match any type, try filtering by decoded year
+                if (empty($this->filter_modifications) && !empty($this->selected_year)) {
+                    $yVal = (int)$this->selected_year;
+                    $this->filter_modifications = collect($this->all_modifications)->filter(function ($m) use ($yVal) {
+                        $yearFrom = $m['yearFrom'] ?? null;
+                        $yearTo = $m['yearTo'] ?? null;
+                        if ($yearFrom && $yearTo) return $yVal >= $yearFrom && $yVal <= $yearTo;
+                        if ($yearFrom) return $yVal >= $yearFrom;
+                        if ($yearTo) return $yVal <= $yearTo;
+                        return true;
+                    })->values()->toArray();
+                }
+
+                // If still empty, show all modifications of this model
+                if (empty($this->filter_modifications)) {
+                    $this->filter_modifications = $this->all_modifications;
+                }
+            }
+
+            // 3. Fallback to local DB modifications if API types not available
             if (empty($this->filter_modifications)) {
                 try {
-                    $this->filter_modifications = Modification::where('status', 1)
+                    $modQuery = Modification::where('status', 1)
                         ->where('brand_name', 'like', '%' . $this->brand_name . '%')
-                        ->where('variant_name', 'like', '%' . $this->variant_name . '%')
+                        ->where('variant_name', 'like', '%' . $this->variant_name . '%');
+
+                    if (!empty($this->selected_year)) {
+                        $modQuery->where('year', 'like', '%' . $this->selected_year . '%');
+                    }
+
+                    $this->filter_modifications = $modQuery
                         ->select('id', 'title as name', 'fuel_type', 'year')
                         ->distinct()
                         ->get()
@@ -389,38 +447,65 @@ class PartsController extends Component
                 } catch (\Exception $e) {
                     $this->filter_modifications = [];
                 }
+
+                if (empty($this->filter_modifications)) {
+                    try {
+                        $this->filter_modifications = Modification::where('status', 1)
+                            ->where('brand_name', 'like', '%' . $this->brand_name . '%')
+                            ->where('variant_name', 'like', '%' . $this->variant_name . '%')
+                            ->select('id', 'title as name', 'fuel_type', 'year')
+                            ->distinct()
+                            ->get()
+                            ->toArray();
+                    } catch (\Exception $e) {
+                        $this->filter_modifications = [];
+                    }
+                }
             }
 
-            // If still empty, populate from TecDoc matchingVehicles
-            $matchingVehicles = $vinData['matchingVehicles']['array'] ?? [];
+            // 4. Fallback to raw TecDoc matchingVehicles if still empty
             if (empty($this->filter_modifications) && !empty($matchingVehicles)) {
                 $this->filter_modifications = collect($matchingVehicles)->map(function ($mv) {
                     return [
                         'id' => $mv['vehicleId'] ?? null,
                         'name' => $mv['vehicleTypeDescription'] ?? ($mv['carName'] ?? ''),
+                        'fuelType' => '',
+                        'yearFrom' => '',
+                        'yearTo' => '',
                     ];
                 })->toArray();
             }
 
-            // Select best matching modification from TecDoc matching vehicles or default to first
+            // Select best matching modification or default to first
             $matchedModId = null;
-            if (!empty($this->filter_modifications) && !empty($matchingVehicles)) {
-                foreach ($this->filter_modifications as $fMod) {
-                    $fName = $fMod['name'] ?? '';
-                    foreach ($matchingVehicles as $mv) {
-                        $mvDesc = $mv['vehicleTypeDescription'] ?? '';
-                        if ($mvDesc && (strcasecmp($fName, $mvDesc) === 0 || stripos($mvDesc, $fName) !== false || stripos($fName, $mvDesc) !== false)) {
-                            $matchedModId = $fMod['id'];
-                            break 2;
+            if (!empty($this->filter_modifications)) {
+                if (!empty($matchingVehicleIds)) {
+                    $firstMatch = collect($this->filter_modifications)->first(function ($m) use ($matchingVehicleIds) {
+                        return in_array((int)($m['id'] ?? 0), $matchingVehicleIds);
+                    });
+                    if ($firstMatch) {
+                        $matchedModId = $firstMatch['id'];
+                    }
+                }
+
+                if (!$matchedModId && !empty($matchingVehicles)) {
+                    foreach ($this->filter_modifications as $fMod) {
+                        $fName = $fMod['name'] ?? '';
+                        foreach ($matchingVehicles as $mv) {
+                            $mvDesc = $mv['vehicleTypeDescription'] ?? '';
+                            if ($mvDesc && (strcasecmp($fName, $mvDesc) === 0 || stripos($mvDesc, $fName) !== false || stripos($fName, $mvDesc) !== false)) {
+                                $matchedModId = $fMod['id'];
+                                break 2;
+                            }
                         }
                     }
                 }
-            }
 
-            if ($matchedModId) {
-                $this->modification_id = $matchedModId;
-            } elseif (!empty($this->filter_modifications)) {
-                $this->modification_id = $this->filter_modifications[0]['id'];
+                if ($matchedModId) {
+                    $this->modification_id = $matchedModId;
+                } else {
+                    $this->modification_id = $this->filter_modifications[0]['id'];
+                }
             }
 
             $this->dispatch('swal:toast', [
@@ -450,6 +535,7 @@ class PartsController extends Component
         $this->variants = [];
         $this->years = [];
         $this->filter_modifications = [];
+        $this->all_modifications = [];
     }
 
     public function updatedForAllVehicles($value)

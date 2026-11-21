@@ -75,6 +75,8 @@
         .carnate-tools-page .breadcrumb-title {
             margin: 0 !important;
             padding: 0 !important;
+            border: none !important;
+            border-right: none !important;
 
             color: var(--ct-text) !important;
 
@@ -969,8 +971,9 @@
             }
 
             .carnate-tools-page .breadcrumb-title {
-
                 font-size: 18px !important;
+                border: none !important;
+                border-right: none !important;
             }
 
             .carnate-tools-page .tools-subtitle {
@@ -1944,7 +1947,7 @@
 
                 <div>
 
-                    <div class="breadcrumb-title">
+                    <div class="breadcrumb-title" style="border: none !important; border-right: none !important;">
                         Tools
                     </div>
 

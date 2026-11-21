@@ -834,6 +834,18 @@ public function update()
     $this->showModal = false;
 }
 
+    public function colseModel()
+    {
+        $this->resetValidation();
+        $this->showModal = false;
+    }
+
+    public function closeModal()
+    {
+        $this->resetValidation();
+        $this->showModal = false;
+    }
+
 
 
     public function stateData($countryId)

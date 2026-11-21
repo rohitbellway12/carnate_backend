@@ -1461,7 +1461,17 @@
                                     </td>
 
                                     <td>
-                                        @switch($order->order_status)
+                                        @php
+                                            $spareEffectiveStatus = $order->order_status;
+                                            if ($order->orderItem && $order->orderItem->isNotEmpty()) {
+                                                if ($order->orderItem->every(fn($i) => $i->status == 5)) {
+                                                    $spareEffectiveStatus = 5;
+                                                } elseif ($order->orderItem->every(fn($i) => $i->status == 2)) {
+                                                    $spareEffectiveStatus = 2;
+                                                }
+                                            }
+                                        @endphp
+                                        @switch($spareEffectiveStatus)
 
                                             @case(1)
 
@@ -1553,6 +1563,45 @@
                                                 >
                                                     Add Declined Reason
                                                 </a>
+
+                                            @break
+
+                                            @case(4)
+
+                                                <span
+                                                    class="status-badge status-success"
+                                                    data-bs-toggle="tooltip"
+                                                    data-bs-placement="top"
+                                                    title="Order completed"
+                                                >
+                                                    Completed
+                                                </span>
+
+                                            @break
+
+                                            @case(5)
+
+                                                <span
+                                                    class="status-badge status-info"
+                                                    data-bs-toggle="tooltip"
+                                                    data-bs-placement="top"
+                                                    title="Order delayed by Spare Part Vendor. Reason: {{ $order->decline_reason }}"
+                                                >
+                                                    Delayed
+                                                </span>
+
+                                                @if(!empty($order->decline_reason))
+                                                    <a
+                                                        class="reason-link"
+                                                        href="javascript:void(0);"
+                                                        wire:click="declineorder({{ $order->id }},5)"
+                                                        data-bs-toggle="tooltip"
+                                                        data-bs-placement="top"
+                                                        title="Delay Reason: {{ $order->decline_reason }}"
+                                                    >
+                                                        View Reason
+                                                    </a>
+                                                @endif
 
                                             @break
 

@@ -3428,7 +3428,7 @@ try {
                     $metaStock = ProductStock::where('user_id', $this->workshopId)->where('label_id', $itemValue)->first();
                 }
                 if (property_exists($item, 'purchase_price')) {
-                    $item->purchase_price = $metaPart->purchase_price ?? ($metaStock->buy_price ?? null);
+                    $item->purchase_price = $metaStock->buy_price ?? ($metaPart->purchase_price ?? ($sparePart->purchase_price ?? null));
                 }
                 if (property_exists($item, 'tax_type')) {
                     $item->tax_type = $metaPart->tax_type ?? ($metaStock->tax_type ?? null);

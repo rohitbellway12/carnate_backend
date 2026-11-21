@@ -77,6 +77,8 @@
         .supplier-page .breadcrumb-title {
             margin: 0 !important;
             padding: 0 !important;
+            border: none !important;
+            border-right: none !important;
 
             color: var(--supplier-text) !important;
 
@@ -743,6 +745,8 @@
 
             .supplier-page .breadcrumb-title {
                 font-size: 18px !important;
+                border: none !important;
+                border-right: none !important;
             }
 
             .supplier-page .supplier-heading-subtitle {
@@ -793,7 +797,7 @@
 
                 <div>
 
-                    <div class="breadcrumb-title">
+                    <div class="breadcrumb-title" style="border: none !important; border-right: none !important;">
                     Suppliers
                     </div>
 

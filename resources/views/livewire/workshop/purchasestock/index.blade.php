@@ -33,14 +33,20 @@
             inset: 0;
             z-index: 1055;
             background: rgba(6, 6, 6, .55);
-            overflow-y: auto;
-            padding: 25px 15px;
+            overflow: hidden !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 15px;
         }
 
         .carnate-stock-list-page .sl-modal-dialog {
             width: 100%;
             max-width: 900px;
-            margin: 0 auto;
+            margin: auto;
+            max-height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
         }
 
         .carnate-stock-list-page .sl-modal-content {
@@ -48,16 +54,20 @@
             border-radius: 16px;
             overflow: hidden;
             box-shadow: 0 25px 70px rgba(15, 23, 42, .2);
-            max-height: 90vh;
+            max-height: calc(100vh - 40px);
             display: flex;
             flex-direction: column;
+            width: 100%;
         }
 
         .carnate-stock-list-page .sl-modal-content > form {
             display: flex;
             flex-direction: column;
-            max-height: 90vh;
+            max-height: calc(100vh - 40px);
             overflow: hidden;
+            flex: 1 1 auto;
+            min-height: 0;
+            margin-bottom: 0;
         }
 
         .carnate-stock-list-page .sl-modal-header {
@@ -74,6 +84,7 @@
             padding: 22px;
             overflow-y: auto;
             flex: 1 1 auto;
+            min-height: 0;
         }
 
         .carnate-stock-list-page .sl-modal-footer {
@@ -678,7 +689,7 @@
         @media (max-width: 1024px) {
             .carnate-stock-list-page .sl-modal {
                 padding: 12px 8px;
-                overflow-x: hidden;
+                overflow: hidden !important;
             }
 
             .carnate-stock-list-page .sl-modal-dialog {
@@ -740,6 +751,14 @@
         }
     </style>
 
+    @if ($showModal || $showSpariOartesModal)
+        <style>
+            body {
+                overflow: hidden !important;
+            }
+        </style>
+    @endif
+
 
     {{-- ============================================================
         SPARE PART LABEL MODAL
@@ -750,7 +769,7 @@
         tabindex="-1"
         style="
             opacity:1;
-            display:@if ($showSpariOartesModal) block @else none @endif;
+            display:@if ($showSpariOartesModal) flex @else none @endif;
         ">
 
         <div class="sl-modal-dialog">
@@ -860,7 +879,7 @@
         tabindex="-1"
         style="
             opacity:1;
-            display:@if ($showModal) block @else none @endif;
+            display:@if ($showModal) flex @else none @endif;
         ">
 
         <div class="sl-modal-dialog" style="max-width:1000px;">
@@ -931,7 +950,7 @@
 
                                                 <span class="sl-summary-value sl-price">
 
-                                                    Rs. {{ number_format($purchase_amount, 2) }}
+                                                    Rs. {{ !empty($purchase_amount) ? number_format((float)$purchase_amount, 2) : '0.00' }}
 
                                                 </span>
 
@@ -1049,14 +1068,14 @@
 
                                 <div class="col-md-6">
 
-                                    <div class="row align-items-end">
+                                    <label class="form-label">
+                                        Name
+                                        <sup class="text-danger">*</sup>
+                                    </label>
 
-                                        <div class="form-group col-10 pe-0">
+                                    <div class="d-flex align-items-center gap-2">
 
-                                            <label class="form-label">
-                                                Name
-                                                <sup class="text-danger">*</sup>
-                                            </label>
+                                        <div class="flex-grow-1" style="min-width: 0;">
 
                                             <select
                                                 id="stock_product_name_select"
@@ -1081,40 +1100,32 @@
 
                                         </div>
 
-
-                                        <div class="col-2 p-0">
-
-                                            {{-- ORIGINAL ACTION PRESERVED --}}
-
-                                            <button
-                                                type="button"
-                                                class="btn btn-outline-secondary text-light bg-primary fl margin-left-0"
-                                                wire:click="addSparets"
-                                                fdprocessedid="u8qc8n"
-                                                style="
-                                                    width:42px;
-                                                    height:42px;
-                                                    padding:0;
-                                                    border-radius:9px;
-                                                    border:0;
-                                                    background:#e53935 !important;
-                                                    display:flex;
-                                                    align-items:center;
-                                                    justify-content:center;
-                                                    color:#fff !important;
-                                                    font-size:18px;
-                                                ">
-
-                                                +
-
-                                            </button>
-
-                                        </div>
+                                        {{-- ORIGINAL ACTION PRESERVED --}}
+                                        <button
+                                            type="button"
+                                            class="btn btn-danger d-inline-flex align-items-center justify-content-center flex-shrink-0"
+                                            wire:click="addSparets"
+                                            title="Add New Part Name"
+                                            style="
+                                                width: 42px;
+                                                min-width: 42px;
+                                                height: 42px;
+                                                padding: 0;
+                                                border-radius: 9px;
+                                                border: 1px solid #e53935;
+                                                background: #e53935 !important;
+                                                color: #fff !important;
+                                                font-size: 20px;
+                                                box-shadow: 0 3px 8px rgba(229, 57, 53, 0.22);
+                                                transition: all 0.2s ease;
+                                            ">
+                                            <i class="bx bx-plus"></i>
+                                        </button>
 
                                     </div>
 
                                     @error('name')
-                                        <span class="text-danger error">
+                                        <span class="text-danger error d-block mt-1">
                                             {{ $message }}
                                         </span>
                                     @enderror
@@ -1183,6 +1194,7 @@
 
                                                 <input
                                                     type="text"
+                                                    id="stock_product_brand_input"
                                                     wire:model="brand"
                                                     class="form-control"
                                                     placeholder="Enter Brand">
@@ -1257,7 +1269,6 @@
 
                                     <label class="form-label">
                                         Purchase Price
-                                        <sup class="text-danger">*</sup>
                                     </label>
 
                                     <input
@@ -1448,6 +1459,7 @@
                                     </label>
 
                                     <select
+                                        id="stock_sub_category_select"
                                         class="form-select searchable-select"
                                         data-placeholder="Select Sub-Category"
                                         wire:model="category">
@@ -1456,10 +1468,10 @@
                                             Select Category
                                         </option>
 
-                                        @foreach ($categories as $category)
+                                        @foreach ($categories as $cat)
 
-                                            <option value="{{ $category->id }}">
-                                                {{ $category->title }}
+                                            <option value="{{ $cat->id }}" {{ (string)$category === (string)$cat->id ? 'selected' : '' }}>
+                                                {{ $cat->title }}
                                             </option>
 
                                         @endforeach
@@ -2249,6 +2261,33 @@
                             }
                         }
                     }, 80);
+                }
+            });
+
+            window.addEventListener('set-stock-category', function(event) {
+                let detail = event.detail;
+                let catId = (detail && typeof detail === 'object') ? (detail.id ?? (detail[0] ? detail[0].id : null)) : detail;
+                if (catId) {
+                    setTimeout(function() {
+                        let $select = $('#stock_sub_category_select');
+                        if ($select.length) {
+                            $select.val(catId).trigger('change');
+                            if ($select.data('select2')) {
+                                $select.trigger('change.select2');
+                            }
+                        }
+                    }, 80);
+                }
+            });
+
+            window.addEventListener('set-stock-brand', function(event) {
+                let detail = event.detail;
+                let brandVal = (detail && typeof detail === 'object') ? (detail.brand ?? detail.value) : detail;
+                if (brandVal !== undefined && brandVal !== null) {
+                    let $input = $('#stock_product_brand_input');
+                    if ($input.length) {
+                        $input.val(brandVal);
+                    }
                 }
             });
         </script>

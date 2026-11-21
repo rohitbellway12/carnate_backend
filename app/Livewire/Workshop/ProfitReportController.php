@@ -119,9 +119,17 @@ class ProfitReportController extends Component
 
         // 3. Spare parts used in Completed/Closed JobCards
         // Categories: 1 => Accessory, 2 => Parts, 3 => Tools, 4 => Lubricants (Lubes)
+        // Prioritize workshop's own stock buy_price from workshop/stocks
+        $wsId = $this->workshopId;
         $jobcardParts = JobCardSparePart::whereIn('job_card_spare_parts.jobcard_id', $jobcardIds)
             ->leftJoin('spare_part_labels', 'spare_part_labels.id', '=', 'job_card_spare_parts.stock_label_id')
-            ->leftJoin('stocks', 'stocks.id', '=', 'job_card_spare_parts.product_stock_id')
+            ->leftJoin('stocks', function ($join) use ($wsId) {
+                $join->on('stocks.id', '=', 'job_card_spare_parts.product_stock_id')
+                    ->orWhere(function ($q) use ($wsId) {
+                        $q->on('stocks.label_id', '=', 'job_card_spare_parts.stock_label_id')
+                          ->where('stocks.user_id', '=', $wsId);
+                    });
+            })
             ->select(
                 'job_card_spare_parts.*',
                 'spare_part_labels.spare_part_type',
@@ -132,28 +140,28 @@ class ProfitReportController extends Component
         $partsSale = (float) $jobcardParts->filter(fn($p) => ($p->spare_part_type == 2 || empty($p->spare_part_type)))->sum('final_amount');
         $partsPurchase = (float) $jobcardParts->filter(fn($p) => ($p->spare_part_type == 2 || empty($p->spare_part_type)))->sum(function ($p) {
             $qty = $p->quantity ?: 1;
-            $buyPrice = (float) ($p->purchase_price ?: ($p->stock_buy_price ?? 0));
+            $buyPrice = (float) (($p->stock_buy_price !== null && $p->stock_buy_price !== '') ? $p->stock_buy_price : ($p->purchase_price ?: 0));
             return $qty * $buyPrice;
         });
 
         $lubesSale = (float) $jobcardParts->where('spare_part_type', 4)->sum('final_amount');
         $lubesPurchase = (float) $jobcardParts->where('spare_part_type', 4)->sum(function ($p) {
             $qty = $p->quantity ?: 1;
-            $buyPrice = (float) ($p->purchase_price ?: ($p->stock_buy_price ?? 0));
+            $buyPrice = (float) (($p->stock_buy_price !== null && $p->stock_buy_price !== '') ? $p->stock_buy_price : ($p->purchase_price ?: 0));
             return $qty * $buyPrice;
         });
 
         $accessorySale = (float) $jobcardParts->where('spare_part_type', 1)->sum('final_amount');
         $accessoryPurchase = (float) $jobcardParts->where('spare_part_type', 1)->sum(function ($p) {
             $qty = $p->quantity ?: 1;
-            $buyPrice = (float) ($p->purchase_price ?: ($p->stock_buy_price ?? 0));
+            $buyPrice = (float) (($p->stock_buy_price !== null && $p->stock_buy_price !== '') ? $p->stock_buy_price : ($p->purchase_price ?: 0));
             return $qty * $buyPrice;
         });
 
         $toolsSale = (float) $jobcardParts->where('spare_part_type', 3)->sum('final_amount');
         $toolsPurchase = (float) $jobcardParts->where('spare_part_type', 3)->sum(function ($p) {
             $qty = $p->quantity ?: 1;
-            $buyPrice = (float) ($p->purchase_price ?: ($p->stock_buy_price ?? 0));
+            $buyPrice = (float) (($p->stock_buy_price !== null && $p->stock_buy_price !== '') ? $p->stock_buy_price : ($p->purchase_price ?: 0));
             return $qty * $buyPrice;
         });
 

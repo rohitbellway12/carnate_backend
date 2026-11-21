@@ -216,19 +216,59 @@
             color: #ffffff !important;
         }
 
+        .carnate-jobcard-edit .form-floating {
+            position: relative;
+        }
+
         .carnate-jobcard-edit .form-floating > .form-control,
         .carnate-jobcard-edit .form-floating > .form-select {
             border: 1px solid var(--je-border) !important;
             border-radius: 10px !important;
-            height: 50px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--je-text);
+            height: 52px !important;
+            min-height: 52px !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            color: var(--je-text) !important;
+            background-color: #fff !important;
+            transition: all .2s ease;
+        }
+
+        .carnate-jobcard-edit .form-floating > .form-select {
+            padding-top: 20px !important;
+            padding-bottom: 4px !important;
+            padding-left: 12px !important;
+            padding-right: 36px !important;
+            line-height: 1.4 !important;
+            cursor: pointer;
+        }
+
+        .carnate-jobcard-edit .form-floating > .form-control {
+            padding-top: 20px !important;
+            padding-bottom: 4px !important;
+            padding-left: 12px !important;
+            line-height: 1.4 !important;
+        }
+
+        .carnate-jobcard-edit .form-floating > .form-control:focus,
+        .carnate-jobcard-edit .form-floating > .form-select:focus {
+            border-color: rgba(229, 57, 53, .5) !important;
+            box-shadow: 0 0 0 3px rgba(229, 57, 53, .08) !important;
+            outline: none !important;
         }
 
         .carnate-jobcard-edit .form-floating > label {
-            font-size: 12px;
-            color: var(--je-muted);
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            height: auto !important;
+            padding: 6px 12px !important;
+            font-size: 11px !important;
+            font-weight: 600 !important;
+            color: var(--je-muted) !important;
+            letter-spacing: .02em !important;
+            transform: none !important;
+            opacity: 1 !important;
+            pointer-events: none !important;
         }
 
         .carnate-jobcard-edit .form-range {
@@ -1524,48 +1564,22 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <form wire:submit.prevent="{{ $add ? 'customerVoice' : 'customerVoice' }}  ">
-                    <div class="modal-header">
-                        <div class="d-flex justify-content-between w-100 align-items-center">
-                            <h4 class="modal-title" style="font-size:18px;">Customer Voice {{ $customerVoiceCount }}
-                            </h4>
-                            @if ($showCustomerVoiceInput)
-                                <p class="btn btn-danger rounded me-4 mb-0 mt-2" wire:click="cancelVoiceField"> Cancel
-                                    Voice</p>
-                            @else
-                                <p class="btn btn-success rounded me-4 mb-0 mt-2"
-                                    @if ($jobcardData->status != 3) @if ($user->hasPermissionTo('Jobcard-edit')) wire:click="addField" @endif
-                                    @endif> Add More</p>
-                            @endif
+                    <div class="modal-header d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(229, 57, 53, 0.1); color: var(--je-red); display: flex; align-items: center; justify-content: center; font-size: 19px;">
+                                <i class="bx bx-message-dots"></i>
+                            </div>
+                            <div>
+                                <h5 class="modal-title m-0 fw-bold" style="font-size: 16px; color: #1e293b;">Customer Voices</h5>
+                                <small class="text-muted" style="font-size: 11px;">Record customer requests & complaints</small>
+                            </div>
                         </div>
+
                         <button type="button" class="btn-close" wire:click="$set('showCustomerVoice', false)"
                             data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body py-3">
+                    <div class="modal-body p-3">
                         <div class="row">
-
-                            @if ($showCustomerVoiceInput)
-                                <div class="mb-3 col-lg-12 dynamic-field  text-center">
-                                    <div class="row align-items-center">
-                                        <div class="col-11">
-                                            <label for="validationCustom01" class="form-label">Customer
-                                                Voice</label><br>
-                                            <input type="text"
-                                                class="form-control  @error('customerVoices') is-invalid @enderror"
-                                                placeholder="Customer Voice" wire:model="customerVoiceInpt">
-
-                                        </div>
-                                        <div class="col-1 mt-2">
-                                            <button type="button"
-                                                class="btn btn-info btn-xs p-1 remove-field rounded text-white border-white  mt-3"
-                                                wire:click="addCustomerInptVoice"
-                                                style="font-size: 12px; width: 27px; height: 30px; display: flex; align-items: center; ">
-                                                <i class="fa-solid fa-check"></i>
-                                            </button>
-                                        </div>
-
-                                    </div>
-                                </div>
-                            @endif
 
                             <div class="d-flex flex-wrap gap-1">
                                 @foreach ($customerVoices as $index => $voice)
@@ -1866,110 +1880,111 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <form wire:submit.prevent="{{ $addAccessoriesVoice ? 'accessoriesVoice' : 'accessoriesVoice' }}">
-                    <div class="modal-header">
-                        <div class="d-flex justify-content-between w-100 align-items-center">
-                            <h4 class="modal-title">Accessories {{ $accessariesCount }}</h4>
-
-                            @if ($showAccessoriesInput)
-                                <p class="btn btn-danger rounded me-4 mb-0 mt-2" wire:click="cancelAccessoriesField">
-                                    Cancel Voice</p>
-                            @else
-                                <p class="btn btn-success rounded me-4 mb-0 mt-2"
-                                    @if ($jobcardData->status != 3) @if ($user->hasPermissionTo('Jobcard-edit')) wire:click="addAccessorieField" @endif
-                                    @endif> Add More</p>
-                            @endif
+                    <div class="modal-header d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(229, 57, 53, 0.1); color: var(--je-red); display: flex; align-items: center; justify-content: center; font-size: 19px;">
+                                <i class="bx bx-wrench"></i>
+                            </div>
+                            <div>
+                                <h5 class="modal-title m-0 fw-bold" style="font-size: 16px; color: #1e293b;">Vehicle Accessories</h5>
+                                <small class="text-muted" style="font-size: 11px;">Record vehicle accessories & items</small>
+                            </div>
                         </div>
+
                         <button type="button" class="btn-close" wire:click="$set('showAccessoriesVoice', false)"
                             data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
 
-                    <div class="modal-body py-3">
-                        <div class="row">
-                            @if ($showAccessoriesInput)
-                                <div class="mb-3 col-lg-12 dynamic-field text-center">
-                                    <div class="row align-items-center">
-                                        <div class="col-11">
-                                            <label class="form-label">Accessories</label>
-                                            <input type="text" class="form-control" placeholder="Accessories"
-                                                wire:model="accessoriesVoicesInput">
-                                        </div>
-                                        <div class="col-1 mt-2">
-                                            <button type="button"
-                                                class="btn btn-info btn-xs p-1 remove-field rounded text-white border-white mt-3"
-                                                wire:click="addAccessoriesInptVoice"
-                                                style="font-size: 12px; width: 27px; height: 30px; display: flex; align-items: center;">
-                                                <i class="fa-solid fa-check"></i>
-                                            </button>
-                                        </div>
-                                    </div>
+                    <div class="modal-body p-3">
+                        @php
+                            $activeAccessories = array_filter($accessoriesVoices, fn($v) => !empty($v));
+                        @endphp
+                        @if(count($activeAccessories) > 0)
+                            <div class="mb-3 p-3 bg-light rounded-3 border" style="border-color: #e2e8f0 !important;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-uppercase fw-bold text-secondary" style="font-size: 11px; letter-spacing: 0.5px;">
+                                        Selected Accessories ({{ count($activeAccessories) }})
+                                    </span>
                                 </div>
-                            @endif
-
-                            <div class="d-flex flex-wrap gap-1">
-                                @foreach ($accessoriesVoices as $index => $voice)
-                                    @if (!empty($voice))
-                                        <div>
-                                            <span class="badge bg-primary position-relative mb-2 py-1"
-                                                style="padding-right: 1.8rem; font-size:15px;">
-                                                {{ $voice }}
-                                                <a class="btn-close btn-close-white position-absolute"
-                                                    style="top: 1px; right: 5px; width: 0.8rem; height: 0.8rem; background: unset; opacity: 1; cursor: pointer;"
-                                                    aria-label="Close"
-                                                    wire:click="removeAccessoriesVoice({{ $index }})">
-                                                    <i class="fa-solid fa-xmark text-dark"></i>
+                                <div class="d-flex flex-wrap gap-2">
+                                    @foreach ($accessoriesVoices as $index => $voice)
+                                        @if (!empty($voice))
+                                            <span class="badge d-inline-flex align-items-center gap-2 py-2 px-3 text-dark bg-white border shadow-sm" style="border-radius: 8px; font-size: 12px; font-weight: 600; border-color: #cbd5e1 !important;">
+                                                <span>{{ $voice }}</span>
+                                                <a href="javascript:void(0)" wire:click="removeAccessoriesVoice({{ $index }})" class="text-danger d-inline-flex align-items-center justify-content-center" style="text-decoration: none; width: 18px; height: 18px; border-radius: 50%; background: #fee2e2;" title="Remove">
+                                                    <i class="bx bx-x fs-6"></i>
                                                 </a>
                                             </span>
-                                        </div>
-                                    @endif
-                                @endforeach
-                            </div>
-
-                            <!-- Search + Filtered List -->
-                            <div class="col-12 mt-4">
-                                <div class="card bg-light">
-                                    <div class="card-body">
-                                        <p class="text-center"><b>Search Accessories</b></p>
-                                        <input type="text" class="form-control mb-3"
-                                            wire:model.live="search_accessory" placeholder="Search Voice...">
-
-                                        @php
-                                            $AccessoryVoiceData = $accessoryData->where('is_customer_voice', 2);
-
-                                            if (count($customerVoices) > 1 && !empty($customerVoices[0])) {
-                                                $AccessoryVoiceData = $AccessoryVoiceData->whereNotIn(
-                                                    'customer_voice',
-                                                    $customerVoices,
-                                                );
-                                            }
-
-                                            if (trim($search_accessory) !== '') {
-                                                $AccessoryVoiceData = $AccessoryVoiceData->filter(function ($item) use (
-                                                    $search_accessory,
-                                                ) {
-                                                    return stripos($item->customer_voice, $search_accessory) !== false;
-                                                });
-                                            }
-                                        @endphp
-
-                                        @if ($AccessoryVoiceData->isNotEmpty())
-                                            <ul class="list-group list-group-flush"
-                                                style="max-height: 300px; overflow-y: auto;">
-                                                @foreach ($AccessoryVoiceData as $item)
-                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                        style="cursor: pointer;"
-                                                        wire:click="updateSelectedItemsAccessoryVoice('{{ $item->customer_voice }}')">
-                                                        {{ $item->customer_voice }}
-                                                        <!--<i class="fa-solid fa-plus text-primary"></i>-->
-                                                    </li>
-                                                @endforeach
-                                            </ul>
-                                        @else
-                                            <div class="text-center text-muted">No results found</div>
                                         @endif
-                                    </div>
+                                    @endforeach
                                 </div>
                             </div>
+                        @endif
+
+                        <!-- Search Input -->
+                        <div class="mb-3">
+                            <div class="position-relative">
+                                <i class="bx bx-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted fs-5"></i>
+                                <input type="text" class="form-control ps-5 pe-5" wire:model.live="search_accessory"
+                                    placeholder="Search available accessories..."
+                                    style="border-radius: 10px; height: 42px; border-color: var(--je-border); font-size: 13px;">
+                                @if(!empty($search_accessory))
+                                    <button type="button" class="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0 text-muted"
+                                        wire:click="$set('search_accessory', '')" style="text-decoration: none;">
+                                        <i class="bx bx-x fs-5"></i>
+                                    </button>
+                                @endif
+                            </div>
                         </div>
+
+                        @php
+                            $AccessoryVoiceData = $accessoryData->where('is_customer_voice', 2);
+
+                            if (count($customerVoices) > 1 && !empty($customerVoices[0])) {
+                                $AccessoryVoiceData = $AccessoryVoiceData->whereNotIn(
+                                    'customer_voice',
+                                    $customerVoices,
+                                );
+                            }
+
+                            if (trim($search_accessory) !== '') {
+                                $AccessoryVoiceData = $AccessoryVoiceData->filter(function ($item) use (
+                                    $search_accessory,
+                                ) {
+                                    return stripos($item->customer_voice, $search_accessory) !== false;
+                                });
+                            }
+                        @endphp
+
+                        <div class="border rounded-3 overflow-hidden" style="border-color: #e2e8f0 !important;">
+                            <div class="px-3 py-2 bg-light border-bottom d-flex justify-content-between align-items-center" style="font-size: 12px; color: #64748b; font-weight: 600;">
+                                <span>Available Accessories (Click to select)</span>
+                                <span class="badge bg-white text-secondary border">{{ $AccessoryVoiceData->count() }} items</span>
+                            </div>
+                            <div class="list-group list-group-flush" style="max-height: 280px; overflow-y: auto;">
+                                @forelse ($AccessoryVoiceData as $item)
+                                    <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 px-3 border-bottom text-start"
+                                        wire:click="updateSelectedItemsAccessoryVoice('{{ $item->customer_voice }}')"
+                                        style="font-size: 13px; color: #334155; transition: background .15s ease;">
+                                        <span class="fw-medium">{{ $item->customer_voice }}</span>
+                                        <span class="badge rounded-circle p-1 d-inline-flex align-items-center justify-content-center" style="background: rgba(229, 57, 53, 0.1); color: var(--je-red); width: 24px; height: 24px;">
+                                            <i class="bx bx-plus"></i>
+                                        </span>
+                                    </button>
+                                @empty
+                                    <div class="text-center py-4 text-muted">
+                                        <i class="bx bx-info-circle fs-3 d-block mb-1 text-secondary"></i>
+                                        <span style="font-size: 13px;">No matching accessories found.</span>
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top px-3 py-2 bg-light d-flex justify-content-between">
+                        <small class="text-muted" style="font-size: 12px;">Total <b>{{ $accessariesCount }}</b> accessory item(s) recorded</small>
+                        <button type="button" class="btn btn-dark btn-sm px-4" wire:click="$set('showAccessoriesVoice', false)" data-bs-dismiss="modal" style="border-radius: 8px; font-weight: 600; min-height: 36px;">
+                            Done
+                        </button>
                     </div>
                 </form>
             </div>
@@ -1985,120 +2000,121 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <form wire:submit.prevent="{{ $add ? 'workVoice' : 'workVoice' }}">
-                    <div class="modal-header">
-                        <div class="d-flex justify-content-between w-100 align-items-center">
-                            <h4 class="modal-title">Work Note {{ $workNoteCount }}</h4>
-                            @if ($showWorkNoteInput)
-                                <p class="btn btn-danger rounded me-4 mb-0 mt-2" wire:click="cancelworknewvoice">
-                                    Cancel Voice</p>
-                            @else
-                                <p class="btn btn-success rounded me-4 mb-0 mt-2" wire:click="addWorkField">Add More
-                                </p>
-                            @endif
+                    <div class="modal-header d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(229, 57, 53, 0.1); color: var(--je-red); display: flex; align-items: center; justify-content: center; font-size: 19px;">
+                                <i class="bx bx-notepad"></i>
+                            </div>
+                            <div>
+                                <h5 class="modal-title m-0 fw-bold" style="font-size: 16px; color: #1e293b;">Work Notes</h5>
+                                <small class="text-muted" style="font-size: 11px;">Record technician tasks & work instructions</small>
+                            </div>
                         </div>
+
                         <button type="button" class="btn-close" wire:click="$set('showWorkNote', false)"
                             data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
 
-                    <div class="modal-body py-3">
-                        <div class="row">
-                            @if ($showWorkNoteInput)
-                                <div class="mb-3 col-lg-12 dynamic-field">
-                                    <div class="row">
-                                        <div class="col-11">
-                                            <label for="validationCustom01" class="form-label">Work Note</label>
-                                            <input type="text" class="form-control" placeholder="Work Note"
-                                                wire:model="workNotInpt">
-                                        </div>
-                                        <div class="col-1 mt-3">
-                                            <button type="button"
-                                                class="btn btn-info btn-xs p-1 remove-field rounded text-white border-white mt-3"
-                                                wire:click="addWorkNotInptVoice"
-                                                style="font-size: 12px; width: 27px; height: 30px; display: flex; align-items: center;">
-                                                <i class="fa-solid fa-check"></i>
-                                            </button>
-                                        </div>
-                                    </div>
+                    <div class="modal-body p-3">
+                        @php
+                            $activeWorkVoices = array_filter($workVoices, fn($v) => !empty($v));
+                        @endphp
+                        @if(count($activeWorkVoices) > 0)
+                            <div class="mb-3 p-3 bg-light rounded-3 border" style="border-color: #e2e8f0 !important;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-uppercase fw-bold text-secondary" style="font-size: 11px; letter-spacing: 0.5px;">
+                                        Selected Work Notes ({{ count($activeWorkVoices) }})
+                                    </span>
                                 </div>
-                            @endif
-
-                            <!-- Selected Voices -->
-                            <div class="d-flex flex-wrap gap-1">
-                                @foreach ($workVoices as $index => $voice)
-                                    @if (!empty($voice))
-                                        <div>
-                                            <span class="badge bg-primary position-relative mb-2 py-1"
-                                                style="padding-right: 1.8rem; font-size:15px;">
-                                                {{ $voice }}
-                                                <a class="btn-close btn-close-white position-absolute"
-                                                    style="top: 1px; right: 5px; width: 0.8rem; height: 0.8rem; background: unset; opacity: 1; cursor: pointer;"
-                                                    aria-label="Close"
-                                                    wire:click="removeWorkNotVoice({{ $index }})">
-                                                    <i class="fa-solid fa-xmark text-dark"></i>
+                                <div class="d-flex flex-wrap gap-2">
+                                    @foreach ($workVoices as $index => $voice)
+                                        @if (!empty($voice))
+                                            <span class="badge d-inline-flex align-items-center gap-2 py-2 px-3 text-dark bg-white border shadow-sm" style="border-radius: 8px; font-size: 12px; font-weight: 600; border-color: #cbd5e1 !important;">
+                                                <span>{{ $voice }}</span>
+                                                <a href="javascript:void(0)" wire:click="removeWorkNotVoice({{ $index }})" class="text-danger d-inline-flex align-items-center justify-content-center" style="text-decoration: none; width: 18px; height: 18px; border-radius: 50%; background: #fee2e2;" title="Remove">
+                                                    <i class="bx bx-x fs-6"></i>
                                                 </a>
                                             </span>
-                                        </div>
-                                    @endif
-                                @endforeach
-                            </div>
-
-                            <!-- Search Box -->
-                            <div class="col-12 mt-4">
-                                <div class="card bg-light">
-                                    <div class="card-body">
-                                        <p class="text-center"><b>Search Work Note</b></p>
-                                        <input type="text" class="form-control mb-3"
-                                            wire:model.live="search_work_notes" placeholder="Search Work Note...">
-
-                                        @php
-                                            $WorkNotVoiceData = $worknotVoicesData->where('is_customer_voice', 0);
-
-                                            if (count($workVoices) > 0 && !empty($workVoices[0])) {
-                                                $WorkNotVoiceData = $WorkNotVoiceData->whereNotIn(
-                                                    'customer_voice',
-                                                    $workVoices,
-                                                );
-                                            }
-
-                                            if (trim($search_work_notes) !== '') {
-                                                $WorkNotVoiceData = $WorkNotVoiceData->filter(function ($item) use (
-                                                    $search_work_notes,
-                                                ) {
-                                                    return stripos($item->customer_voice, $search_work_notes) !== false;
-                                                });
-                                            }
-                                        @endphp
-
-                                        @if ($WorkNotVoiceData->isNotEmpty())
-                                            <ul class="list-group list-group-flush"
-                                                style="max-height: 300px; overflow-y: auto;">
-                                                @foreach ($WorkNotVoiceData as $item)
-                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                        style="cursor: pointer;"
-                                                        wire:click="updateSelectedItemsWorkNotesVoice('{{ $item->customer_voice }}')">
-                                                        {{ $item->customer_voice }}
-                                                        <!--<i class="fa-solid fa-plus text-primary"></i>-->
-                                                    </li>
-                                                @endforeach
-                                            </ul>
-                                        @else
-                                            <div class="text-center text-muted">No results found</div>
                                         @endif
-                                    </div>
+                                    @endforeach
                                 </div>
                             </div>
+                        @endif
 
-                            <!-- Validation Errors -->
-                            @foreach ($workVoices as $index => $voice)
-                                <div class="mb-3 col-lg-12 dynamic-field">
-                                    <div class="row">
-                                        @error("workVoices.$index")
-                                            <span class="text-danger">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                </div>
-                            @endforeach
+                        <!-- Search Input -->
+                        <div class="mb-3">
+                            <div class="position-relative">
+                                <i class="bx bx-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted fs-5"></i>
+                                <input type="text" class="form-control ps-5 pe-5" wire:model.live="search_work_notes"
+                                    placeholder="Search available work notes..."
+                                    style="border-radius: 10px; height: 42px; border-color: var(--je-border); font-size: 13px;">
+                                @if(!empty($search_work_notes))
+                                    <button type="button" class="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0 text-muted"
+                                        wire:click="$set('search_work_notes', '')" style="text-decoration: none;">
+                                        <i class="bx bx-x fs-5"></i>
+                                    </button>
+                                @endif
+                            </div>
                         </div>
+
+                        @php
+                            $WorkNotVoiceData = $worknotVoicesData->where('is_customer_voice', 0);
+
+                            if (count($workVoices) > 0 && !empty($workVoices[0])) {
+                                $WorkNotVoiceData = $WorkNotVoiceData->whereNotIn(
+                                    'customer_voice',
+                                    $workVoices,
+                                );
+                            }
+
+                            if (trim($search_work_notes) !== '') {
+                                $WorkNotVoiceData = $WorkNotVoiceData->filter(function ($item) use (
+                                    $search_work_notes,
+                                ) {
+                                    return stripos($item->customer_voice, $search_work_notes) !== false;
+                                });
+                            }
+                        @endphp
+
+                        <div class="border rounded-3 overflow-hidden" style="border-color: #e2e8f0 !important;">
+                            <div class="px-3 py-2 bg-light border-bottom d-flex justify-content-between align-items-center" style="font-size: 12px; color: #64748b; font-weight: 600;">
+                                <span>Available Work Notes (Click to select)</span>
+                                <span class="badge bg-white text-secondary border">{{ $WorkNotVoiceData->count() }} notes</span>
+                            </div>
+                            <div class="list-group list-group-flush" style="max-height: 280px; overflow-y: auto;">
+                                @forelse ($WorkNotVoiceData as $item)
+                                    <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 px-3 border-bottom text-start"
+                                        wire:click="updateSelectedItemsWorkNotesVoice('{{ $item->customer_voice }}')"
+                                        style="font-size: 13px; color: #334155; transition: background .15s ease;">
+                                        <span class="fw-medium">{{ $item->customer_voice }}</span>
+                                        <span class="badge rounded-circle p-1 d-inline-flex align-items-center justify-content-center" style="background: rgba(229, 57, 53, 0.1); color: var(--je-red); width: 24px; height: 24px;">
+                                            <i class="bx bx-plus"></i>
+                                        </span>
+                                    </button>
+                                @empty
+                                    <div class="text-center py-4 text-muted">
+                                        <i class="bx bx-info-circle fs-3 d-block mb-1 text-secondary"></i>
+                                        <span style="font-size: 13px;">No matching work notes found.</span>
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div>
+
+                        <!-- Validation Errors -->
+                        @foreach ($workVoices as $index => $voice)
+                            <div class="mb-2">
+                                @error("workVoices.$index")
+                                    <span class="text-danger" style="font-size: 12px;">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <div class="modal-footer border-top px-3 py-2 bg-light d-flex justify-content-between">
+                        <small class="text-muted" style="font-size: 12px;">Total <b>{{ $workNoteCount }}</b> note(s) recorded</small>
+                        <button type="button" class="btn btn-dark btn-sm px-4" wire:click="$set('showWorkNote', false)" data-bs-dismiss="modal" style="border-radius: 8px; font-weight: 600; min-height: 36px;">
+                            Done
+                        </button>
                     </div>
                 </form>
             </div>
@@ -2450,13 +2466,13 @@
                                 </div>
                             </div>
                             <div class="col-4">
-                                <label for="fual_level" class="form-label">Fuel Level</label>
+                                <label for="fual_level" class="form-label" style="font-size: 11px; font-weight: 600; color: var(--je-muted); margin-bottom: 6px;">Fuel Level</label>
                                 <input type="range" class="form-range" id="fual_level" wire:model="fual_level"
                                     min="0" max="100" @disabled($jobcardData->status == 3 || !$user->hasPermissionTo('Jobcard-edit'))>
                                 <span class="fuel-value-badge">{{ $fual_level }}%</span>
                             </div>
                             <div class="col-4">
-                                <div class="form-floating">
+                                <div class="form-floating mb-3">
                                     <select class="form-select" id="supervisor" wire:model="supervisor"
                                         aria-label="Floating label select example" @disabled($jobcardData->status == 3 || !$user->hasPermissionTo('Jobcard-edit'))>
                                         <option value="">--Attended By--</option>
