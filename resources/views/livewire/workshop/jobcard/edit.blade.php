@@ -1032,6 +1032,272 @@
             border-color: #e53935 !important;
             box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.12) !important;
         }
+
+        /* =========================================================
+           CARNATE PRINT & PDF DOWNLOAD MODALS
+        ========================================================= */
+        .carnate-doc-modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1055;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(3px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .carnate-doc-modal-card {
+            background: #ffffff;
+            border: 1px solid var(--je-border);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(15, 23, 42, 0.22);
+            width: 100%;
+            max-width: 480px;
+            overflow: hidden;
+            animation: carnateDocModalIn 0.22s ease-out;
+        }
+
+        @keyframes carnateDocModalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.96) translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .carnate-doc-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--je-border);
+            background: #ffffff;
+        }
+
+        .carnate-doc-modal-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .carnate-doc-modal-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--je-red-soft);
+            color: var(--je-red);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 19px;
+            flex-shrink: 0;
+        }
+
+        .carnate-doc-modal-title {
+            margin: 0;
+            color: var(--je-text);
+            font-size: 17px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .carnate-doc-modal-subtitle {
+            margin: 3px 0 0;
+            color: var(--je-muted);
+            font-size: 12.5px;
+        }
+
+        .carnate-doc-modal-close {
+            width: 34px;
+            height: 34px;
+            border: 1px solid var(--je-border);
+            border-radius: 8px;
+            background: #ffffff;
+            color: #64748b;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .carnate-doc-modal-close:hover {
+            background: var(--je-red-soft);
+            color: var(--je-red);
+            border-color: #fecaca;
+        }
+
+        .carnate-doc-modal-body {
+            padding: 22px;
+            background: #ffffff;
+        }
+
+        .carnate-doc-section-label {
+            display: block;
+            margin-bottom: 12px;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .carnate-doc-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .carnate-doc-card {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 13px 16px;
+            border: 1.5px solid var(--je-border);
+            border-radius: 12px;
+            background: #ffffff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            margin: 0;
+        }
+
+        .carnate-doc-card:hover {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+        }
+
+        .carnate-doc-card.active {
+            border-color: var(--je-red);
+            background: #fff8f8;
+            box-shadow: 0 0 0 1px var(--je-red);
+        }
+
+        .carnate-doc-radio {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .carnate-doc-card-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 9px;
+            background: #f1f5f9;
+            color: #475569;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .carnate-doc-card.active .carnate-doc-card-icon {
+            background: var(--je-red-soft);
+            color: var(--je-red);
+        }
+
+        .carnate-doc-card-info {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .carnate-doc-title {
+            color: var(--je-text);
+            font-size: 14px;
+            font-weight: 650;
+            line-height: 1.3;
+        }
+
+        .carnate-doc-desc {
+            color: var(--je-muted);
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        .carnate-doc-check {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid #cbd5e1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: transparent;
+            font-size: 13px;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .carnate-doc-card.active .carnate-doc-check {
+            border-color: var(--je-red);
+            background: var(--je-red);
+            color: #ffffff;
+        }
+
+        .carnate-doc-modal-footer {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 16px 22px;
+            border-top: 1px solid var(--je-border);
+            background: #fafafa;
+        }
+
+        .carnate-modal-btn-cancel {
+            min-height: 42px;
+            min-width: 95px;
+            padding: 0 18px;
+            border: 1px solid var(--je-border);
+            border-radius: 9px;
+            background: #ffffff;
+            color: #64748b;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .carnate-modal-btn-cancel:hover {
+            background: #f1f5f9;
+            color: var(--je-text);
+            border-color: #cbd5e1;
+        }
+
+        .carnate-modal-btn-submit {
+            min-height: 42px;
+            min-width: 110px;
+            padding: 0 20px;
+            border: 0;
+            border-radius: 9px;
+            background: var(--je-red);
+            color: #ffffff !important;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            box-shadow: 0 4px 12px rgba(229, 57, 53, 0.2);
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .carnate-modal-btn-submit:hover {
+            background: #d32f2f;
+            transform: translateY(-1px);
+        }
     </style>
 
 
@@ -2121,145 +2387,191 @@
         </div>
     </div>
 
-    {{-- manku --}}
-    <div class="modal @if ($showPrint) show @endif" tabindex="-1"
-        style="opacity:1; background-color:#0606068c; display:@if ($showPrint) block @endif">
-        <div class="modal-dialog modal-md">
-            <div class="modal-content">
-                <form wire:submit.prevent="{{ $isPrint ? 'workVoice' : 'workVoice' }}" target="_blank">
-                    <div class="modal-header">
-                        <button type="button" class="btn-close" wire:click="$set('showPrint', false)"
-                            data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body py-3">
-                        <div class="row g-3">
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <h5 class="mb-4" style="font-weight: 300;">Please select type
-                                        <sup class="text-danger">*</sup>
-                                    </h5>
-                                    <div>
-                                        <!-- Radio Buttons -->
-                                        @if (in_array($jobcardData->status, [0, 1, 4]))
-                                            <label class="form-check-label">
-                                                <input type="radio" wire:model="viewtype" value="mechanic"
-                                                    class="form-check-input">
-                                                Mechanic Copy
-                                            </label>
-                                        @endif
-
-                                        @if (in_array($jobcardData->status, [1, 2, 4]) || ($jobcardData->status == 0 && $jobcardData->step != 0))
-                                            <label class="form-check-label ml-3">
-                                                <input type="radio" wire:model="viewtype"
-                                                    value="worksheet_estimate" class="form-check-input">
-                                                Estimate Worksheet
-                                            </label>
-                                        @endif
-
-                                        @if ($jobcardData->status == 2 || $jobcardData->status == 3)
-                                            <label class="form-check-label ml-3">
-                                                <input type="radio" wire:model="viewtype" value="invoice"
-                                                    class="form-check-input">
-                                                {{ isset($user) && $user->is_gst == 1 ? 'TAX Invoice' : 'Cash Invoice' }}
-                                            </label>
-                                        @endif
-
-                                        {{-- <a href="{{ route('download.invoice', ['id' => $jobcardData->id, 'type' => 0]) }}"
-                                            class="btn btn-outline-secondary mx-1">
-                                            <i class="fa fa-file-pdf"></i></a> --}}
-
-                                        {{-- <label class="form-check-label ml-3">
-                                                <input type="radio" wire:model="viewtype" value="invoice_download"
-                                                    class="form-check-input"
-                                                    @disabled($jobcardData->status == 0 && $jobcardData->step == 0)>
-                                                <a href="{{ route('download.invoice', ['id' => $jobcardData->id, 'type' => 0]) }}"
-                                                   class="text-decoration-none text-dark">
-                                                    <i class="fa fa-file-pdf"></i> Estimate
-                                                </a>
-                                            </label> --}}
-
-                                        {{-- Estimate link removed to use radio buttons consistently --}}
-                                    </div>
-                                </div>
-                                @error('type')
-                                    <span class="text-danger error">{{ $message }}</span>
-                                @enderror
+    {{-- Print Document Modal --}}
+    @if ($showPrint)
+        <div class="carnate-doc-modal-overlay" tabindex="-1">
+            <div class="carnate-doc-modal-card">
+                <form wire:submit.prevent="viewPdfdata">
+                    <div class="carnate-doc-modal-header">
+                        <div class="carnate-doc-modal-title-wrap">
+                            <span class="carnate-doc-modal-icon">
+                                <i class="bx bx-printer"></i>
+                            </span>
+                            <div>
+                                <h5 class="carnate-doc-modal-title">Print Document</h5>
+                                <p class="carnate-doc-modal-subtitle">Select the document copy to print</p>
                             </div>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" wire:click="$set('showPrint', false)"
-                            data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary" wire:click="viewPdfdata">
-                            {{ $isPrint ? 'Print' : 'Print' }}
-                            <i class="spinner-border spinner-border-sm" wire:loading></i>
+                        <button type="button" class="carnate-doc-modal-close" wire:click="$set('showPrint', false)">
+                            <i class="bx bx-x fs-5"></i>
                         </button>
+                    </div>
 
+                    <div class="carnate-doc-modal-body">
+                        <span class="carnate-doc-section-label">Select Document Type <sup class="text-danger">*</sup></span>
+
+                        <div class="carnate-doc-options">
+                            @if (in_array($jobcardData->status, [0, 1, 4]))
+                                <label class="carnate-doc-card {{ $viewtype == 'mechanic' ? 'active' : '' }}">
+                                    <input type="radio" wire:model.live="viewtype" value="mechanic" class="carnate-doc-radio">
+                                    <div class="carnate-doc-card-icon">
+                                        <i class="bx bx-wrench"></i>
+                                    </div>
+                                    <div class="carnate-doc-card-info">
+                                        <span class="carnate-doc-title">Mechanic Copy</span>
+                                        <span class="carnate-doc-desc">Worksheet with inspection notes & parts list</span>
+                                    </div>
+                                    <div class="carnate-doc-check">
+                                        <i class="bx bx-check"></i>
+                                    </div>
+                                </label>
+                            @endif
+
+                            @if (in_array($jobcardData->status, [1, 2, 4]) || ($jobcardData->status == 0 && $jobcardData->step != 0))
+                                <label class="carnate-doc-card {{ $viewtype == 'worksheet_estimate' ? 'active' : '' }}">
+                                    <input type="radio" wire:model.live="viewtype" value="worksheet_estimate" class="carnate-doc-radio">
+                                    <div class="carnate-doc-card-icon">
+                                        <i class="bx bx-file-blank"></i>
+                                    </div>
+                                    <div class="carnate-doc-card-info">
+                                        <span class="carnate-doc-title">Estimate Worksheet</span>
+                                        <span class="carnate-doc-desc">Detailed estimation with parts & extra charges</span>
+                                    </div>
+                                    <div class="carnate-doc-check">
+                                        <i class="bx bx-check"></i>
+                                    </div>
+                                </label>
+                            @endif
+
+                            @if ($jobcardData->status == 2 || $jobcardData->status == 3)
+                                <label class="carnate-doc-card {{ $viewtype == 'invoice' ? 'active' : '' }}">
+                                    <input type="radio" wire:model.live="viewtype" value="invoice" class="carnate-doc-radio">
+                                    <div class="carnate-doc-card-icon">
+                                        <i class="bx bx-receipt"></i>
+                                    </div>
+                                    <div class="carnate-doc-card-info">
+                                        <span class="carnate-doc-title">{{ isset($user) && $user->is_gst == 1 ? 'TAX Invoice' : 'Cash Invoice' }}</span>
+                                        <span class="carnate-doc-desc">Customer final tax invoice with payments</span>
+                                    </div>
+                                    <div class="carnate-doc-check">
+                                        <i class="bx bx-check"></i>
+                                    </div>
+                                </label>
+                            @endif
+                        </div>
+
+                        @error('viewtype')
+                            <span class="text-danger error d-block mt-2 font-12">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="carnate-doc-modal-footer">
+                        <button type="button" class="carnate-modal-btn-cancel" wire:click="$set('showPrint', false)">
+                            Cancel
+                        </button>
+                        <button type="submit" class="carnate-modal-btn-submit" wire:click="viewPdfdata">
+                            <i class="bx bx-printer"></i>
+                            Print
+                            <span wire:loading wire:target="viewPdfdata" class="spinner-border spinner-border-sm ms-1"></span>
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
-    </div>
+    @endif
 
-
-
-    <div class="modal @if ($showDownload) show @endif" tabindex="-1"
-        style="opacity:1; background-color:#0606068c; display:@if ($showDownload) block @endif;">
-        <div class="modal-dialog modal-md">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">Download PDF</h4>
-                    <button type="button" class="btn-close" wire:click="$set('showDownload', false)"
-                        data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body py-3">
-                    <div class="row g-3">
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <h5 class="mb-4" style="font-weight: 300;">Please select type
-                                    <sup class="text-danger">*</sup>
-                                </h5>
-                                <div>
-                                    <!-- Radio Buttons -->
-                                    @if (in_array($jobcardData->status, [0, 1, 4]))
-                                        <label class="form-check-label">
-                                            <input type="radio" wire:model="pdftype" value="mechanic"
-                                                class="form-check-input">
-                                            Mechanic Copy
-                                        </label>
-                                    @endif
-                                    @if (in_array($jobcardData->status, [1, 2, 4]) || ($jobcardData->status == 0 && $jobcardData->step != 0))
-                                        <label class="form-check-label ml-3">
-                                            <input type="radio" wire:model="pdftype" value="worksheet_estimate"
-                                                class="form-check-input">
-                                            Estimate Worksheet
-                                        </label>
-                                    @endif
-
-                                    @if ($jobcardData->status == 2 || $jobcardData->status == 3)
-                                        <label class="form-check-label ml-3">
-                                            <input type="radio" wire:model="pdftype" value="invoice"
-                                                class="form-check-input">
-                                            {{ isset($user) && $user->is_gst == 1 ? 'Tax Invoice' : 'Cash Invoice' }}
-                                        </label>
-                                    @endif
-                                </div>
+    {{-- Download PDF Modal --}}
+    @if ($showDownload)
+        <div class="carnate-doc-modal-overlay" tabindex="-1">
+            <div class="carnate-doc-modal-card">
+                <form wire:submit.prevent="downloadPdfdata">
+                    <div class="carnate-doc-modal-header">
+                        <div class="carnate-doc-modal-title-wrap">
+                            <span class="carnate-doc-modal-icon">
+                                <i class="bx bxs-file-pdf"></i>
+                            </span>
+                            <div>
+                                <h5 class="carnate-doc-modal-title">Download PDF</h5>
+                                <p class="carnate-doc-modal-subtitle">Select the document copy to download</p>
                             </div>
-                            @error('pdftype')
-                                <span class="text-danger error">{{ $message }}</span>
-                            @enderror
                         </div>
+                        <button type="button" class="carnate-doc-modal-close" wire:click="$set('showDownload', false)">
+                            <i class="bx bx-x fs-5"></i>
+                        </button>
                     </div>
-                </div>
-                <div class="modal-footer border-top">
-                    <button type="button" class="btn btn-secondary rounded border-0 text-white"
-                        wire:click="$set('showDownload', false)">Close</button>
-                    <button type="button" class="btn btn-primary rounded border-0 text-white"
-                        wire:click="downloadPdfdata">Download</button>
-                </div>
+
+                    <div class="carnate-doc-modal-body">
+                        <span class="carnate-doc-section-label">Select Document Type <sup class="text-danger">*</sup></span>
+
+                        <div class="carnate-doc-options">
+                            @if (in_array($jobcardData->status, [0, 1, 4]))
+                                <label class="carnate-doc-card {{ $pdftype == 'mechanic' ? 'active' : '' }}">
+                                    <input type="radio" wire:model.live="pdftype" value="mechanic" class="carnate-doc-radio">
+                                    <div class="carnate-doc-card-icon">
+                                        <i class="bx bx-wrench"></i>
+                                    </div>
+                                    <div class="carnate-doc-card-info">
+                                        <span class="carnate-doc-title">Mechanic Copy</span>
+                                        <span class="carnate-doc-desc">Worksheet with inspection notes & parts list</span>
+                                    </div>
+                                    <div class="carnate-doc-check">
+                                        <i class="bx bx-check"></i>
+                                    </div>
+                                </label>
+                            @endif
+
+                            @if (in_array($jobcardData->status, [1, 2, 4]) || ($jobcardData->status == 0 && $jobcardData->step != 0))
+                                <label class="carnate-doc-card {{ $pdftype == 'worksheet_estimate' ? 'active' : '' }}">
+                                    <input type="radio" wire:model.live="pdftype" value="worksheet_estimate" class="carnate-doc-radio">
+                                    <div class="carnate-doc-card-icon">
+                                        <i class="bx bx-file-blank"></i>
+                                    </div>
+                                    <div class="carnate-doc-card-info">
+                                        <span class="carnate-doc-title">Estimate Worksheet</span>
+                                        <span class="carnate-doc-desc">Detailed estimation with parts & extra charges</span>
+                                    </div>
+                                    <div class="carnate-doc-check">
+                                        <i class="bx bx-check"></i>
+                                    </div>
+                                </label>
+                            @endif
+
+                            @if ($jobcardData->status == 2 || $jobcardData->status == 3)
+                                <label class="carnate-doc-card {{ $pdftype == 'invoice' ? 'active' : '' }}">
+                                    <input type="radio" wire:model.live="pdftype" value="invoice" class="carnate-doc-radio">
+                                    <div class="carnate-doc-card-icon">
+                                        <i class="bx bx-receipt"></i>
+                                    </div>
+                                    <div class="carnate-doc-card-info">
+                                        <span class="carnate-doc-title">{{ isset($user) && $user->is_gst == 1 ? 'Tax Invoice' : 'Cash Invoice' }}</span>
+                                        <span class="carnate-doc-desc">Customer final tax invoice with payments</span>
+                                    </div>
+                                    <div class="carnate-doc-check">
+                                        <i class="bx bx-check"></i>
+                                    </div>
+                                </label>
+                            @endif
+                        </div>
+
+                        @error('pdftype')
+                            <span class="text-danger error d-block mt-2 font-12">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="carnate-doc-modal-footer">
+                        <button type="button" class="carnate-modal-btn-cancel" wire:click="$set('showDownload', false)">
+                            Cancel
+                        </button>
+                        <button type="submit" class="carnate-modal-btn-submit" wire:click="downloadPdfdata">
+                            <i class="bx bx-download"></i>
+                            Download
+                            <span wire:loading wire:target="downloadPdfdata" class="spinner-border spinner-border-sm ms-1"></span>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
-    </div>
+    @endif
 
     {{-- @include('livewire.workshop.jobcard.dent_car_modal') --}}
     @include('livewire.workshop.jobcard.vehical_modal')

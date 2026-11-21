@@ -107,6 +107,33 @@
             transform: translateY(-1px);
         }
 
+        /* Secondary Button (Cancel) */
+        .carnate-btn-secondary {
+            min-height: 42px;
+            min-width: 95px;
+            padding: 0 18px;
+            border: 1px solid var(--c-border);
+            border-radius: 9px;
+            background: #fff;
+            color: var(--c-secondary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none !important;
+            transition: all .2s ease;
+            cursor: pointer;
+        }
+
+        .carnate-btn-secondary:hover {
+            background: var(--c-hover);
+            color: var(--c-text);
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
         /* Filter */
         .carnate-filter-card {
             margin-top: 18px;

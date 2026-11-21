@@ -32,6 +32,16 @@ class WorkshopsReportController extends Component
     public function updatingToDate(): void { $this->resetPage(); }
     public function updatingStatusFilter(): void { $this->resetPage(); }
 
+    public function resetFilters(): void
+    {
+        $this->search = '';
+        $this->filterType = null;
+        $this->fromDate = null;
+        $this->toDate = null;
+        $this->statusFilter = '';
+        $this->resetPage();
+    }
+
     public function viewWorkshop(int $workshopId): void
     {
         $this->viewWorkshopId = $workshopId;
