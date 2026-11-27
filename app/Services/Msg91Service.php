@@ -189,6 +189,9 @@ class Msg91Service
                 }
             }
         }
+        if (empty($workshopPhone)) {
+            $workshopPhone = '9999999999';
+        }
 
         // Generate Estimation URL for customer
         $estimateUrl = route('customer.estimate.download', [
@@ -217,15 +220,15 @@ class Msg91Service
                 'alp4' => $workshopName,
             ];
         } elseif ($event === 'process') {
-            // "Dear ##alp1##, Your vehicle ##alp2## inspection is complete. View your job card ##alp3##..."
-            // alp3 is mapped to the estimate download URL; aliases also provided for link/url/pdf_link
+            // "Dear ##alp1##, Your vehicle ##alp2## inspection is complete. View your repair estimate here: ##urg1##. Please call us at ##num1## to discuss and confirm the repairs. ##alp3##."
             $eventVars = [
                 'alp1' => $customerName,
                 'alp2' => $vehicleNumber,
-                'alp3' => $estimateUrl,
+                'urg1' => $estimateUrl,
+                'num1' => $workshopPhone,
+                'alp3' => $workshopName,
                 'alp4' => $workshopName,
                 'alp5' => $estimateUrl,
-                'num1' => $workshopPhone,
                 'link' => $estimateUrl,
                 'url' => $estimateUrl,
                 'pdf_link' => $estimateUrl,
@@ -270,6 +273,7 @@ class Msg91Service
             'phone' => $workshopPhone,
             'link' => $estimateUrl,
             'url' => $estimateUrl,
+            'urg1' => $estimateUrl,
             'pdf_link' => $estimateUrl,
             'pdf_url' => $estimateUrl,
             'estimate_link' => $estimateUrl,
