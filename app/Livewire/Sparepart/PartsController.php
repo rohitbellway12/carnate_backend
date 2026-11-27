@@ -61,7 +61,7 @@ class PartsController extends Component
     public $suppliers;
     protected $rules = [
         'name' => 'required',
-        'purchase_amount' => 'required|numeric|min:1',
+        'purchase_amount' => 'nullable|numeric|min:0',
         'selling_amount' => 'required|numeric|min:1',
         'unit' => 'required|integer',
         'stock' => 'required|integer|min:0',
@@ -881,7 +881,7 @@ class PartsController extends Component
             'image' => $this->image_id,
             'part_number' => $this->part_number,
             'sp_type' => $this->sp_type,
-            'purchase_price' => $this->purchase_amount,
+            'purchase_price' => !empty($this->purchase_amount) ? $this->purchase_amount : 0,
             'tax_type' => $this->tax_type,
             'tax_percentage' => $this->tax_percentage,
             'category_id' => $this->category,
@@ -1216,7 +1216,7 @@ class PartsController extends Component
             'image' => $this->image_id,
             'part_number' => $this->part_number,
             'sp_type' => $this->sp_type,
-            'purchase_price' => $this->purchase_amount,
+            'purchase_price' => !empty($this->purchase_amount) ? $this->purchase_amount : 0,
             'tax_type' => $this->tax_type,
             'tax_percentage' => $this->tax_percentage,
             'category_id' => $this->category,

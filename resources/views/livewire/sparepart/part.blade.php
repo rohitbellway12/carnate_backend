@@ -772,7 +772,7 @@
                         <div class="form-section-body">
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label class="form-label">Purchase Price <sup class="text-danger">*</sup></label>
+                                    <label class="form-label">Purchase Price</label>
                                     <div class="input-group">
                                         <span class="input-group-text">₹</span>
                                         <input type="number" step="any" min="0" wire:model.live="purchase_amount" class="form-control" {{ $isView ? 'disabled' : '' }}>

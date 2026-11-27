@@ -197,18 +197,19 @@ public function updatedStockQuantity($value)
     $this->stock_selling_price = $value * $this->stock_unit_price;
 }
 
-//  public function updatedSelectAll($value)
-// {
-//     if ($value) {
-//         // Select all vehicles
-//         $this->part_suitable_for = $this->part_modifications->map(function($mod) {
-//             return trim($mod->brand_name . ' ' . $mod->variant_name . ' ' . $mod->year);
-//         })->toArray();
-//     } else {
-//         // Unselect all
-//         $this->part_suitable_for = [];
-//     }
-// }
+public function selectAllVehicles()
+{
+    if ($this->part_modifications) {
+        $this->part_suitable_for = $this->part_modifications->map(function($mod) {
+            return trim($mod->brand_name . ' ' . $mod->variant_name . ' ' . $mod->year);
+        })->toArray();
+    }
+}
+
+public function clearAllVehicles()
+{
+    $this->part_suitable_for = [];
+}
 
 
 public function updateFullDetails()

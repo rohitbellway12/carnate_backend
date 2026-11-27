@@ -395,74 +395,73 @@
         }
 
         .carnate-stock-page .modal-dialog {
-            max-width: 850px;
-            margin-top: 35px;
-            margin-bottom: 35px;
+            max-width: 900px;
+            margin: 1.5rem auto;
         }
 
         .carnate-stock-page .modal-content {
-            max-height: calc(100vh - 70px);
-
+            max-height: calc(100vh - 50px);
             display: flex;
             flex-direction: column;
-
             border: 0 !important;
             border-radius: 16px !important;
-
-            box-shadow:
-                0 22px 60px rgba(15, 23, 42, .24) !important;
-
+            box-shadow: 0 25px 60px rgba(15, 23, 42, .25) !important;
             overflow: hidden;
+            background: #fff;
+        }
+
+        .carnate-stock-page .modal-content > form {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            max-height: calc(100vh - 50px);
+            min-height: 0;
+            overflow: hidden;
+            margin: 0;
         }
 
         .carnate-stock-page .modal-header {
             flex-shrink: 0;
-
-            padding: 18px 24px !important;
-
+            padding: 16px 24px !important;
             background: #fff;
-
             border-bottom: 1px solid var(--stock-border-light) !important;
         }
 
         .carnate-stock-page .modal-header-icon {
-            width: 42px;
-            height: 42px;
-            min-width: 42px;
-
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-
             color: var(--stock-red);
             background: var(--stock-red-soft);
-
-            border-radius: 11px;
-
+            border-radius: 10px;
             font-size: 20px;
         }
 
         .carnate-stock-page .modal-title {
             margin: 0;
-
             color: var(--stock-text);
-
             font-size: 18px;
             font-weight: 700;
         }
 
         .carnate-stock-page .modal-header .btn-close {
             opacity: .65;
+            transition: opacity .15s ease;
+        }
+
+        .carnate-stock-page .modal-header .btn-close:hover {
+            opacity: 1;
         }
 
         .carnate-stock-page .modal-body {
             flex: 1 1 auto;
-
-            max-height: calc(100vh - 190px);
-
-            padding: 24px !important;
-
-            overflow-y: auto;
+            min-height: 0;
+            max-height: none !important;
+            padding: 20px 24px !important;
+            overflow-y: auto !important;
             overflow-x: hidden;
         }
 
@@ -485,12 +484,10 @@
 
         .carnate-stock-page .modal-footer {
             flex-shrink: 0;
-
             padding: 14px 24px !important;
-
             background: #f8fafc;
-
             border-top: 1px solid var(--stock-border-light) !important;
+            z-index: 5;
         }
 
         /* =========================================================
@@ -498,7 +495,7 @@
         ========================================================= */
 
         .carnate-stock-page .modal-section {
-            margin-bottom: 25px;
+            margin-bottom: 18px;
         }
 
         .carnate-stock-page .modal-section:last-child {
@@ -508,37 +505,28 @@
         .carnate-stock-page .section-heading {
             display: flex;
             align-items: center;
-            gap: 9px;
-
-            margin-bottom: 15px;
-
+            gap: 8px;
+            margin-bottom: 12px;
             color: var(--stock-text);
-
             font-size: 14px;
             font-weight: 700;
         }
 
         .carnate-stock-page .section-heading-icon {
-            width: 30px;
-            height: 30px;
-
+            width: 28px;
+            height: 28px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-
             color: var(--stock-red);
             background: var(--stock-red-soft);
-
             border-radius: 7px;
-
             font-size: 15px;
         }
 
         .carnate-stock-page .section-divider {
             height: 1px;
-
-            margin: 24px 0;
-
+            margin: 18px 0;
             background: var(--stock-border-light);
             border: 0;
         }
@@ -562,33 +550,84 @@
         }
 
         /* =========================================================
-           VEHICLE BOX
+           VEHICLE BOX & CARDS
         ========================================================= */
 
         .carnate-stock-page .vehicle-box {
             padding: 14px;
-
             background: #f8fafc;
-
             border: 1px solid var(--stock-border);
             border-radius: 10px;
         }
 
-        .carnate-stock-page .vehicle-list {
-            max-height: 300px;
+        .carnate-stock-page .vehicle-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
 
-            padding: 4px;
+        .carnate-stock-page .vehicle-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
 
-            overflow-y: auto;
+        .carnate-stock-page .vehicle-btn-action {
+            font-size: 11px;
+            padding: 3px 9px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #475569;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all .15s ease;
+            cursor: pointer;
+        }
 
+        .carnate-stock-page .vehicle-btn-action:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+            border-color: #94a3b8;
+        }
+
+        .carnate-stock-page .vehicle-filter-input {
+            width: 190px;
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
             background: #fff;
+            color: #1e293b;
+        }
 
+        .carnate-stock-page .vehicle-filter-input:focus {
+            outline: none;
+            border-color: var(--stock-primary);
+            box-shadow: 0 0 0 2px rgba(234, 84, 85, 0.15);
+        }
+
+        .carnate-stock-page .vehicle-list {
+            max-height: 230px;
+            padding: 8px;
+            overflow-y: auto;
+            background: #ffffff;
             border: 1px solid var(--stock-border);
-            border-radius: 9px;
+            border-radius: 8px;
         }
 
         .carnate-stock-page .vehicle-list::-webkit-scrollbar {
-            width: 5px;
+            width: 6px;
+        }
+
+        .carnate-stock-page .vehicle-list::-webkit-scrollbar-track {
+            background: #f8fafc;
+            border-radius: 10px;
         }
 
         .carnate-stock-page .vehicle-list::-webkit-scrollbar-thumb {
@@ -596,58 +635,93 @@
             border-radius: 10px;
         }
 
-        .carnate-stock-page .vehicle-item {
-            min-height: 60px;
-
-            margin: 0 !important;
-            padding: 9px 10px !important;
-
-            border-bottom: 1px solid var(--stock-border-light) !important;
-
-            border-radius: 6px;
-
-            transition: background .15s ease;
+        .carnate-stock-page .vehicle-list::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
 
-        .carnate-stock-page .vehicle-item:hover {
-            background: #fffafa;
-        }
-
-        .carnate-stock-page .vehicle-item:last-child {
-            border-bottom: 0 !important;
-        }
-
-        .carnate-stock-page .vehicle-item .form-check-input {
-            margin-top: 4px;
-        }
-
-        .carnate-stock-page .vehicle-item .form-check-label {
-            padding-left: 4px;
-
-            color: var(--stock-text-2);
-
-            font-size: 12px;
-
+        .carnate-stock-page .vehicle-card-tile {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px 12px;
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
             cursor: pointer;
+            user-select: none;
+            transition: all .15s ease;
+            margin: 0;
+            height: 100%;
+            position: relative;
         }
 
-        .carnate-stock-page .vehicle-item strong {
-            color: var(--stock-text);
+        .carnate-stock-page .vehicle-card-tile:hover {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+
+        .carnate-stock-page .vehicle-card-tile:has(input:checked),
+        .carnate-stock-page .vehicle-card-tile.active {
+            background: #fff8f8 !important;
+            border-color: #ea5455 !important;
+            box-shadow: 0 2px 6px rgba(234, 84, 85, 0.12) !important;
+        }
+
+        .carnate-stock-page .vehicle-card-tile .vehicle-custom-checkbox {
+            width: 17px;
+            height: 17px;
+            min-width: 17px;
+            margin-top: 2px;
+            accent-color: #ea5455;
+            cursor: pointer;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .carnate-stock-page .vehicle-card-tile .vehicle-custom-checkbox:checked {
+            background-color: #ea5455;
+            border-color: #ea5455;
+        }
+
+        .carnate-stock-page .vehicle-tile-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .carnate-stock-page .vehicle-brand-title {
+            color: #1e293b;
             font-size: 12px;
+            font-weight: 600;
+            line-height: 1.35;
+            word-break: break-word;
         }
 
-        .carnate-stock-page .vehicle-item small {
-            color: var(--stock-muted) !important;
+        .carnate-stock-page .vehicle-meta {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 2px;
+            color: #64748b;
             font-size: 11px;
         }
 
+        .carnate-stock-page .vehicle-year-pill {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 10px;
+        }
+
         .carnate-stock-page .vehicle-help {
-            display: block;
-
-            margin-top: 7px;
-
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 8px;
             color: #64748b;
-
             font-size: 11px;
         }
 
@@ -656,7 +730,7 @@
         ========================================================= */
 
         .carnate-stock-page textarea.form-control {
-            min-height: 100px;
+            min-height: 48px;
             resize: vertical;
         }
 
@@ -1027,11 +1101,11 @@
         "
     >
 
-        <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
 
             <div class="modal-content">
 
-                <form wire:submit.prevent="updateFullDetails">
+                <form wire:submit.prevent="updateFullDetails" style="display: flex; flex-direction: column; height: 100%; max-height: inherit; min-height: 0; overflow: hidden; margin: 0;">
 
 
                     {{-- MODAL HEADER --}}
@@ -1215,13 +1289,14 @@
 
                                 {{-- Description --}}
 
-                                <div class="col-md-12">
+                                <div class="col-md-4">
 
                                     <label class="form-label">
                                         Description
                                     </label>
 
                                     <textarea
+                                        rows="1"
                                         class="form-control"
                                         wire:model.defer="description"
                                         placeholder="Enter description"
@@ -1256,12 +1331,46 @@
 
                             <div class="vehicle-box">
 
-                                <div class="mb-2">
+                                <div class="vehicle-toolbar">
 
-                                    <label class="form-label mb-0">
-                                        Compatible Vehicles List
-                                        <span class="required">*</span>
-                                    </label>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <label class="form-label mb-0 fw-semibold text-dark" style="font-size: 12.5px;">
+                                            Compatible Vehicles List
+                                            <span class="required">*</span>
+                                        </label>
+                                        @if (!empty($part_suitable_for) && count($part_suitable_for) > 0)
+                                            <span class="badge bg-danger-subtle text-danger" style="font-size: 11px; border-radius: 20px; padding: 2px 8px; font-weight: 600;">
+                                                {{ count($part_suitable_for) }} Selected
+                                            </span>
+                                        @endif
+                                    </div>
+
+                                    <div class="vehicle-actions">
+                                        <button 
+                                            type="button" 
+                                            class="vehicle-btn-action" 
+                                            wire:click="selectAllVehicles"
+                                            title="Select all vehicles"
+                                        >
+                                            <i class="bx bx-check-double text-danger"></i> Select All
+                                        </button>
+
+                                        <button 
+                                            type="button" 
+                                            class="vehicle-btn-action" 
+                                            wire:click="clearAllVehicles"
+                                            title="Clear selected vehicles"
+                                        >
+                                            <i class="bx bx-x text-muted"></i> Clear
+                                        </button>
+
+                                        <input 
+                                            type="text" 
+                                            class="vehicle-filter-input" 
+                                            placeholder="🔍 Filter vehicles..." 
+                                            oninput="let f=this.value.toLowerCase(); document.querySelectorAll('.carnate-stock-page .vehicle-card-wrapper').forEach(el=>{ el.style.display = el.innerText.toLowerCase().includes(f)?'':'none'; });"
+                                        >
+                                    </div>
 
                                 </div>
 
@@ -1270,42 +1379,43 @@
 
                                     @if (!empty($part_modifications))
 
-                                        <div class="row g-0">
+                                        <div class="row g-2">
 
                                             @foreach ($part_modifications as $modification)
 
-                                                <div class="col-md-6">
+                                                @php
+                                                    $vehicleVal = trim($modification->brand_name . ' ' . $modification->variant_name . ' ' . $modification->year);
+                                                    $isChecked = !empty($part_suitable_for) && in_array($vehicleVal, $part_suitable_for);
+                                                @endphp
 
-                                                    <div class="form-check vehicle-item">
+                                                <div class="col-md-6 vehicle-card-wrapper">
+
+                                                    <label class="vehicle-card-tile {{ $isChecked ? 'active' : '' }}" for="modification_{{ $modification->id }}">
 
                                                         <input
-                                                            class="form-check-input"
+                                                            class="form-check-input vehicle-custom-checkbox"
                                                             type="checkbox"
-                                                            value="{{ $modification->brand_name }} {{ $modification->variant_name }} {{ $modification->year }}"
+                                                            value="{{ $vehicleVal }}"
                                                             wire:model.lazy="part_suitable_for"
                                                             id="modification_{{ $modification->id }}"
                                                         >
 
-                                                        <label
-                                                            class="form-check-label"
-                                                            for="modification_{{ $modification->id }}"
-                                                        >
+                                                        <div class="vehicle-tile-content">
 
-                                                            <strong>
-                                                                {{ $modification->brand_name }}
-                                                                {{ $modification->variant_name }}
-                                                            </strong>
+                                                            <div class="vehicle-brand-title">
+                                                                {{ $modification->brand_name }} {{ $modification->variant_name }}
+                                                            </div>
 
-                                                            <br>
+                                                            <div class="vehicle-meta">
+                                                                <span class="vehicle-year-pill">{{ $modification->year }}</span>
+                                                                @if (!empty($modification->title))
+                                                                    <span>{{ $modification->title }}</span>
+                                                                @endif
+                                                            </div>
 
-                                                            <small>
-                                                                {{ $modification->year }}
-                                                                {{ $modification->title }}
-                                                            </small>
+                                                        </div>
 
-                                                        </label>
-
-                                                    </div>
+                                                    </label>
 
                                                 </div>
 
@@ -1330,10 +1440,15 @@
                                 </div>
 
 
-                                <span class="vehicle-help">
-                                    <i class="bx bx-info-circle me-1"></i>
-                                    All selected vehicles will be saved as compatible.
-                                </span>
+                                <div class="vehicle-help">
+                                    <span>
+                                        <i class="bx bx-info-circle me-1"></i>
+                                        Click any card to select or deselect compatible vehicles.
+                                    </span>
+                                    <span class="text-muted">
+                                        Total: {{ !empty($part_modifications) ? count($part_modifications) : 0 }} models
+                                    </span>
+                                </div>
 
                             </div>
 

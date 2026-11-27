@@ -1216,7 +1216,7 @@
                             <div class="col-md-6">
 
                                 <label class="form-label">
-                                    Purchase Price<sup class="text-danger">*</sup>
+                                    Purchase Price
                                 </label>
 
                                 <input

@@ -42,7 +42,7 @@ class ToolsController extends Component
 
     protected $rules = [
         'name' => 'required',
-       'purchase_amount' => 'required|numeric|min:1',
+       'purchase_amount' => 'nullable|numeric|min:0',
         'selling_amount' => 'required|numeric|min:1',
         'unit' => 'required|integer',
         'stock' => 'required|integer|min:0',
@@ -140,7 +140,7 @@ class ToolsController extends Component
             'image' => $this->image_id,
             'hsn_code' => $this->hsn_code,
             'rack_no' => $this->rack_no,
-            'purchase_price' => $this->purchase_amount,
+            'purchase_price' => !empty($this->purchase_amount) ? $this->purchase_amount : 0,
             'tax_type' => $this->tax_type,
             'tax_percentage' => $this->tax_percentage,
             'category_id' => $this->category,
@@ -300,7 +300,7 @@ class ToolsController extends Component
             'rack_no' => $this->rack_no,
             'tax_type' => $this->tax_type,
             'tax_percentage' => $this->tax_percentage,
-            'purchase_price' => $this->purchase_amount,
+            'purchase_price' => !empty($this->purchase_amount) ? $this->purchase_amount : 0,
             'category_id' => $this->category,
             'selling_amount' => $this->selling_amount,
             'discount_type' => $this->discount_type,

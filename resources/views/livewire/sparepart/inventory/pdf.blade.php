@@ -281,15 +281,12 @@
         {{-- Order & Supplier Details --}}
         <table class="table mb-3">
             <tr class="bg-lightblue">
-                <th style="width: 50%;">ORDER TO (SUPPLIER)</th>
+                <th style="width: 50%;">BUSINESS INFO</th>
                 <th style="width: 50%;">ORDER DETAILS</th>
             </tr>
             <tr>
                 <td style="vertical-align: top; line-height: 1.5;">
                     <strong style="font-size: 13px; color: #0f172a;">{{ $order->supplier->business_first_name ?? 'N/A' }}</strong><br>
-                    @if(!empty($order->supplier->owner_first_name))
-                        <span>Contact Person: {{ $order->supplier->owner_first_name }}</span><br>
-                    @endif
                     @if(!empty($order->supplier->business_address))
                         <span>Address: {{ $order->supplier->business_address }}</span><br>
                     @endif

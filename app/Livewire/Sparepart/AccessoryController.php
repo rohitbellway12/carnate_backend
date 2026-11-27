@@ -45,7 +45,7 @@ class AccessoryController extends Component
     public $online_price = 0, $offline_price = 0;
     protected $rules = [
         'name' => 'required',
-        'purchase_amount' => 'required|numeric|min:1',
+        'purchase_amount' => 'nullable|numeric|min:0',
         'selling_amount' => 'required|numeric|min:1',
         'unit' => 'required|integer',
         'category' => 'required|integer',
@@ -299,7 +299,7 @@ class AccessoryController extends Component
             'rack_no' => $this->rack_no,
             'description' => $this->description ?? '',
             'image' => $this->image_id,
-            'purchase_price' => $this->purchase_amount,
+            'purchase_price' => !empty($this->purchase_amount) ? $this->purchase_amount : 0,
             'tax_type' => $this->tax_type,
             'tax_percentage' => $this->tax_percentage,
             'category_id' => $this->category,
@@ -413,19 +413,6 @@ class AccessoryController extends Component
         }
     }
 
-    /**
-     * Listener for the VehicleSelector component.
-     * The VehicleSelector emits "vehicleAdded" with the selected modification ID.
-     * We simply push that ID into the $suitable_for array so it will be saved
-     * when the accessory is stored.
-     */
-    /**
-     * Listener for the VehicleSelector component.
-     * Adds the selected modification ID to the compatible vehicles list.
-     * Additionally, ensures the newly added modification is present in the
-     * `$modifications` collection so that it can be displayed immediately in
-     * the "Selected Compatible Vehicles" badge list.
-     */
     public function addSuitableVehicle($modificationId)
     {
         // Ensure $suitable_for is an array and avoid duplicate IDs
@@ -436,15 +423,10 @@ class AccessoryController extends Component
             $this->suitable_for[] = $modificationId;
         }
 
-        // Load the Modification model (if it exists) and add it to the
-        // `$modifications` collection used by the view. This mirrors the
-        // behaviour in the workshop stock page where newly added vehicles are
-        // instantly visible.
         if ($modificationId) {
             $mod = Modification::find($modificationId);
             if ($mod) {
-                // $this->modifications is an Eloquent Collection; ensure we
-                // don't duplicate entries.
+              
                 if (!$this->modifications->contains('id', $mod->id)) {
                     $this->modifications->push($mod);
                 }
@@ -452,10 +434,6 @@ class AccessoryController extends Component
         }
     }
 
-    /**
-     * Remove a vehicle id from the selected list.
-     * Called from the UI via wire:click="removeVehicle({{ $vehId }})".
-     */
     public function removeSuitableVehicle($modificationId)
     {
         $this->suitable_for = array_filter($this->suitable_for, function ($id) use ($modificationId) {
@@ -614,7 +592,7 @@ class AccessoryController extends Component
             'label_id' => $sparePartLabel->id,
             'brand' => $this->brand ?? '',
             'price' => $this->customerPrice,
-            'purchase_price' => $this->purchase_amount,
+            'purchase_price' => !empty($this->purchase_amount) ? $this->purchase_amount : 0,
             'amount' => $this->reflectedPrice,
             'hsn_code' => $this->hsn_code,
             'rack_no' => $this->rack_no,

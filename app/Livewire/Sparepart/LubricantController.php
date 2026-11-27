@@ -56,7 +56,7 @@ class LubricantController extends Component
     public $online_price = 0, $offline_price = 0;
     protected $rules = [
         'name' => 'required',
-        'purchase_amount' => 'required|numeric|min:1',
+        'purchase_amount' => 'nullable|numeric|min:0',
         'selling_amount' => 'required|numeric|min:1',
         'unit' => 'required|integer',
         'category' => 'required|integer',
@@ -343,7 +343,7 @@ class LubricantController extends Component
             'description' => $this->description ?? '',
             'image' => $this->license_id,
             'category_id' => $this->category,
-            'purchase_price' => $this->purchase_amount,
+            'purchase_price' => !empty($this->purchase_amount) ? $this->purchase_amount : 0,
             'tax_type' => $this->tax_type,
             'tax_percentage' => $this->tax_percentage,
             'selling_amount' => $this->selling_amount,
@@ -610,7 +610,7 @@ class LubricantController extends Component
             'category_id' => $this->category,
             'tax_type' => $this->tax_type,
             'tax_percentage' => $this->tax_percentage,
-            'purchase_price' => $this->purchase_amount,
+            'purchase_price' => !empty($this->purchase_amount) ? $this->purchase_amount : 0,
             'selling_amount' => $this->selling_amount,
             'discount_type' => $this->discount_type,
             'platform_charge' => $this->commission,

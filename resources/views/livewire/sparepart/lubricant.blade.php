@@ -252,7 +252,6 @@
 
                                     <label>
                                         Purchase Price
-                                        <span>*</span>
                                     </label>
 
                                     <div class="carnate-input-wrap">
